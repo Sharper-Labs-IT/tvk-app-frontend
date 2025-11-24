@@ -1,18 +1,37 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import Home from '../pages/Home';
+import Membership from '../pages/Membership';
+import Game from '../pages/Game';
+import Events from '../pages/Events';
+import Loader from '../components/Loader';
 
 const AppRoutes: React.FC = () => {
+  const location = useLocation();
+  
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]); 
+
   return (
-    <Routes>
-      {/* Main Pages */}
-      <Route path="/" element={<Home />} />
-      
-      {/* Placeholders for future pages */}
-      <Route path="/membership" element={<div className="p-10 text-white">Membership Page</div>} />
-      <Route path="/game" element={<div className="p-10 text-white">Game Page</div>} />
-      <Route path="/events" element={<div className="p-10 text-white">Events Page</div>} />
-    </Routes>
+    <>
+      {isLoading && <Loader />}
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/membership" element={<Membership />} />
+        <Route path="/game" element={<Game />} />
+        <Route path="/events" element={<Events />} />
+      </Routes>
+    </>
   );
 };
 
