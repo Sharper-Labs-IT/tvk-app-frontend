@@ -7,11 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        // I extracted these approximate colors from your image
         brand: {
-          dark: '#111111', // The almost-black background
-          gold: '#E6C65B', // A base gold color
-          goldDark: '#B68D40', // Darker gold for gradients
+          dark: '#111111',       // Existing: The almost-black background
+          gold: '#E6C65B',       // Existing: A base gold color
+          goldDark: '#B68D40',   // Existing: Darker gold for gradients
+          footerBlue: '#2A344E', // NEW: The specific dark blue for the footer
         }
       },
       fontFamily: {
