@@ -98,9 +98,9 @@ const Hero = () => {
   const getVideoSrc = (index: number): string => `/videos/hero-${index}.mp4`;
 
   return (
-    <div className="relative h-[90vh] w-screen overflow-x-hidden">
+    <div className="relative h-dvh w-screen overflow-x-hidden">
       {loading && (
-        <div className="flex-center absolute z-[100] h-[90vh] w-screen bg-violet-50">
+        <div className="flex-center absolute z-[100] h-dvh w-screen bg-violet-50">
           <div className="three-body" role="status" aria-label="Loading videos">
             <div className="three-body__dot"></div>
             <div className="three-body__dot"></div>
@@ -111,10 +111,10 @@ const Hero = () => {
 
       <div
         id="video-frame"
-        className="relative z-10 h-[85vh] w-screen overflow-hidden rounded-lg bg-blue-75"
+        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
       >
         <div>
-          <div className="mask-clip-path absolute-center absolute z-50 size-56 cursor-pointer overflow-hidden rounded-lg">
+          <div className="mask-clip-path absolute-center absolute z-50 size-64 cursor-pointer overflow-hidden rounded-lg">
             <VideoPreview>
               <div
                 onClick={handleMiniVdClick}
@@ -165,7 +165,7 @@ const Hero = () => {
           />
         </div>
 
-        <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
+        <h1 className="special-font hero-heading absolute bottom-10 right-5 z-40 text-blue-75">
           G<b>A</b>MING <b>A</b>REN<b>A</b>
         </h1>
 
