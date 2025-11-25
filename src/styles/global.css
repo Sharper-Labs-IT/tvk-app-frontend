@@ -15,3 +15,84 @@
 .btn-gold-gradient {
     background: linear-gradient(90deg, #B68D40 0%, #E6C65B 50%, #B68D40 100%);
 }
+
+/* Hero component utilities */
+.absolute-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.special-font {
+  font-family: 'Luckiest Guy', cursive;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.hero-heading {
+  font-size: clamp(2.5rem, 8vw, 8rem);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.mask-clip-path {
+  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+/* Loading animation */
+.three-body {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.three-body__dot {
+  position: absolute;
+  top: 32px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background-color: #7c3aed;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+
+.three-body__dot:nth-child(1) {
+  left: 8px;
+  animation: three-body-dot1 0.6s infinite;
+}
+
+.three-body__dot:nth-child(2) {
+  left: 8px;
+  animation: three-body-dot2 0.6s infinite;
+}
+
+.three-body__dot:nth-child(3) {
+  left: 32px;
+  animation: three-body-dot2 0.6s infinite;
+}
+
+@keyframes three-body-dot1 {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes three-body-dot2 {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(24px, 0);
+  }
+}
