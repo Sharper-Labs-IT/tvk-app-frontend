@@ -2,6 +2,7 @@ import React from 'react';
 import Header from '../components/Header';
 import Hero from '../components/game/Hero';
 import About from '../components/game/About';
+import Story from '../components/game/Story';
 
 const Game: React.FC = () => {
   return (
@@ -10,6 +11,7 @@ const Game: React.FC = () => {
       <main className='bg-[#dfdff0]'>
         <Hero />
         <About />
+        <Story />
       </main>
     </div>
   );

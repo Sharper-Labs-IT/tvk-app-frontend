@@ -70,7 +70,7 @@ const About = () => {
           }}
         >
           <img
-            src="img/abou.webp"
+            src="img/about.webp"
             alt="Background"
             className="absolute left-0 top-0 w-full h-full object-cover"
           />
