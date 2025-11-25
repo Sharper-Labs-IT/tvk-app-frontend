@@ -35,7 +35,7 @@ const MembershipPlan: React.FC = () => {
   };
 
   return (
-    <section className="relative w-full min-h-screen py-20 overflow-hidden bg-brand-dark flex items-center justify-center">
+    <section className="relative w-full min-h-[600px] py-20 overflow-hidden bg-brand-dark flex items-center justify-center">
       
       {/* Background Image */}
       <div 

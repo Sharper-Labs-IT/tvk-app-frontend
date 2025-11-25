@@ -15,8 +15,8 @@ const headerContainerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      delay: 0.6, 
-      staggerChildren: 0.4, 
+      delay: 0.6,
+      staggerChildren: 0.4,
     },
   },
 };
@@ -27,7 +27,7 @@ const majorItemVariants: Variants = {
 };
 
 const navStaggerVariants: Variants = {
-  hidden: {}, 
+  hidden: {},
   visible: {
     transition: {
       staggerChildren: 0.1,
@@ -47,42 +47,37 @@ const Header: React.FC = () => {
   return (
     <>
       <motion.header
-        className="w-full text-white h-24 px-4 md:px-8 flex items-center justify-between z-50 relative"
+        className="w-full bg-brand-dark text-white h-24 px-8 md:px-16 flex items-center justify-between z-50 relative"
         initial="hidden"
         animate="visible"
-        variants={headerContainerVariants} 
+        variants={headerContainerVariants}
       >
         {/* 1. --- Logo Section (Animated first by majorItemVariants) --- */}
         <motion.div className="flex-shrink-0" variants={majorItemVariants}>
           <Link to="/">
-            <img 
-              src="/images/tvk-logo.png" 
-              alt="TVK Logo" 
-              className="h-20 w-auto object-contain" 
-            />
+            <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-20 w-auto object-contain" />
           </Link>
         </motion.div>
 
         {/* 2. --- Navigation Links (Desktop: Animated second) --- */}
-        <motion.nav 
-            className="hidden md:block" 
-            variants={navStaggerVariants} 
-        >
-          <motion.ul className="flex space-x-12" variants={navStaggerVariants}> 
+        <motion.nav className="hidden md:block" variants={navStaggerVariants}>
+          <motion.ul className="flex space-x-12" variants={navStaggerVariants}>
             {navItems.map((item) => (
               <motion.li key={item.name} variants={majorItemVariants}>
-                <Link 
-                  to={item.path} 
+                <Link
+                  to={item.path}
                   className={`
                     text-lg font-medium transition-colors relative group uppercase tracking-wide
                     ${isActive(item.path) ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                   `}
                 >
                   {item.name}
-                  <span className={`
+                  <span
+                    className={`
                     absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
                     ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
-                  `}></span>
+                  `}
+                  ></span>
                 </Link>
               </motion.li>
             ))}
@@ -91,31 +86,36 @@ const Header: React.FC = () => {
 
         {/* 3. --- Login Button (Animated third) / Mobile Menu Button --- */}
         <motion.div variants={majorItemVariants}>
-          <button 
-            className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded hover:opacity-90 transition-opacity text-lg shadow-lg"
-          >
+          <button className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded hover:opacity-90 transition-opacity text-lg shadow-lg">
             Login/ Join
           </button>
 
           {/* Mobile Menu Button (Hamburger Icon) */}
-          <button 
+          <button
             className="md:hidden p-2 transition-colors hover:text-brand-gold"
             onClick={toggleMenu}
             aria-label="Open menu"
           >
-            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="w-8 h-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </motion.div>
       </motion.header>
 
       {/* Mobile Menu Component */}
-      <MobileMenu 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        navItems={navItems}
-      />
+      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} navItems={navItems} />
     </>
   );
 };

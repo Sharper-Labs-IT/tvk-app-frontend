@@ -1,16 +1,16 @@
 import React from 'react';
-// We don't need Header import here anymore, it's inside HomeHero
 import HomeHero from '../components/HomeHero';
 import Footer from '../components/Footer';
 import MembershipPlan from '../components/MembershipPlan';
+import Header from '../components/Header';
 
 const Home: React.FC = () => {
   return (
     <main>
+      <Header />
       <HomeHero />
-      <MembershipPlan/>
-      <Footer/>
-
+      <MembershipPlan />
+      <Footer />
     </main>
   );
 };

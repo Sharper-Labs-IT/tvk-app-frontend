@@ -1,81 +1,98 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Header from './Header';
+import React, { useEffect, useState } from 'react';
 
 const HomeHero: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // 0.5 second delay to account for global loading screen
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Helper string for common transition styles
+  const transitionBase = 'transition-all duration-1000 ease-out transform';
+  const getAnimClass = (delayClass: string) =>
+    `${transitionBase} ${delayClass} ${
+      isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+    }`;
+
   return (
-    // 1. Main Container: Dark background, takes full screen height, relative for positioning children
-    <section className="relative w-full min-h-screen bg-brand-dark overflow-hidden flex flex-col">
-        
-      {/* 2. Yellow Side Borders (Absolute positioning to stick to edges) */}
-      {/* Left Border */}
-      <div className="absolute left-0 top-0 bottom-0 w-4 md:w-6 bg-brand-gold z-10"></div>
-      {/* Right Border */}
-      <div className="absolute right-0 top-0 bottom-0 w-4 md:w-6 bg-brand-gold z-10"></div>
+    // UPDATED: Increased min-h for mobile (800px) to allow stacking, kept lg:min-h original
+    <section className="relative w-full bg-brand-dark overflow-hidden min-h-[800px] lg:min-h-[650px] flex items-start lg:items-center">
+      {/* --- LAYER 1: Yellow Line --- */}
+      <div className="absolute bottom-2 left-0 w-full h-3 bg-brand-gold z-0" />
 
+      {/* --- LAYER 2: Hero Image --- */}
+      <img
+        src="/images/HeroBackImg.png"
+        alt="Thalapathy Vijay"
+        // UPDATED: Added 'left-1/2 -translate-x-1/2' for mobile centering, reset for desktop
+        className={`absolute bottom-0 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0 z-10 w-auto h-[50%] md:h-[75%] lg:h-[95%] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
 
-      {/* 3. Content Layer (Z-index higher than borders) */}
-      <div className="relative z-20 flex flex-col flex-grow h-full">
-        
-        {/* The Transparent Header sits at the top */}
-        <Header />
+      {/* --- LAYER 3: Red Line --- */}
+      <div className="absolute bottom-0 left-0 w-full h-2 bg-red-600 z-20" />
 
-        {/* Main Hero Body Area */}
-        {/* Use flex-grow to fill space, items-center to vertically center content */}
-        <div className="flex-grow container mx-auto px-10 md:px-20 py-8 flex items-center">
-          
-          {/* Grid layout: 1 column on mobile, 2 columns on large screens */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full items-center">
-            
-            {/* === LEFT COLUMN: TEXT & BUTTONS === */}
-            <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
-              <div>
-                 {/* Gold Gradient Text */}
-                <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold uppercase tracking-wider leading-none font-sans mb-4">
-                   <span className="text-gradient-gold">TVK MEMBERS</span>
-                </h1>
-                {/* White Subtext */}
-                <h2 className="text-3xl md:text-5xl text-white font-bold mb-6">
-                  The Ultimate Global Fan Hub
-                </h2>
-                {/* Smaller Gray Text */}
-                <p className="text-xl md:text-2xl text-gray-300 font-light tracking-wide">
-                  One World. One Thalapathy Family.
-                </p>
-              </div>
+      {/* --- LAYER 4: Main Content --- */}
+      <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full">
+        {/* UPDATED: Added 'justify-start pt-20 pb-[50%]' for mobile layout, 'items-center text-center' for alignment */}
+        <div className="flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-left h-full w-full lg:w-2/3 pt-20 pb-[50%] lg:pt-0 lg:pb-0 lg:py-20">
+          {/* Headline */}
+          <h1
+            className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight uppercase whitespace-normal md:whitespace-nowrap ${getAnimClass(
+              'delay-0'
+            )}`}
+          >
+            <span className="bg-[linear-gradient(to_bottom,theme('colors.brand.goldDark'),#e8d479ff,#a06800ff,#e8d479ff)] bg-clip-text text-transparent drop-shadow-sm leading-tight">
+              TVK Members
+            </span>
+          </h1>
 
-              {/* Buttons Area */}
-              <div className="flex flex-wrap justify-center lg:justify-start gap-6 pt-4">
-                {/* Join Free Button (White) */}
-                <Link 
-                  to="/membership" 
-                  className="px-10 py-4 bg-white text-brand-dark font-bold rounded text-xl hover:bg-gray-100 transition-colors min-w-[180px] text-center"
-                >
-                  Join Free
-                </Link>
+          {/* Spacer */}
+          <div className="h-6 md:h-8" />
 
-                {/* Super Fan Button (Gold Gradient) */}
-                <Link 
-                  to="/membership" 
-                  className="px-10 py-4 btn-gold-gradient text-brand-dark font-bold rounded text-xl hover:opacity-90 transition-opacity min-w-[300px] text-center shadow-[0_0_20px_rgba(230,198,91,0.4)]"
-                >
-                  Become a Super Fan $9.99
-                </Link>
-              </div>
-            </div>
+          {/* Sub-headline */}
+          <h2
+            className={`text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight ${getAnimClass(
+              'delay-[200ms]'
+            )}`}
+          >
+            The Ultimate Global Fan Hub
+          </h2>
 
+          {/* Spacer */}
+          <div className="h-6 md:h-8" />
 
-            {/* === RIGHT COLUMN: ACTOR IMAGE === */}
-            {/* order-1 on mobile (shows first), order-2 on desktop (shows right) */}
-            <div className="flex justify-center lg:justify-end items-end order-1 lg:order-2 relative h-full">
-               <img 
-                 src="/images/HeroBackImg.png" 
-                 alt="Thalapathy Vijay" 
-                 /* Adjust max-h (max height) to fit the image properly within the screen */
-                 className="w-auto max-h-[50vh] md:max-h-[70vh] lg:max-h-[85vh] object-contain drop-shadow-2xl" 
-               />
-            </div>
+          {/* Tagline */}
+          <p
+            className={`text-lg md:text-xl text-gray-300 font-medium ${getAnimClass(
+              'delay-[400ms]'
+            )}`}
+          >
+            One World. One Thalapathy Family.
+          </p>
 
+          {/* Spacer */}
+          <div className="h-10 md:h-12" />
+
+          {/* Buttons Group */}
+          {/* UPDATED: Added 'w-full justify-center' for mobile centering */}
+          <div
+            className={`w-full flex flex-col sm:flex-row justify-center lg:justify-start gap-5 ${getAnimClass(
+              'delay-[600ms]'
+            )}`}
+          >
+            <button className="px-10 py-4 bg-white text-brand-dark font-bold rounded shadow hover:bg-gray-100 transition-colors duration-200 uppercase tracking-wide text-sm md:text-base">
+              Join Free
+            </button>
+
+            <button className="px-10 py-4 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark transition-colors duration-200 uppercase tracking-wide text-sm md:text-base">
+              Become a Super Fan $9.99
+            </button>
           </div>
         </div>
       </div>
