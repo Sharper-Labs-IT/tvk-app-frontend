@@ -1,4 +1,3 @@
-// src/components/Header.tsx
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
@@ -11,32 +10,26 @@ const navItems = [
   { name: 'EVENTS', path: '/events' },
 ];
 
-// 1. Container Variants (Handles the 0.6s delay and staggers its DIRECT children)
 const headerContainerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      // Global load delay
       delay: 0.6, 
-      // Stagger delay between Logo, Nav Container, and Login Button Container
       staggerChildren: 0.4, 
     },
   },
 };
 
-// 2. Item Variants (Defines how a single major item animates)
 const majorItemVariants: Variants = {
   hidden: { y: -20, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
 };
 
-// 3. Nav Link Stagger Variants (Used inside the Nav container to animate individual links)
 const navStaggerVariants: Variants = {
-  hidden: {}, // No initial animation needed here, parent handles it
+  hidden: {}, 
   visible: {
     transition: {
-      // Stagger delay between each individual link
       staggerChildren: 0.1,
     },
   },
@@ -53,12 +46,11 @@ const Header: React.FC = () => {
 
   return (
     <>
-      {/* Header container */}
       <motion.header
         className="w-full text-white h-24 px-4 md:px-8 flex items-center justify-between z-50 relative"
         initial="hidden"
         animate="visible"
-        variants={headerContainerVariants} // Uses the new container variants
+        variants={headerContainerVariants} 
       >
         {/* 1. --- Logo Section (Animated first by majorItemVariants) --- */}
         <motion.div className="flex-shrink-0" variants={majorItemVariants}>
@@ -74,7 +66,7 @@ const Header: React.FC = () => {
         {/* 2. --- Navigation Links (Desktop: Animated second) --- */}
         <motion.nav 
             className="hidden md:block" 
-            variants={navStaggerVariants} // Use navStaggerVariants here
+            variants={navStaggerVariants} 
         >
           <motion.ul className="flex space-x-12" variants={navStaggerVariants}> 
             {navItems.map((item) => (
