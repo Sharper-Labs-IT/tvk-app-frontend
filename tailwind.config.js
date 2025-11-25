@@ -1,20 +1,23 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
-    content: [
-      "./index.html",
-      "./src/**/*.{js,jsx,ts,tsx}",
-    ],
-    theme: {
-      extend: {
-        colors: {
-          primary: "#1E1E1E",
-          accent: "#F2C94C",
-        },
-        fontFamily: {
-          sans: ["Inter", "sans-serif"],
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        brand: {
+          dark: '#111111',       // Existing: The almost-black background
+          gold: '#E6C65B',       // Existing: A base gold color
+          goldDark: '#B68D40',   // Existing: Darker gold for gradients
+          footerBlue: '#2A344E', // NEW: The specific dark blue for the footer
         }
       },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'], // Ensure you have a clean font
+      }
     },
-    plugins: [],
-  }
-  
+  },
+  plugins: [],
+}

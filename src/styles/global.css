@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Custom class for gold gradient text */
+.text-gradient-gold {
+  background: linear-gradient(to right, #E6C65B, #F7E19B, #B68D40);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ensure buttons have the right look */
+.btn-gold-gradient {
+    background: linear-gradient(90deg, #B68D40 0%, #E6C65B 50%, #B68D40 100%);
+}
