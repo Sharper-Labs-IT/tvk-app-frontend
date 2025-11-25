@@ -39,6 +39,9 @@ const Header: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  // Check if we are on Home page
+  const isHome = location.pathname === '/';
+
   const isActive = (path: string) => location.pathname === path;
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -52,14 +55,47 @@ const Header: React.FC = () => {
         animate="visible"
         variants={headerContainerVariants}
       >
-        {/* 1. --- Logo Section (Animated first by majorItemVariants) --- */}
-        <motion.div className="flex-shrink-0" variants={majorItemVariants}>
-          <Link to="/">
-            <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-20 w-auto object-contain" />
+        {/* 1. --- Logo Section --- */}
+        <motion.div className="flex-shrink-0 relative" variants={majorItemVariants}>
+          <Link to="/" className="block relative">
+            {/* LOGO LOGIC UPDATED:
+              1. Base classes (Mobile): 'relative h-20'. Always normal size on mobile.
+              2. md: classes (Desktop): 
+                 - If isHome: 'md:absolute md:top-0 md:h-48'. 
+                   (top-0 prevents cut-off, h-48 makes it big).
+                 - If not Home: 'md:relative md:h-20'.
+            */}
+            <img
+              src="/images/tvk-logo.png"
+              alt="TVK Logo"
+              className={`
+                object-contain transition-all duration-300 ease-in-out z-50
+                relative h-20 w-auto
+                ${
+                  isHome
+                    ? 'md:absolute md:top-0 md:h-48 md:max-w-none md:drop-shadow-xl'
+                    : 'md:relative md:h-20'
+                }
+              `}
+            />
+
+            {/* PHANTOM LOGO (Desktop Home Only):
+              - hidden on mobile (default)
+              - md:block only if isHome is true
+              This keeps the spacing correct when the real logo becomes absolute.
+            */}
+            {isHome && (
+              <img
+                src="/images/tvk-logo.png"
+                alt=""
+                aria-hidden="true"
+                className="hidden md:block h-20 w-auto opacity-0"
+              />
+            )}
           </Link>
         </motion.div>
 
-        {/* 2. --- Navigation Links (Desktop: Animated second) --- */}
+        {/* 2. --- Navigation Links --- */}
         <motion.nav className="hidden md:block" variants={navStaggerVariants}>
           <motion.ul className="flex space-x-12" variants={navStaggerVariants}>
             {navItems.map((item) => (
@@ -84,13 +120,13 @@ const Header: React.FC = () => {
           </motion.ul>
         </motion.nav>
 
-        {/* 3. --- Login Button (Animated third) / Mobile Menu Button --- */}
+        {/* 3. --- Login Button / Mobile Menu --- */}
         <motion.div variants={majorItemVariants}>
           <button className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded hover:opacity-90 transition-opacity text-lg shadow-lg">
             Login/ Join
           </button>
 
-          {/* Mobile Menu Button (Hamburger Icon) */}
+          {/* Mobile Hamburger */}
           <button
             className="md:hidden p-2 transition-colors hover:text-brand-gold"
             onClick={toggleMenu}
