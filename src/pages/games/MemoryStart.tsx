@@ -87,7 +87,7 @@ const GameLandingPage: React.FC = () => {
               hideDefaultCursor={true}
               parallaxOn={true}
             />
-            <button className="cursor-target bg-brand-gold hover:bg-brand-goldDark text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-blue-900/20 transform hover:-translate-y-0.5">
+            <button onClick={() => navigate("/game/memory-challenge/start")} className="cursor-target bg-brand-gold hover:bg-brand-goldDark text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-blue-900/20 transform hover:-translate-y-0.5">
               Play Now
             </button>
 
