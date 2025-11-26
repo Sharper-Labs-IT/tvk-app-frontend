@@ -5,6 +5,7 @@ import Membership from '../pages/Membership';
 import Game from '../pages/Game';
 import Events from '../pages/Events';
 import Loader from '../components/Loader';
+import MemoryChallenge from '../pages/games/MemoryChallenge';
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
@@ -29,6 +30,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/" element={<Home />} />
         <Route path="/membership" element={<Membership />} />
         <Route path="/game" element={<Game />} />
+        <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
         <Route path="/events" element={<Events />} />
       </Routes>
     </>

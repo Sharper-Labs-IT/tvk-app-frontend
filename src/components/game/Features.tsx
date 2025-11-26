@@ -48,6 +48,7 @@ type BentoCardProps = {
   description?: string;
   isComingSoon?: boolean;
   clickToPlay?: boolean;
+  onPlay?: () => void;
 };
 
 export const BentoCard = ({
@@ -56,6 +57,7 @@ export const BentoCard = ({
   description,
   isComingSoon,
   clickToPlay,
+  onPlay,
 }: BentoCardProps) => {
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [hoverOpacity, setHoverOpacity] = useState<number>(0);
@@ -116,7 +118,12 @@ export const BentoCard = ({
 
         {clickToPlay && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity hover:opacity-100">
-            <button className="btn-gold-gradient rounded-full px-5 py-2 text-sm font-semibold text-black">Play</button>
+            <button
+              className="btn-gold-gradient rounded-full px-5 py-2 text-sm font-semibold text-black"
+              onClick={onPlay}
+            >
+              Play
+            </button>
           </div>
         )}
       </div>
@@ -124,101 +131,109 @@ export const BentoCard = ({
   );
 };
 
-const Features = () => (
-  <section className="bg-black pb-52">
-    <div className="container mx-auto px-3 md:px-10">
-      <div className="px-5 py-32">
-        <p className="font-circular-web text-lg text-blue-50">
-          Into the Metagame Layer
-        </p>
-        <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
-          Immerse yourself in a rich and ever-expanding universe where a vibrant
-          array of products converge into an interconnected overlay experience
-          on your world.
-        </p>
-      </div>
+import { useNavigate } from "react-router-dom";
 
-      <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
-        <BentoCard
-          src="videos/feature-1.mp4"
-          title={
-            <>
-              TVK<b> memory</b> Challenge
-            </>
-          }
-          description="A VJ Movie shuffle game - remix iconic scenes from Thalapathy Vijay's blockbuster movies."
-            clickToPlay
-        />
-      </BentoTilt>
+const Features = () => {
+  const navigate = useNavigate();
+  return (
+    <section className="bg-black pb-52">
+      <div className="container mx-auto px-3 md:px-10">
+        <div className="px-5 py-32">
+          <p className="font-circular-web text-lg text-blue-50">
+            Into the Metagame Layer
+          </p>
+          <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
+            Immerse yourself in a rich and ever-expanding universe where a vibrant
+            array of products converge into an interconnected overlay experience
+            on your world.
+          </p>
+        </div>
 
-      <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
-        <BentoTilt className="bento-tilt_1 md:col-span-1 md:row-span-2">
+        <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
           <BentoCard
-            src="img/feature-2.webp"
-            title={<>VJ</>}
-            description="Thalapathy Vijay's exclusive gaming avatar - a play-to-earn gaming experience like no other."
-            isComingSoon
-          />
-          <img
-            src="img/feature-2.webp"
-            alt="zigma avatar"
-            className="absolute left-0 top-0 size-full object-cover object-center z-0"
-          />
-        </BentoTilt>
-
-        <BentoTilt className="bento-tilt_1 ms-32 md:col-span-1 md:ms-0">
-          <BentoCard
-            src="videos/feature-3.mp4"
-            title={<>Protect the Queen</>}
-            description="Help VJ to rescue the queen and save the kingdom in this epic action-adventure game."
-            clickToPlay
-          />
-           <img
-            src="img/protect.webp"
-            alt="zigma avatar"
-            className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
-          />
-        </BentoTilt>
-
-        <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
-          <BentoCard
-            src="videos/feature-4.mp4"
+            src="videos/feature-1.mp4"
             title={
               <>
-                <b>VJ</b> Quiz
+                TVK<b> memory</b> Challenge
               </>
             }
-            description="Challenge yourself with trivia from Thalapathy Vijay's movies, career, and more."
+            description="A VJ Movie shuffle game - remix iconic scenes from Thalapathy Vijay's blockbuster movies."
             clickToPlay
-          />
-          <img
-            src="img/game-2.webp"
-            alt="game 2"
-            className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
+            onPlay={() => navigate("/game/memory-challenge")}
           />
         </BentoTilt>
 
-        <BentoTilt className="bento-tilt_2">
-          <div className="flex size-full flex-col justify-between btn-gold-gradient p-5">
-            <h1 className="bento-title special-font max-w-64 text-black">
-              M<b>o</b>re co<b>m</b>ing s<b>o</b>on.
-            </h1>
-            <TiLocationArrow className="m-5 scale-[5] self-end" />
-          </div>
-        </BentoTilt>
+        <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
+          <BentoTilt className="bento-tilt_1 md:col-span-1 md:row-span-2">
+            <BentoCard
+              src="img/feature-2.webp"
+              title={<>VJ</>}
+              description="Thalapathy Vijay's exclusive gaming avatar - a play-to-earn gaming experience like no other."
+              isComingSoon
+            />
+            <img
+              src="img/feature-2.webp"
+              alt="zigma avatar"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0"
+            />
+          </BentoTilt>
 
-        <BentoTilt className="bento-tilt_2">
-          <video
-            src="videos/feature-2.mp4"
-            loop
-            muted
-            autoPlay
-            className="size-full object-cover object-center"
-          />
-        </BentoTilt>
+          <BentoTilt className="bento-tilt_1 ms-32 md:col-span-1 md:ms-0">
+            <BentoCard
+              src="videos/feature-3.mp4"
+              title={<>Protect the Queen</>}
+              description="Help VJ to rescue the queen and save the kingdom in this epic action-adventure game."
+              clickToPlay
+              onPlay={() => navigate("/game/protect-queen")}
+            />
+             <img
+              src="img/protect.webp"
+              alt="zigma avatar"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
+            />
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
+            <BentoCard
+              src="videos/feature-4.mp4"
+              title={
+                <>
+                  <b>VJ</b> Quiz
+                </>
+              }
+              description="Challenge yourself with trivia from Thalapathy Vijay's movies, career, and more."
+              clickToPlay
+              onPlay={() => navigate("/game/quiz")}
+            />
+            <img
+              src="img/game-2.webp"
+              alt="game 2"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
+            />
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_2">
+            <div className="flex size-full flex-col justify-between btn-gold-gradient p-5">
+              <h1 className="bento-title special-font max-w-64 text-black">
+                M<b>o</b>re co<b>m</b>ing s<b>o</b>on
+              </h1>
+              <TiLocationArrow className="m-5 scale-[5] self-end" />
+            </div>
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_2">
+            <video
+              src="videos/feature-2.mp4"
+              loop
+              muted
+              autoPlay
+              className="size-full object-cover object-center"
+            />
+          </BentoTilt>
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 export default Features;
