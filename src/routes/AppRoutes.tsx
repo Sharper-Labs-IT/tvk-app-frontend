@@ -5,7 +5,7 @@ import Membership from '../pages/Membership';
 import Game from '../pages/Game';
 import Events from '../pages/Events';
 import Loader from '../components/Loader';
-import MemoryChallenge from '../pages/games/MemoryChallenge';
+import MemoryChallenge from '../pages/games/MemoryStart';
 
 const AppRoutes: React.FC = () => {
   const location = useLocation();
