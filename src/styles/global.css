@@ -54,6 +54,19 @@
   margin: 0 auto;
 }
 
+  .bento-tilt_1 {
+    @apply relative  col-span-2 overflow-hidden rounded-md transition-transform duration-300 ease-out;
+  }
+
+  .bento-tilt_2 {
+    @apply relative col-span-1 row-span-1 overflow-hidden rounded-md transition-transform duration-300 ease-out border-yellow-400/50 border-2;
+  }
+
+  .bento-title {
+    @apply uppercase md:text-6xl text-4xl font-black font-zentry;
+  }
+
+
 .about-subtext {
     @apply absolute bottom-[-50dvh] left-1/2 w-full max-w-96 -translate-x-1/2 text-center text-lg md:max-w-[34rem];
   }
@@ -88,6 +101,17 @@
     transform: translate3d(0, 0, 0) rotateX(0) rotateY(0) rotateZ(0) scale(1);
   }
 
+  .sword-man-clip-path {
+    clip-path: polygon(16% 0, 89% 15%, 75% 100%, 0 97%);
+  }
+
+  .contact-clip-path-1 {
+    clip-path: polygon(25% 0%, 74% 0, 69% 64%, 34% 73%);
+  }
+
+  .contact-clip-path-2 {
+    clip-path: polygon(29% 15%, 85% 30%, 50% 100%, 10% 64%);
+  }
 
 /* Loading animation */
 .three-body {
