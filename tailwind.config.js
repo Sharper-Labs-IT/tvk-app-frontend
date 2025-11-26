@@ -5,14 +5,15 @@ export default {
     extend: {
       colors: {
         brand: {
-          dark: '#111111', // Existing: The almost-black background
-          gold: '#E6C65B', // Existing: A base gold color
-          goldDark: '#B68D40', // Existing: Darker gold for gradients
-          footerBlue: '#2A344E', // NEW: The specific dark blue for the footer
+          dark: '#111111',
+          gold: '#E6C65B',
+          goldDark: '#B68D40',
+          footerBlue: '#2A344E',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'], // Ensure you have a clean font
+        sans: ['Inter', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
       },
     },
   },
