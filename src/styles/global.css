@@ -113,7 +113,7 @@
     clip-path: polygon(29% 15%, 85% 30%, 50% 100%, 10% 64%);
   }
 
-/* Loading animation */
+/* Loading animation Not necessary just added*/
 .three-body {
   display: inline-block;
   position: relative;
