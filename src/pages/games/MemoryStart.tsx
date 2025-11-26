@@ -97,6 +97,26 @@ const GameLandingPage: React.FC = () => {
           </div>
         </main>
 
+         {/* Coming Soon Banner */}
+          <div className="mt-12 relative">
+            <div className=" border-purple-400/50 rounded-2xl px-8 py-4 shadow-2xl shadow-purple-900/50 animate-pulse">
+              <div className="flex items-center justify-center gap-3">
+                <span className="text-3xl">⚔️</span>
+                <div className="text-center">
+                  <div className="text-xl md:text-2xl font-bold text-white tracking-wide">
+                    Multiplayer 1v1 Mode
+                  </div>
+                  <div className="text-sm md:text-base text-purple-200 font-medium">
+                    Coming Soon
+                  </div>
+                </div>
+                <span className="text-3xl">⚔️</span>
+              </div>
+            </div>
+            {/* Glow effect */}
+            <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-2xl -z-10" />
+          </div>
+
         {/* --- Footer --- */}
         <footer className="px-8 py-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-sm">
           <div>© 2025 TVK. All rights reserved.</div>
