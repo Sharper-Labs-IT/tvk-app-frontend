@@ -6,6 +6,8 @@ import Header from '../components/Header';
 import WhatYouGet from '../components/WhatYouGet';
 import FanOfMonth from '../components/FanOfMonth';
 import MembersExclusiveBlog from '../components/MembersExclusiveBlog';
+import GameSection from '../components/GameSection';
+import CommunityHighlights from '../components/CommunityHighlights';
 
 const Home: React.FC = () => {
   return (
@@ -16,6 +18,8 @@ const Home: React.FC = () => {
       <WhatYouGet />
       <FanOfMonth />
       <MembersExclusiveBlog />
+      <GameSection />
+      <CommunityHighlights />
       <Footer />
     </main>
   );
