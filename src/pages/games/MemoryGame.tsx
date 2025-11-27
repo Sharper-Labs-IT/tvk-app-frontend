@@ -183,17 +183,15 @@ const MemoryGame: React.FC = () => {
   };
 
   const handleBack = () => {
-    navigate(-1); // Go back to previous page
+    navigate(-1); 
   };
 
   return (
     <div className="min-h-screen text-white p-4 font-sans overflow-hidden relative flex flex-col items-center">
-
-      {/* Background Layers */}
       <div 
         className="absolute inset-0 z-0"
         style={{
-          backgroundImage: 'url("/img/game-1.webp")', // Ensure this path is correct
+          backgroundImage: 'url("/img/game-1.webp")', 
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
@@ -204,7 +202,6 @@ const MemoryGame: React.FC = () => {
          <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-red-600 rounded-full blur-[100px] mix-blend-screen" />
       </div>
 
-      {/* Main Back Button (Top Left) */}
       <div className="absolute top-4 left-4 z-50">
         <motion.button
           whileHover={{ scale: 1.1, x: -5 }}
@@ -217,7 +214,6 @@ const MemoryGame: React.FC = () => {
         </motion.button>
       </div>
 
-      {/* Main Content */}
       <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-col items-center mt-8 md:mt-0">
         <motion.div 
           initial={{ y: -50, opacity: 0 }}
@@ -381,7 +377,6 @@ const MemoryGame: React.FC = () => {
                  </div>
               </div>
 
-              {/* ACTION BUTTONS GRID */}
               <div className="grid grid-cols-2 gap-3">
                 <motion.button
                   whileHover={{ scale: 1.02 }}
