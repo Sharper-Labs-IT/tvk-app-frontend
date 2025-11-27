@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Globe,
   Award,
   Sticker,
-  Film,
+  Clapperboard,
   Mic,
   Users,
   ShoppingCart,
@@ -18,6 +18,30 @@ interface BenefitItem {
 }
 
 const WhatYouGet: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, []);
+
   const benefits: BenefitItem[] = [
     {
       id: 1,
@@ -31,30 +55,15 @@ const WhatYouGet: React.FC = () => {
       description: 'Personalized banner with country flag.',
       icon: Award,
     },
-    {
-      id: 3,
-      title: 'Vijay Special Sticker Pack',
-      description: 'Digital stickers.',
-      icon: Sticker,
-    },
+    { id: 3, title: 'Vijay Special Sticker Pack', description: 'Digital stickers.', icon: Sticker },
     {
       id: 4,
       title: 'Exclusive Gallery',
       description: 'Behind-the-scenes content.',
-      icon: Film,
+      icon: Clapperboard,
     },
-    {
-      id: 5,
-      title: 'Events & Live Streams',
-      description: 'Global access.',
-      icon: Mic,
-    },
-    {
-      id: 6,
-      title: 'Global Fan Community',
-      description: 'Regional groups.',
-      icon: Users,
-    },
+    { id: 5, title: 'Events & Live Streams', description: 'Global access.', icon: Mic },
+    { id: 6, title: 'Global Fan Community', description: 'Regional groups.', icon: Users },
     {
       id: 7,
       title: 'Merchandise Access',
@@ -70,43 +79,53 @@ const WhatYouGet: React.FC = () => {
   ];
 
   return (
-    <section className="relative w-full py-20 overflow-hidden bg-brand-dark">
-      {/* Background Image Layer - Overlay Removed */}
+    <section ref={sectionRef} className="relative w-full py-20 bg-black overflow-hidden">
+      {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src="/images/WhatYouGet.png"
-          alt="Background"
-          className="w-full h-full object-cover opacity-50"
-        />
+        <img src="/images/WhatYouGet.png" alt="Background" className="w-full h-full object-cover" />
       </div>
 
       <div className="relative z-10 container mx-auto px-4">
-        {/* Title Section */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-yellow-100 to-brand-goldDark drop-shadow-md">
+        <div
+          className={`text-center mb-12 transition-all duration-700 transform ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
+          <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-wider text-[#D4AF37] drop-shadow-lg">
             What You Get
           </h2>
         </div>
 
-        {/* Grid Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {benefits.map((item) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+          {benefits.map((item, index) => (
             <div
               key={item.id}
-              className="group flex flex-col items-center text-center p-6 rounded-xl border border-brand-gold/30 bg-gradient-to-b from-brand-dark/80 to-black/90 backdrop-blur-sm shadow-[0_0_15px_rgba(230,198,91,0.05)] hover:shadow-[0_0_25px_rgba(230,198,91,0.2)] transition-all duration-300 transform hover:-translate-y-1"
+              style={{ transitionDelay: `${index * 100}ms` }}
+              className={`
+                group relative flex flex-col items-center justify-center text-center p-6 
+                aspect-square w-full max-w-[280px] mx-auto
+                rounded-2xl border border-[#c3a359ff] overflow-hidden
+                bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.15)_0%,_transparent_50%),_radial-gradient(circle_at_bottom,_rgba(255,215,0,0.4)_0%,_transparent_40%),_linear-gradient(to_bottom,_#020617_0%,_#0a1229_100%)]
+                shadow-[0_4px_20px_rgba(0,0,0,0.5)]
+                hover:-translate-y-2 transition-all duration-500 ease-out
+                ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}
+              `}
             >
               {/* Icon Container */}
-              <div className="mb-4 p-3 rounded-full bg-gradient-to-br from-gray-900 to-black border border-brand-gold/20 group-hover:border-brand-gold/60 transition-colors">
-                <item.icon className="w-10 h-10 text-brand-gold drop-shadow-[0_0_8px_rgba(230,198,91,0.4)]" />
+              <div className="relative z-10 mb-5">
+                <item.icon
+                  strokeWidth={1.5}
+                  className="w-14 h-14 text-[#c3a359ff] drop-shadow-[0_2px_10px_rgba(212,175,55,0.4)]"
+                />
               </div>
 
-              {/* Card Title */}
-              <h3 className="text-xl font-bold text-white mb-2 tracking-wide group-hover:text-brand-gold transition-colors">
+              {/* Title */}
+              <h3 className="relative z-10 text-xl font-bold text-[#c3a359ff] mb-3 leading-tight tracking-wide drop-shadow-md">
                 {item.title}
               </h3>
 
-              {/* Card Description */}
-              <p className="text-gray-400 text-sm font-medium leading-relaxed">
+              {/* Description */}
+              <p className="relative z-10 text-gray-300 text-sm font-medium leading-relaxed max-w-[90%] opacity-90">
                 {item.description}
               </p>
             </div>
