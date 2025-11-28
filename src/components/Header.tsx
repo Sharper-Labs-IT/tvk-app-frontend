@@ -122,9 +122,12 @@ const Header: React.FC = () => {
 
         {/* 3. --- Login Button / Mobile Menu --- */}
         <motion.div variants={majorItemVariants}>
-          <button className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded hover:opacity-90 transition-opacity text-lg shadow-lg">
-            Login/ Join
-          </button>
+          <Link
+            to="/login"
+            className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded hover:opacity-90 transition-opacity text-lg shadow-lg"
+          >
+            Login / Join
+          </Link>
 
           {/* Mobile Hamburger */}
           <button
