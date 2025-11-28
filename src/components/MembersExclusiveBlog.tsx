@@ -18,7 +18,7 @@ const blogPosts: BlogPost[] = [
     category: 'BEHIND THE SCENES',
     title: 'Making of the Global Anthem: Exclusive Studio Footage',
     description: 'Get an insider’s look at the recording sessions and creative process.',
-    imageUrl: '/images/blog/studio.jpg',
+    imageUrl: '/images/blog/studio.webp',
     type: 'video',
   },
   {
@@ -27,7 +27,7 @@ const blogPosts: BlogPost[] = [
     title: "Director's Vision: Full Interview (English Translation)",
     description:
       'Read the complete, translated interview with the director on the upcoming project.',
-    imageUrl: '/images/blog/mic.jpg',
+    imageUrl: '/images/blog/mic.webp',
     type: 'article',
   },
   {
@@ -35,7 +35,7 @@ const blogPosts: BlogPost[] = [
     category: 'FAN EVENT COVERAGE',
     title: 'TVK Global Fan Meet: Highlights from Dubai',
     description: 'Exclusive photos and reports from the recent international fan gathering.',
-    imageUrl: '/images/blog/fan-meet.jpg',
+    imageUrl: '/images/blog/fan-meet.webp',
     type: 'gallery',
   },
   {
@@ -43,7 +43,7 @@ const blogPosts: BlogPost[] = [
     category: 'INTERNATIONAL UPDATE',
     title: 'Global Release Strategy: New Territories Announced',
     description: 'Details on the expanded international theatrical release plan.',
-    imageUrl: '/images/blog/globe.jpg',
+    imageUrl: '/images/blog/globe.webp',
     type: 'article',
   },
   {
@@ -51,7 +51,7 @@ const blogPosts: BlogPost[] = [
     category: 'BEHIND THE SCENES',
     title: 'On Set: Filming the Climax Action Sequence',
     description: 'Exclusive on-location report and concept art from the final schedule.',
-    imageUrl: '/images/blog/camera.jpg',
+    imageUrl: '/images/blog/camera.webp',
     type: 'article',
   },
   {
@@ -59,7 +59,7 @@ const blogPosts: BlogPost[] = [
     category: 'TRANSLATED INTERVIEW',
     title: "Music Director's Insights: The Soundscape of the Film",
     description: 'An in-depth translated conversation about composing the film’s score.',
-    imageUrl: '/images/blog/headphones.jpg',
+    imageUrl: '/images/blog/headphones.webp',
     type: 'video',
   },
   {
@@ -67,7 +67,7 @@ const blogPosts: BlogPost[] = [
     category: 'FAN EVENT COVERAGE',
     title: 'TVK Fan Club: UK Premiere Celebration',
     description: 'Coverage of the special fan screening event in London.',
-    imageUrl: '/images/blog/ticket.jpg',
+    imageUrl: '/images/blog/ticket.webp',
     type: 'gallery',
   },
   {
@@ -75,7 +75,7 @@ const blogPosts: BlogPost[] = [
     category: 'INTERNATIONAL UPDATE',
     title: 'Box Office Report: Opening Weekend Global Numbers',
     description: 'A detailed breakdown of the film’s performance across international markets.',
-    imageUrl: '/images/blog/chart.jpg',
+    imageUrl: '/images/blog/chart.webp',
     type: 'article',
   },
   {
@@ -83,7 +83,7 @@ const blogPosts: BlogPost[] = [
     category: 'BEHIND THE SCENES',
     title: 'Costume Design: Creating the Iconic Look',
     description: 'Exclusive sketches and details on the character’s wardrobe design.',
-    imageUrl: '/images/blog/sketch.jpg',
+    imageUrl: '/images/blog/sketch.webp',
     type: 'article',
   },
 ];
