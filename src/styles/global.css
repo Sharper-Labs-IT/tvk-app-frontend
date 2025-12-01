@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom class for gold gradient text */
+.text-gradient-gold {
+  background: linear-gradient(to right, #e6c65b, #f7e19b, #b68d40);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Ensure buttons have the right look */
+.btn-gold-gradient {
+  background: linear-gradient(90deg, #b68d40 0%, #e6c65b 50%, #b68d40 100%);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}

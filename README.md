@@ -1,75 +1,143 @@
-# React + TypeScript + Vite
+# TVK App Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React + TypeScript + Vite frontend application using TailwindCSS for styling and Axios for API communication.
 
-Currently, two official plugins are available:
+This project is structured for scalable, real-world applications with clean folders, layouts, reusable components, routing, and environment variable support.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## 🚀 Tech Stack
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+| Technology       | Purpose                                 |
+| ---------------- | --------------------------------------- |
+| **React 19**     | UI Framework                            |
+| **TypeScript**   | Strong typing for safety                |
+| **Vite**         | Fast dev server & build tool            |
+| **Tailwind CSS** | Styling & UI                            |
+| **Axios**        | API requests                            |
+| **ESLint**       | Code quality                            |
+| **React Router** | Page routing (optional but recommended) |
 
-Note: This will impact Vite dev & build performances.
+---
 
-## Expanding the ESLint configuration
+## 📁 Project Folder Structure
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+tvk-app-frontend/
+│
+├── index.html
+├── package.json
+├── tsconfig.app.json
+├── vite.config.ts
+├── tailwind.config.js
+├── postcss.config.js
+│
+├── .gitignore
+├── .env # Not committed — private variables
+├── .env.example # Shared example variables
+│
+├── public/ # Static assets
+│ ├── images/
+│ └── icons/
+│
+├── src/
+│ ├── main.tsx
+│ ├── App.tsx
+│
+│ ├── assets/ # Images imported inside components
+│ ├── components/ # Reusable UI components
+│ ├── pages/ # Screens (Home, Login, etc.)
+│ ├── layout/ # Page layouts (Header/Footer)
+│ ├── routes/ # Routing setup
+│ ├── hooks/ # Custom React hooks
+│ ├── utils/ # Helper/utility functions
+│ ├── constants/ # Constants (URLs, colors)
+│ ├── types/ # TypeScript interfaces & types
+│ └── styles/
+│ └── global.css # TailwindCSS imports
+│
+└── dist/ # Build output (auto generated)
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+---
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## ⚙ Environment Variables
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+Create a `.env` file in the project root:
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+VITE_API_URL=https://your-api-url.com
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+VITE_APP_NAME=TVK Frontend
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+✔ All Vite variables **must start with `VITE_`**  
+✔ Values are accessible like this:
+
+```ts
+import.meta.env.VITE_API_URL
+
+
+Add an .env.example file for your team (without secrets):
+
+VITE_API_URL=
+VITE_APP_NAME=TVK Frontend
+
+📦 Install Dependencies
+
+Inside the project folder, run:
+
+npm install
+
+▶️ Start Development Server
+npm run dev
+
+
+Open the app:
+
+http://localhost:5173
+
+📦 Build for Production
+npm run build
+
+
+Preview production build:
+
+npm run preview
+
+🧹 Linting
+
+Check for errors:
+
+npm run lint
+
+📝 Git Ignore
+
+Useful files already excluded:
+
+node_modules
+
+dist
+
+.env
+
+logs
+
+editor files
+
+📖 About the Project
+
+This is the frontend for TVK App, built with a modern stack and structured for long-term maintainability. The codebase is designed to scale comfortably with:
+
+modular components
+
+clean folder structure
+
+environment variable management
+
+routing support
+
+reusable layouts
+
+TypeScript type safety
+
+📬 Contact
+
+If you have questions or issues, contact your senior developer or project maintainer.
 ```
