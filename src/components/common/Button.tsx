@@ -1,44 +1,45 @@
 import React from 'react';
 
-/**
- * @fileoverview Reusable Button component using Tailwind CSS.
- */
-
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
+  variant?: 'primary' | 'secondary' | 'gold'; // Added 'gold'
   isLoading?: boolean;
+  fullWidth?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
   children,
   variant = 'primary',
   isLoading = false,
+  fullWidth = true,
   disabled,
+  className = '',
   ...props
 }) => {
   const baseClasses =
-    'w-full py-2 px-4 rounded-lg font-semibold transition duration-150 ease-in-out shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2';
+    'flex items-center justify-center py-3 px-4 rounded-lg font-bold transition-all duration-300 ease-in-out shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#121212]';
 
-  const primaryClasses = 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500';
-  const secondaryClasses = 'bg-gray-200 hover:bg-gray-300 text-gray-800 focus:ring-gray-400';
-
-  const disabledClasses = 'opacity-50 cursor-not-allowed';
-
-  const getClasses = () => {
-    let classes = baseClasses;
-    classes += variant === 'primary' ? ` ${primaryClasses}` : ` ${secondaryClasses}`;
-    if (disabled || isLoading) {
-      classes += ` ${disabledClasses}`;
-    }
-    return classes;
+  const variants = {
+    primary: 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500',
+    secondary: 'bg-gray-700 hover:bg-gray-600 text-white focus:ring-gray-500',
+    // Matches your screenshot's Gold/Orange gradient look
+    gold: 'bg-tvk-accent-gold hover:bg-tvk-accent-gold-dark text-black focus:ring-tvk-accent-gold',
   };
 
+  const widthClass = fullWidth ? 'w-full' : '';
+  const disabledClasses = 'opacity-60 cursor-not-allowed transform-none';
+
   return (
-    <button {...props} className={getClasses()} disabled={disabled || isLoading}>
+    <button
+      {...props}
+      className={`${baseClasses} ${variants[variant]} ${widthClass} ${
+        disabled || isLoading ? disabledClasses : 'hover:-translate-y-0.5'
+      } ${className}`}
+      disabled={disabled || isLoading}
+    >
       {isLoading ? (
-        <div className="flex items-center justify-center">
-          <svg className="animate-spin h-5 w-5 mr-3 text-white" viewBox="0 0 24 24">
+        <div className="flex items-center">
+          <svg className="animate-spin h-5 w-5 mr-3 text-current" viewBox="0 0 24 24">
             <circle
               className="opacity-25"
               cx="12"

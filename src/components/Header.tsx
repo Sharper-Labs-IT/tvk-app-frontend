@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
+import { useAuth } from '../context/AuthContext';
+import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
 
 const navItems = [
   { name: 'HOME', path: '/' },
@@ -38,6 +40,9 @@ const navStaggerVariants: Variants = {
 const Header: React.FC = () => {
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false); // 👈 NEW STATE FOR MODAL
+
+  const { isLoggedIn, user, logout } = useAuth();
 
   // Check if we are on Home page
   const isHome = location.pathname === '/';
@@ -45,6 +50,39 @@ const Header: React.FC = () => {
   const isActive = (path: string) => location.pathname === path;
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  // Function called when the user confirms logout in the modal
+  const handleLogoutConfirm = () => {
+    // Calls the context's logout function (which now redirects to '/')
+    logout();
+    // Close the modal
+    setShowLogoutModal(false);
+  };
+
+  // Dynamic component to switch between Login/Join and Logout
+  const AuthButton = () => {
+    // If logged in, show the Logout button
+    if (isLoggedIn) {
+      return (
+        <button
+          onClick={() => setShowLogoutModal(true)} // 👈 OPEN MODAL INSTEAD OF DIRECT LOGOUT
+          className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded-lg hover:opacity-90 transition-opacity text-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          {/* Display user's name (first word) for a more personal touch */}
+          Logout ({user?.name.split(' ')[0]})
+        </button>
+      );
+    }
+    // If logged out, show the Login/Join button
+    return (
+      <Link
+        to="/login"
+        className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded-lg hover:opacity-90 transition-opacity text-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+      >
+        Login / Join
+      </Link>
+    );
   };
 
   return (
@@ -58,13 +96,6 @@ const Header: React.FC = () => {
         {/* 1. --- Logo Section --- */}
         <motion.div className="flex-shrink-0 relative" variants={majorItemVariants}>
           <Link to="/" className="block relative">
-            {/* LOGO LOGIC UPDATED:
-              1. Base classes (Mobile): 'relative h-20'. Always normal size on mobile.
-              2. md: classes (Desktop): 
-                 - If isHome: 'md:absolute md:top-0 md:h-48'. 
-                   (top-0 prevents cut-off, h-48 makes it big).
-                 - If not Home: 'md:relative md:h-20'.
-            */}
             <img
               src="/images/tvk-logo.png"
               alt="TVK Logo"
@@ -79,11 +110,7 @@ const Header: React.FC = () => {
               `}
             />
 
-            {/* PHANTOM LOGO (Desktop Home Only):
-              - hidden on mobile (default)
-              - md:block only if isHome is true
-              This keeps the spacing correct when the real logo becomes absolute.
-            */}
+            {/* PHANTOM LOGO (Desktop Home Only): */}
             {isHome && (
               <img
                 src="/images/tvk-logo.png"
@@ -110,9 +137,9 @@ const Header: React.FC = () => {
                   {item.name}
                   <span
                     className={`
-                    absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                    ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
-                  `}
+                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                      ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
+                    `}
                   ></span>
                 </Link>
               </motion.li>
@@ -120,15 +147,9 @@ const Header: React.FC = () => {
           </motion.ul>
         </motion.nav>
 
-        {/* 3. --- Login Button / Mobile Menu --- */}
+        {/* 3. --- Login/Logout Button / Mobile Menu --- */}
         <motion.div variants={majorItemVariants}>
-          <Link
-            to="/login"
-            className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded hover:opacity-90 transition-opacity text-lg shadow-lg"
-          >
-            Login / Join
-          </Link>
-
+          <AuthButton /> {/* Render the dynamic button */}
           {/* Mobile Hamburger */}
           <button
             className="md:hidden p-2 transition-colors hover:text-brand-gold"
@@ -152,6 +173,17 @@ const Header: React.FC = () => {
           </button>
         </motion.div>
       </motion.header>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showLogoutModal}
+        title="Confirm Logout"
+        message="Are you sure you want to log out of your account?"
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setShowLogoutModal(false)}
+        confirmText="Log Out"
+        cancelText="Stay Logged In"
+      />
 
       {/* Mobile Menu Component */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} navItems={navItems} />

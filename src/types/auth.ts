@@ -44,3 +44,26 @@ export interface IVerifyOtpPayload {
   user_id: number;
   otp: string;
 }
+
+// 7. Resend OTP Payload (NEW)
+export interface IResendOtpPayload {
+  user_id: number;
+}
+
+// 8. Forgot Password Request Payload
+export interface IForgotPasswordPayload {
+  email: string;
+}
+
+// 9. Reset Password Request Payload
+export interface IResetPasswordPayload {
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+// 10. Generic Message Response (Used for Forgot Password and Reset Password success)
+export interface IMessageResponse {
+  message: string;
+}
