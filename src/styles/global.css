@@ -2,10 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-
 /* Custom class for gold gradient text */
 .text-gradient-gold {
-  background: linear-gradient(to right, #E6C65B, #F7E19B, #B68D40);
+  background: linear-gradient(to right, #e6c65b, #f7e19b, #b68d40);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -13,7 +12,23 @@
 
 /* Ensure buttons have the right look */
 .btn-gold-gradient {
-    background: linear-gradient(90deg, #B68D40 0%, #E6C65B 50%, #B68D40 100%);
+  background: linear-gradient(90deg, #B68D40 0%, #E6C65B 50%, #B68D40 100%);
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(-5deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }
 
 /* Hero component utilities */
@@ -163,6 +178,3 @@
     transform: translate(24px, 0);
   }
 }
-
-
-
