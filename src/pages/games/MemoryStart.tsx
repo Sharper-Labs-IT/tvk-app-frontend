@@ -29,7 +29,7 @@ const GameLandingPage: React.FC = () => {
       <div className="relative z-10 flex flex-col min-h-screen text-white">
         <header className="flex justify-between items-center px-8 py-6 md:px-12">
           <div
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/game")}
             className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
           >
             <div className="bg-white text-black p-1 rounded-full">
