@@ -97,7 +97,7 @@ const GameLandingPage: React.FC = () => {
           </div>
         </main>
 
-         {/* Coming Soon Banner */}
+   
           <div className="mt-12 relative">
             <div className=" border-purple-400/50 rounded-2xl px-8 py-4 shadow-2xl shadow-purple-900/50 animate-pulse">
               <div className="flex items-center justify-center gap-3">
@@ -113,11 +113,11 @@ const GameLandingPage: React.FC = () => {
                 <span className="text-3xl">⚔️</span>
               </div>
             </div>
-            {/* Glow effect */}
+ 
             <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-2xl -z-10" />
           </div>
 
-        {/* --- Footer --- */}
+
         <footer className="px-8 py-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-sm">
           <div>© 2025 TVK. All rights reserved.</div>
 
@@ -140,15 +140,15 @@ const GameLandingPage: React.FC = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          {/* Backdrop with blur */}
+          
           <div 
             className="absolute inset-0 bg-black/70 backdrop-blur-md"
             onClick={() => setShowModal(false)}
           />
           
-          {/* Modal Content */}
+  
           <div className="relative bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
-            {/* Header */}
+        
             <div className="sticky top-0 bg-slate-800/95 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">How to Play</h2>
               <button
@@ -159,7 +159,7 @@ const GameLandingPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Tutorial Content */}
+            
             <div className="p-6 space-y-6 text-gray-200">
               <div className="space-y-3">
                 <h3 className="text-xl font-semibold text-yellow-400 flex items-center gap-2">
