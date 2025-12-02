@@ -46,7 +46,7 @@ const Card: React.FC<CardProps> = ({ id, cardData, onCardFlip }) => {
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
             <div className="relative z-10 text-slate-600 group-hover:text-yellow-500 transition-colors duration-300 transform group-hover:scale-110">
-               <HelpCircle size={32} strokeWidth={1.5} />
+               <HelpCircle className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
             </div>
           </div>
         </div>
@@ -75,18 +75,18 @@ const Card: React.FC<CardProps> = ({ id, cardData, onCardFlip }) => {
                   <motion.div 
                     initial={{ scale: 0 }} 
                     animate={{ scale: 1 }} 
-                    className="bg-yellow-500 rounded-full p-2 text-black shadow-lg"
+                    className="bg-yellow-500 rounded-full p-1.5 md:p-2 text-black shadow-lg"
                   >
-                    <CheckCircle2 size={32} strokeWidth={3} />
+                    <CheckCircle2 className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
                   </motion.div>
                 )}
                 {isMismatch && (
                   <motion.div 
                     initial={{ scale: 0 }} 
                     animate={{ scale: 1 }} 
-                    className="bg-red-600 rounded-full p-2 text-white shadow-lg"
+                    className="bg-red-600 rounded-full p-1.5 md:p-2 text-white shadow-lg"
                   >
-                     <XCircle size={32} strokeWidth={3} />
+                     <XCircle className="w-6 h-6 md:w-8 md:h-8" strokeWidth={3} />
                   </motion.div>
                 )}
               </div>
