@@ -140,12 +140,12 @@ const Features = () => {
       <div className="container mx-auto px-3 md:px-10">
         <div className="px-5 py-32">
           <p className="font-circular-web text-lg text-blue-50">
-            Into the Metagame Layer
+            Experience the thrill of gaming with Thalapathy Vijay like never
           </p>
           <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
-            Immerse yourself in a rich and ever-expanding universe where a vibrant
-            array of products converge into an interconnected overlay experience
-            on your world.
+            Dive deeper into the TVK universe with exclusive games and
+            interactive experiences that bring you closer to Thalapathy Vijay
+            than ever before.
           </p>
         </div>
 
@@ -198,16 +198,16 @@ const Features = () => {
               src="videos/feature-4.mp4"
               title={
                 <>
-                  <b>VJ</b> Quiz
+                  <b>Protect the</b> Galaxy
                 </>
               }
-              description="Challenge yourself with trivia from Thalapathy Vijay's movies, career, and more."
+              description="Defend your territory from alien invaders in this thrilling space shooter game"
               clickToPlay
-              onPlay={() => navigate("/game/quiz")}
+              onPlay={() => navigate("/game/protect-area")}
             />
             <img
-              src="img/game-2.webp"
-              alt="game 2"
+              src="img/game-3.webp"
+              alt="game 3"
               className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
             />
           </BentoTilt>

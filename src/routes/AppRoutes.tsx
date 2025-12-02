@@ -14,6 +14,8 @@ import { AuthProvider, useAuth } from '../context/AuthContext';
 import MemoryChallenge from '../pages/games/MemoryStart';
 import ProtectQueenStart from '../pages/games/ProtectQueenStart';
 import MemoryGame from '../pages/games/MemoryGame';
+import SpaceInvadersTVK from '../pages/games/SpaceInvadersTVK';
+import SpaceInvadersGame from '../pages/games/SpaceInvadersGame';
 
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
@@ -63,6 +65,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
         <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
         <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
+        <Route path="/game/protect-area" element={<SpaceInvadersTVK />} />
+        <Route path="/game/protect-area/start" element={<SpaceInvadersGame />} />
         <Route path="/events" element={<Events />} />
 
         {/* Auth Routes must be PublicOnly */}
