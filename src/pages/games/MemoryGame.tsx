@@ -478,7 +478,7 @@ const MemoryGame: React.FC = () => {
           </div>
         </motion.div>
 
-        <motion.button
+        {/* <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={startNewGame}
@@ -486,7 +486,7 @@ const MemoryGame: React.FC = () => {
         >
           <RotateCcw className="mr-2 h-5 w-5 group-hover:rotate-180 transition-transform duration-500" />
           {gameCompleted || gameOver ? "Play Again" : "Reset Game"}
-        </motion.button>
+        </motion.button> */}
       </div>
 
       <AnimatePresence>
