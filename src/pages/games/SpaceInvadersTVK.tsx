@@ -146,7 +146,13 @@ const SpaceInvadersTVK: React.FC = () => {
             onClick={() => setShowModal(false)}
           />
 
-          <div className="relative bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto">
+          <div
+            className="relative bg-slate-800/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto bg-cover bg-center"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(30, 41, 59, 0.9), rgba(30, 41, 59, 0.9)), url('/img/bg-play3.webp')",
+            }}
+          >
             <div className="sticky top-0 bg-slate-800/95 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex items-center justify-between">
               <h2 className="text-2xl font-bold text-white">How to Play</h2>
               <button

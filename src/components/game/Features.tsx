@@ -1,5 +1,6 @@
 import { useState, useRef, type MouseEvent, type ReactNode } from "react";
 import { TiLocationArrow } from "react-icons/ti";
+import Button from "./Button";
 
 type BentoTiltProps = {
   children: ReactNode;
@@ -117,13 +118,13 @@ export const BentoCard = ({
         )}
 
         {clickToPlay && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 transition-opacity hover:opacity-100">
-            <button
-              className="btn-gold-gradient rounded-full px-5 py-2 text-sm font-semibold text-black"
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 hover:opacity-100">
+            <Button
+              title="Play Now"
+              leftIcon={<TiLocationArrow className="relative z-20 text-xl scale-150 mr-2" />}
+              containerClass="!bg-yellow-300 flex items-center justify-center gap-1"
               onClick={onPlay}
-            >
-              Play
-            </button>
+            />
           </div>
         )}
       </div>
