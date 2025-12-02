@@ -14,21 +14,23 @@ const TIME_PENALTY = 1;
 const REVEAL_TIME_MS = 3000;
 
 const SUCCESS_MESSAGES = [
-  "Verithanam!",
-  "Mass Nanba!",
-  "Wow, Great!",
+  "Verithanam! (Epic Play!)",
+  "Mass Nanba! (You’re cracked!)",
+  "God Tier Move!",
   "Super!",
+  "Clean Finish!",
   "Nice One!",
-  "Theri Baby!"
+  "Smooth Combo!",
+  "Theri Baby! (You’re on fire!)"
 ];
 
 const ERROR_MESSAGES = [
-  "Ayyayo!",
-  "Focus Mate!",
-  "I am waiting...",
-  "Missed it!",
-  "Pathu pannu!",
-  "Don't worry!"
+  "Ayyayo! (Epic Fail!)",
+  "Focus Mate! (Stay Locked In!)",
+  "I am waiting... (Load that brain!)",
+  "Missed it! Try Again!",
+  "Pathu pannu! (Watch your moves!)",
+  "Don't worry! (You can clutch this!)"
 ];
 
 const MemoryGame: React.FC = () => {
