@@ -187,7 +187,7 @@ const Features = () => {
               onPlay={() => navigate("/game/protect-queen")}
             />
              <img
-              src="img/protect.webp"
+              src="img/game-4.webp"
               alt="zigma avatar"
               className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
             />
