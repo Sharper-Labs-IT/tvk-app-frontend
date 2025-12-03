@@ -11,27 +11,50 @@ import VerifyOtp from '../pages/VerifyOtp';
 import ForgotPassword from '../pages/ForgotPassword';
 import ResetPassword from '../pages/ResetPassword';
 import { AuthProvider, useAuth } from '../context/AuthContext';
+
+// Game Pages
 import MemoryChallenge from '../pages/games/MemoryStart';
 import ProtectQueenStart from '../pages/games/ProtectQueenStart';
 import MemoryGame from '../pages/games/MemoryGame';
 
+// Admin Layout & Pages
+import AdminLayout from '../layout/admin/AdminLayout';
+import DashboardPage from '../pages/admin/DashboardPage';
+
+/**
+ * Route Guard: Only for logged-out users (Login, Signup)
+ */
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
-
-  if (!isAuthInitialized) {
-    return <Loader />;
-  }
-
+  if (!isAuthInitialized) return <Loader />;
   return !isLoggedIn ? <>{element}</> : <Navigate to="/" replace />;
 };
 
-const ProtectedRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
-  const { isLoggedIn, isAuthInitialized } = useAuth();
+/**
+ * Route Guard: Only for Admins
+ * Checks if user is logged in AND has 'admin' role
+ */
+const AdminRoute: React.FC = () => {
+  const { isLoggedIn, user, isAuthInitialized } = useAuth();
 
-  if (!isAuthInitialized) {
-    return <Loader />;
+  if (!isAuthInitialized) return <Loader />;
+
+  // 1. Must be logged in
+  if (!isLoggedIn || !user) {
+    return <Navigate to="/login" replace />;
   }
-  return isLoggedIn ? <>{element}</> : <Navigate to="/login" replace />;
+
+  // 2. Must have 'admin' role
+  // We check if the roles array exists and contains 'admin'
+  const isAdmin = user.roles?.some((role) => role.name === 'admin');
+
+  if (!isAdmin) {
+    // If logged in but not admin, redirect to home
+    return <Navigate to="/" replace />;
+  }
+
+  // Render the nested Admin Layout
+  return <AdminLayout />;
 };
 
 const AppRoutes: React.FC = () => {
@@ -40,11 +63,7 @@ const AppRoutes: React.FC = () => {
 
   useEffect(() => {
     setIsLoading(true);
-
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-
+    const timer = setTimeout(() => setIsLoading(false), 300);
     return () => clearTimeout(timer);
   }, [location.pathname]);
 
@@ -53,11 +72,8 @@ const AppRoutes: React.FC = () => {
       {isLoading && <Loader />}
 
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<Home />} />
-
-        {/* Example of a Protected Route for future use: */}
-        {/* <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} /> */}
-
         <Route path="/membership" element={<Membership />} />
         <Route path="/game" element={<Game />} />
         <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
@@ -65,16 +81,38 @@ const AppRoutes: React.FC = () => {
         <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
         <Route path="/events" element={<Events />} />
 
-        {/* Auth Routes must be PublicOnly */}
+        {/* Auth Routes */}
         <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
         <Route path="/signup" element={<PublicOnlyRoute element={<Signup />} />} />
-        <Route path="/verify-otp" element={<PublicOnlyRoute element={<VerifyOtp />} />} />
 
-        {/* FORGOT PASSWORD ROUTES (NEW) */}
+        {/* Verify OTP serves both Signup and Admin 2FA */}
+        <Route path="/verify-otp" element={<VerifyOtp />} />
+
         <Route path="/forgot-password" element={<PublicOnlyRoute element={<ForgotPassword />} />} />
         <Route path="/reset-password" element={<PublicOnlyRoute element={<ResetPassword />} />} />
 
-        {/* 3. FALLBACK: Catch-all route */}
+        {/* --- ADMIN PANEL ROUTES --- */}
+        <Route path="/admin" element={<AdminRoute />}>
+          {/* Default redirect to dashboard */}
+          <Route index element={<Navigate to="dashboard" replace />} />
+          <Route path="dashboard" element={<DashboardPage />} />
+
+          {/* Placeholders for future pages */}
+          <Route
+            path="posts"
+            element={<div className="text-white p-8">Post Management (Coming Soon)</div>}
+          />
+          <Route
+            path="members"
+            element={<div className="text-white p-8">Member Management (Coming Soon)</div>}
+          />
+          <Route
+            path="settings"
+            element={<div className="text-white p-8">Settings (Coming Soon)</div>}
+          />
+        </Route>
+
+        {/* Catch-all */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>
