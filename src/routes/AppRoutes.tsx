@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
+
+// Public Pages
 import Home from '../pages/Home';
 import Membership from '../pages/Membership';
 import Game from '../pages/Game';
 import Events from '../pages/Events';
 import Loader from '../components/Loader';
+
+// Auth Pages
 import Login from '../pages/Login';
 import Signup from '../pages/Signup';
 import VerifyOtp from '../pages/VerifyOtp';
@@ -21,12 +25,20 @@ import MemoryGame from '../pages/games/MemoryGame';
 import AdminLayout from '../layout/admin/AdminLayout';
 import DashboardPage from '../pages/admin/DashboardPage';
 
+// Admin Post Management Pages
+import PostListPage from '../pages/admin/posts/PostListPage';
+import PostCreatePage from '../pages/admin/posts/PostCreatePage';
+import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
+
 /**
  * Route Guard: Only for logged-out users (Login, Signup)
  */
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
+
+  // Wait for auth check to finish before redirecting
   if (!isAuthInitialized) return <Loader />;
+
   return !isLoggedIn ? <>{element}</> : <Navigate to="/" replace />;
 };
 
@@ -61,6 +73,7 @@ const AppRoutes: React.FC = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
 
+  // Simulate loading state on route change for smooth transitions
   useEffect(() => {
     setIsLoading(true);
     const timer = setTimeout(() => setIsLoading(false), 300);
@@ -72,7 +85,7 @@ const AppRoutes: React.FC = () => {
       {isLoading && <Loader />}
 
       <Routes>
-        {/* Public Routes */}
+        {/* --- PUBLIC ROUTES --- */}
         <Route path="/" element={<Home />} />
         <Route path="/membership" element={<Membership />} />
         <Route path="/game" element={<Game />} />
@@ -81,7 +94,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
         <Route path="/events" element={<Events />} />
 
-        {/* Auth Routes */}
+        {/* --- AUTH ROUTES --- */}
         <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
         <Route path="/signup" element={<PublicOnlyRoute element={<Signup />} />} />
 
@@ -95,13 +108,15 @@ const AppRoutes: React.FC = () => {
         <Route path="/admin" element={<AdminRoute />}>
           {/* Default redirect to dashboard */}
           <Route index element={<Navigate to="dashboard" replace />} />
+
           <Route path="dashboard" element={<DashboardPage />} />
 
+          {/* Post Management Routes */}
+          <Route path="posts" element={<PostListPage />} />
+          <Route path="posts/create" element={<PostCreatePage />} />
+          <Route path="posts/:id" element={<PostDetailsPage />} />
+
           {/* Placeholders for future pages */}
-          <Route
-            path="posts"
-            element={<div className="text-white p-8">Post Management (Coming Soon)</div>}
-          />
           <Route
             path="members"
             element={<div className="text-white p-8">Member Management (Coming Soon)</div>}
@@ -112,7 +127,7 @@ const AppRoutes: React.FC = () => {
           />
         </Route>
 
-        {/* Catch-all */}
+        {/* Catch-all Route - Redirects to Home */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

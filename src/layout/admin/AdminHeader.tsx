@@ -20,7 +20,7 @@ const AdminHeader: React.FC = () => {
       {/* Left Side: Logo */}
       <div className="flex items-center gap-3">
         {/* Ensure tvk-logo.png exists in your public folder */}
-        <img src="/tvk-logo.png" alt="TVK Logo" className="h-10 w-auto object-contain" />
+        <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-10 w-auto object-contain" />
       </div>
 
       {/* Right Side: User Profile */}

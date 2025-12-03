@@ -5,18 +5,20 @@ import AdminHeader from './AdminHeader';
 
 const AdminLayout: React.FC = () => {
   return (
-    <div className="min-h-screen bg-tvk-dark-DEFAULT font-sans text-gray-100 flex">
+    // FIX: Changed 'bg-tvk-dark-DEFAULT' to 'bg-tvk-dark'
+    <div className="min-h-screen w-full bg-tvk-dark font-sans text-gray-100 flex">
       {/* 1. Sidebar (Fixed width) */}
       <AdminSidebar />
 
       {/* 2. Main Content Area */}
-      <div className="flex-1 flex flex-col">
+      {/* FIX: Changed 'bg-tvk-dark-DEFAULT' to 'bg-tvk-dark' */}
+      <div className="flex-1 flex flex-col min-h-screen bg-tvk-dark">
         {/* Header */}
         <AdminHeader />
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 p-8 ml-64 overflow-y-auto">
-          {/* This renders the child route components */}
+        {/* FIX: Changed 'bg-tvk-dark-DEFAULT' to 'bg-tvk-dark' */}
+        <main className="flex-1 p-8 ml-64 overflow-y-auto bg-tvk-dark">
           <Outlet />
         </main>
       </div>
