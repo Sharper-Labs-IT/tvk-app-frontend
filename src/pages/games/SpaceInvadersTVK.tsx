@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Gamepad2, Youtube, MessageSquare, Smartphone, Triangle, X } from 'lucide-react';
-import TargetCursor from '../../components/TargetCursor';
 import { useNavigate } from 'react-router-dom';
 import TextType from '../../components/TextType';
-import TrueFocus from '../../components/TrueFocus';
 import Shuffle from '../../components/Shufflle';
 
 const SpaceInvadersTVK: React.FC = () => {
@@ -54,7 +52,7 @@ const SpaceInvadersTVK: React.FC = () => {
 
         <main className="flex-grow flex flex-col justify-center items-center text-center px-4 mt-[-60px]">
           <Shuffle
-            text="VJ Galaxy Strike"
+            text="VJ's Galaxy Force"
             shuffleDirection="right"
             duration={0.35}
             animationMode="evenodd"
@@ -65,15 +63,15 @@ const SpaceInvadersTVK: React.FC = () => {
             triggerOnce={true}
             triggerOnHover={true}
             respectReducedMotion={true}
-            className="text-4xl md:text-6xl font-extrabold mb-6"
+            className="text-4xl md:text-6xl font-extrabold mb-6 text-yellow-400 drop-shadow-lg"
           />
 
           <TextType
             text={[
               'Defend.',
               'Shoot.',
-              'Survive.',
-              ' Protect the galaxy from the alien invasion in this classic arcade shooter.',
+              'Conquer.',
+              ' Join the TVK Army and defend the galaxy from the invasion.',
             ]}
             typingSpeed={75}
             pauseDuration={1500}
@@ -86,16 +84,16 @@ const SpaceInvadersTVK: React.FC = () => {
             
             <button
               onClick={() => navigate('/game/protect-area/start')}
-              className="cursor-target bg-brand-gold hover:bg-brand-goldDark text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-blue-900/20 transform hover:-translate-y-0.5 text-xl md:text-2xl"
+              className="cursor-target bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-red-900/40 transform hover:-translate-y-0.5 text-xl md:text-2xl border-2 border-yellow-400"
             >
-              Play Now
+              Start Mission
             </button>
 
             <button
               onClick={() => setShowModal(true)}
               className="cursor-target bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 transform hover:-translate-y-0.5 text-xl md:text-2xl"
             >
-              How to Play
+              Mission Briefing
             </button>
           </div>
         </main>
