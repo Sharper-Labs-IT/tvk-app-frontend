@@ -27,10 +27,19 @@ export default {
           goldDark: '#B68D40',
           footerBlue: '#2A344E',
         },
+        blue: {
+          50: '#eff6ff',
+          75: '#dbeafe',
+          100: '#bfdbfe',
+        },
+        violet: {
+          50: '#faf5ff',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         serif: ['Playfair Display', 'serif'],
+        zentry: ['Zentry', 'system-ui', 'sans-serif'],
       },
 
       // Custom gradient for the submit button
@@ -51,6 +60,7 @@ export default {
       animation: {
         'pulse-slow': 'pulse-slow 8s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
+
     },
   },
   plugins: [],
