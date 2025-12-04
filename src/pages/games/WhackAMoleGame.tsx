@@ -231,7 +231,7 @@ const WhackAMoleGame: React.FC = () => {
     baseDelay = Math.max(300, baseDelay - (levelRef.current * 50));
     
     if (isFeverRef.current) {
-        baseDelay = 400; // Slower speed for Coin Rush (was 250)
+        baseDelay = 550; // Slower speed for Coin Rush (was 250)
     } else if (isGodlikeRef.current) {
         baseDelay = baseDelay * 1.3; // Slow down spawn rate for Godlike
     }
@@ -295,7 +295,7 @@ const WhackAMoleGame: React.FC = () => {
 
     // Schedule removal
     let duration = Math.max(MIN_MOLE_DURATION, INITIAL_MOLE_DURATION - (currentLevel * 50));
-    if (currentIsFever) duration = 600;
+    if (currentIsFever) duration = 1100;
     if (isGodlikeRef.current) duration = duration * 1.5; // Slow down mole duration for Godlike
     if (type === 'boss') duration = 4000; // Boss stays longer
 
@@ -534,7 +534,7 @@ const WhackAMoleGame: React.FC = () => {
               <img 
                 src={ASSETS.coin} 
                 alt="Coin" 
-                className="w-[80%] h-[80%] object-contain drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-bounce pointer-events-none select-none relative z-10"
+                className="w-[95%] h-[95%] object-contain drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-bounce pointer-events-none select-none relative z-10"
               />
            </div>
         );
