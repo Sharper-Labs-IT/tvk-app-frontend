@@ -13,7 +13,7 @@ const STORY_LINES = [
   "But one spark remains...",
   "One warrior who fights not for himself...",
   "But for the people",
-  "COMMANDER VIJAY",
+  "COMMANDER VJ",
   "The time has come to break the silence",
   "MISSION: PROTECT THE GALAXY"
 ];
