@@ -14,6 +14,14 @@ import { AuthProvider, useAuth } from '../context/AuthContext';
 import MemoryChallenge from '../pages/games/MemoryStart';
 import ProtectQueenStart from '../pages/games/ProtectQueenStart';
 import MemoryGame from '../pages/games/MemoryGame';
+import SpaceInvadersTVK from '../pages/games/SpaceInvadersTVK';
+import SpaceInvadersGame from '../pages/games/SpaceInvadersGame';
+import WhackAMoleStart from '../pages/games/WhackAMoleStart';
+import WhackAMoleGame from '../pages/games/WhackAMoleGame';
+import TriviaGameStart from '../pages/games/TriviaGameStart';
+import TriviaGame from '../pages/games/TriviaGame';
+import JigsawPuzzleStart from '../pages/games/JigsawPuzzleStart';
+import JigsawPuzzleGame from '../pages/games/JigsawPuzzleGame';
 
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
@@ -63,6 +71,14 @@ const AppRoutes: React.FC = () => {
         <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
         <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
         <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
+        <Route path="/game/protect-area" element={<SpaceInvadersTVK />} />
+        <Route path="/game/protect-area/start" element={<SpaceInvadersGame />} />
+        <Route path="/game/villain-hunt" element={<WhackAMoleStart />} />
+        <Route path="/game/villain-hunt/start" element={<WhackAMoleGame />} />
+        <Route path="/game/trivia" element={<TriviaGameStart />} />
+        <Route path="/game/trivia/start" element={<TriviaGame />} />
+        <Route path="/game/jigsaw-puzzle" element={<JigsawPuzzleStart />} />
+        <Route path="/game/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
         <Route path="/events" element={<Events />} />
 
         {/* Auth Routes must be PublicOnly */}

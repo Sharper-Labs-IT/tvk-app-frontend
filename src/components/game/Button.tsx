@@ -7,6 +7,7 @@ type ButtonProps = {
   rightIcon?: ReactNode;
   leftIcon?: ReactNode;
   containerClass?: string;
+  onClick?: () => void;
 };
 
 const Button = ({
@@ -15,10 +16,12 @@ const Button = ({
   rightIcon,
   leftIcon,
   containerClass,
+  onClick,
 }: ButtonProps) => {
   return (
     <button
       id={id}
+      onClick={onClick}
       className={clsx(
         "group relative z-10 w-fit cursor-pointer overflow-hidden rounded-full bg-violet-50 px-7 py-3 text-black",
         containerClass
