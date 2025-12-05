@@ -80,13 +80,15 @@ export const BentoCard = ({
 
   return (
     <div className="relative size-full">
-      <video
-        src={src}
-        loop
-        muted
-        autoPlay
-        className="absolute left-0 top-0 size-full object-cover object-center"
-      />
+      {src && (
+        <video
+          src={src}
+          loop
+          muted
+          autoPlay
+          className="absolute left-0 top-0 size-full object-cover object-center"
+        />
+      )}
 
       <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50">
         <div>
@@ -164,7 +166,7 @@ const Features = () => {
           />
         </BentoTilt>
 
-        <div className="grid h-[135vh] w-full grid-cols-2 grid-rows-3 gap-7">
+        <div className="grid h-[180vh] w-full grid-cols-2 grid-rows-4 gap-7">
           <BentoTilt className="bento-tilt_1 md:col-span-1 md:row-span-2">
             <BentoCard
               src="img/feature-2.webp"
@@ -184,13 +186,32 @@ const Features = () => {
               src="videos/feature-3.mp4"
               title={<>Protect the Queen</>}
               description="Help VJ to rescue the queen and save the kingdom in this epic action-adventure game."
-              clickToPlay
+              isComingSoon
               onPlay={() => navigate("/game/protect-queen")}
             />
              <img
               src="img/game-4.webp"
               alt="zigma avatar"
               className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
+            />
+          </BentoTilt>
+
+          <BentoTilt className="bento-tilt_2">
+            <BentoCard
+              src="videos/feature-2.mp4" 
+              title={
+                <>
+                  <b>Villain</b> Hunt
+                </>
+              }
+              description="Whack the villains and clean up the system in this fast-paced reflex game!"
+              clickToPlay
+              onPlay={() => navigate("/game/villain-hunt")}
+            />
+             <img
+              src="img/game-1.webp" 
+              alt="villain hunt"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
             />
           </BentoTilt>
 
@@ -214,23 +235,52 @@ const Features = () => {
           </BentoTilt>
 
           <BentoTilt className="bento-tilt_2">
-            <div className="flex size-full flex-col justify-between btn-gold-gradient p-5">
-              <h1 className="bento-title special-font max-w-64 text-black">
-                M<b>o</b>re co<b>m</b>ing s<b>o</b>on
-              </h1>
-              <TiLocationArrow className="m-5 scale-[5] self-end" />
-            </div>
+            <BentoCard
+              src="" 
+              title={
+                <>
+                  <b>Jigsaw</b> Puzzle
+                </>
+              }
+              description="Piece together iconic moments in this timed puzzle challenge!"
+              clickToPlay
+              onPlay={() => navigate("/game/jigsaw-puzzle")}
+            />
+             <img
+              src="img/jigsaw.webp" 
+              alt="jigsaw puzzle"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
+            />
           </BentoTilt>
 
           <BentoTilt className="bento-tilt_2">
-            <video
-              src="videos/feature-2.mp4"
-              loop
-              muted
-              autoPlay
-              className="size-full object-cover object-center"
+            <BentoCard
+              src="" 
+              title={
+                <>
+                  <b>Trivia</b> Battle
+                </>
+              }
+              description="Test your knowledge about Thalapathy Vijay and prove you are the biggest fan!"
+              clickToPlay
+              onPlay={() => navigate("/game/trivia")}
+            />
+             <img
+              src="img/trivia.webp" 
+              alt="trivia battle"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
             />
           </BentoTilt>
+
+          <BentoTilt className="bento-tilt_2">
+          <video
+            src="videos/feature-2.mp4"
+            loop
+            muted
+            autoPlay
+            className="size-full object-cover object-center"
+          />
+        </BentoTilt>
         </div>
       </div>
     </section>
