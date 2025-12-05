@@ -5,7 +5,7 @@ import Story from '../components/game/Story';
 import Contact from '../components/game/Contact';
 import Footer from '../components/Footer';
 import Features from '../components/game/Features';
-import NavBar from '../components/game/Navbar';
+import NavBar from '../components/game/NavBar';
 
 const Game: React.FC = () => {
   return (
