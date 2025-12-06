@@ -281,7 +281,7 @@ const SpaceInvadersGame: React.FC = () => {
     setTimeout(() => triggerConversation('start'), 500);
   };
 
-  const playSound = (type: 'shoot' | 'explosion' | 'win' | 'lose' | 'coin') => {
+  const playSound = (_: 'shoot' | 'explosion' | 'win' | 'lose' | 'coin') => {
     if (isMuted) return;
     // console.log(`Playing sound: ${type}`);
   };

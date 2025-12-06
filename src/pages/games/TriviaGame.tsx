@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Timer, Trophy, CheckCircle, XCircle, RotateCcw, 
-  Zap, Users, Snowflake, Star, Award, Coins 
+  ArrowLeft, Trophy, CheckCircle, XCircle, RotateCcw, 
+  Users, Snowflake, Coins 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -54,7 +54,7 @@ const BACKGROUNDS = [
 const TIMER_SECONDS = 15;
 
 // --- Helper: Play Sound (Placeholder) ---
-const playSound = (type: 'correct' | 'wrong' | 'click' | 'win') => {
+const playSound = (_: 'correct' | 'wrong' | 'click' | 'win') => {
   // const audio = new Audio(`/sounds/${type}.mp3`);
   // audio.play().catch(() => {}); 
 };

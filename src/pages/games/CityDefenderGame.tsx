@@ -15,12 +15,9 @@ interface Enemy {
 }
 
 // --- Constants ---
-const GAME_WIDTH = 100; // Using percentages for responsiveness
-const GAME_HEIGHT = 100;
 const CENTER_X = 50;
 const CENTER_Y = 50;
 const SPAWN_RATE_MS = 1500;
-const GAME_LOOP_MS = 16; // ~60fps
 
 const ENEMY_TYPES = [
   { type: 'villain1', img: '/img/villain-1.webp', speed: 0.15, score: 10 },
