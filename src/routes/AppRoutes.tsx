@@ -22,6 +22,8 @@ import TriviaGameStart from '../pages/games/TriviaGameStart';
 import TriviaGame from '../pages/games/TriviaGame';
 import JigsawPuzzleStart from '../pages/games/JigsawPuzzleStart';
 import JigsawPuzzleGame from '../pages/games/JigsawPuzzleGame';
+import CityDefenderStart from '../pages/games/CityDefenderStart';
+import CityDefenderGame from '../pages/games/CityDefenderGame';
 
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
@@ -79,6 +81,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/game/trivia/start" element={<TriviaGame />} />
         <Route path="/game/jigsaw-puzzle" element={<JigsawPuzzleStart />} />
         <Route path="/game/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
+        <Route path="/game/city-defender" element={<CityDefenderStart />} />
+        <Route path="/game/city-defender/start" element={<CityDefenderGame />} />
         <Route path="/events" element={<Events />} />
 
         {/* Auth Routes must be PublicOnly */}
