@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowLeft, RefreshCw, Trophy, AlertCircle, 
@@ -44,7 +44,7 @@ interface Piece {
 }
 
 // --- Sound Controller Stub ---
-const playSound = (type: 'tap' | 'success' | 'win' | 'lose') => {
+const playSound = (_: 'tap' | 'success' | 'win' | 'lose') => {
   // In a real app, you'd play audio files here.
   // For now, we'll just log or use browser beep if possible, 
   // but mostly this is a placeholder for the structure.

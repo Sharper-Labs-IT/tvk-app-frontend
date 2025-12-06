@@ -35,15 +35,6 @@ const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) =>
   return !isLoggedIn ? <>{element}</> : <Navigate to="/" replace />;
 };
 
-const ProtectedRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
-  const { isLoggedIn, isAuthInitialized } = useAuth();
-
-  if (!isAuthInitialized) {
-    return <Loader />;
-  }
-  return isLoggedIn ? <>{element}</> : <Navigate to="/login" replace />;
-};
-
 const AppRoutes: React.FC = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);

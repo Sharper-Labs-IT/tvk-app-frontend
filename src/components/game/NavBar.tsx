@@ -2,10 +2,7 @@ import clsx from "clsx";
 import gsap from "gsap";
 import { useWindowScroll } from "react-use";
 import { useEffect, useRef, useState } from "react";
-import { TiLocationArrow } from "react-icons/ti";
 import { Link, useLocation } from "react-router-dom";
-
-import Button from "./Button";
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -19,8 +16,7 @@ const NavBar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   // audio + visual indicator toggle
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
-  const [isIndicatorActive, setIsIndicatorActive] = useState(false);
+  const [isAudioPlaying] = useState(false);
 
   // refs
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -30,12 +26,6 @@ const NavBar = () => {
   const { y: currentScrollY } = useWindowScroll();
   const [isNavVisible, setIsNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-  // toggle audio
-  const toggleAudioIndicator = () => {
-    setIsAudioPlaying((prev) => !prev);
-    setIsIndicatorActive((prev) => !prev);
-  };
 
   // play/pause audio
   useEffect(() => {

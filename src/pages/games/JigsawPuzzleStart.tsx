@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  Gamepad2,
   Clapperboard,
   Film,
   Trophy,

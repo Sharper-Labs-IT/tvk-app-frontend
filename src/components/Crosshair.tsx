@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, type RefObject } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 
 const lerp = (a: number, b: number, n: number): number => (1 - n) * a + n * b;

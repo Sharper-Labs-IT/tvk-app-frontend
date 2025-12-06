@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import api from '../utils/api';
 import type { IUser } from '../types/auth';
 
 /**
