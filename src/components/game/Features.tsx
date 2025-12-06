@@ -273,14 +273,23 @@ const Features = () => {
           </BentoTilt>
 
           <BentoTilt className="bento-tilt_2">
-          <video
-            src="videos/feature-2.mp4"
-            loop
-            muted
-            autoPlay
-            className="size-full object-cover object-center"
-          />
-        </BentoTilt>
+            <BentoCard
+              src="" 
+              title={
+                <>
+                  <b>City</b> Defender
+                </>
+              }
+              description="Defend the city from villains as the ultimate protector!"
+              clickToPlay
+              onPlay={() => navigate("/game/city-defender")}
+            />
+             <img
+              src="img/bg-game3.webp" 
+              alt="city defender"
+              className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
+            />
+          </BentoTilt>
         </div>
       </div>
     </section>
