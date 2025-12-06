@@ -13,23 +13,15 @@ const Hero = () => {
   const [hasClicked, setHasClicked] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(true);
-  const [loadedVideos, setLoadedVideos] = useState<number>(0);
 
   const totalVideos = 4;
-  const initialVideoCount = 3; 
-
   const nextVdRef = useRef<HTMLVideoElement | null>(null);
   const currentVdRef = useRef<HTMLVideoElement | null>(null);
 
-  const handleVideoLoad = () => {
-    setLoadedVideos((prev) => prev + 1);
+  // We only wait for the main video to load to dismiss the loader
+  const handleMainVideoLoad = () => {
+    setLoading(false);
   };
-
-  useEffect(() => {
-    if (loadedVideos >= initialVideoCount) {
-      setLoading(false);
-    }
-  }, [loadedVideos]);
 
   // Fallback: Hide loading after 3 seconds regardless
   useEffect(() => {
@@ -133,7 +125,6 @@ const Hero = () => {
                   preload="auto"
                   id="current-video"
                   className="size-64 origin-center scale-150 object-cover object-center"
-                  onLoadedData={handleVideoLoad}
                 />
               </div>
             </VideoPreview>
@@ -148,7 +139,6 @@ const Hero = () => {
             preload="auto"
             id="next-video"
             className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
-            onLoadedData={handleVideoLoad}
           />
 
           <video
@@ -161,7 +151,7 @@ const Hero = () => {
             playsInline
             preload="auto"
             className="absolute left-0 top-0 size-full object-cover object-center"
-            onLoadedData={handleVideoLoad}
+            onLoadedData={handleMainVideoLoad}
           />
         </div>
 
