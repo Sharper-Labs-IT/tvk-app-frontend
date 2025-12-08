@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
-import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
+import ConfirmationModal from '../components/common/ConfirmationModal';
 
+// Navigation Items
 const navItems = [
   { name: 'HOME', path: '/' },
   { name: 'MEMBERSHIP', path: '/membership' },
+  { name: 'SHOP', path: '/shop' },
   { name: 'GAME', path: '/game' },
   { name: 'EVENTS', path: '/events' },
+  { name: 'DASHBOARD', path: '/dashboard-access' },
 ];
 
 const headerContainerVariants: Variants = {
@@ -39,46 +42,40 @@ const navStaggerVariants: Variants = {
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // 👈 NEW STATE FOR MODAL
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const { isLoggedIn, user, logout } = useAuth();
 
-  // Check if we are on Home page
   const isHome = location.pathname === '/';
-
   const isActive = (path: string) => location.pathname === path;
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Function called when the user confirms logout in the modal
   const handleLogoutConfirm = () => {
-    // Calls the context's logout function (which now redirects to '/')
     logout();
-    // Close the modal
     setShowLogoutModal(false);
+    navigate('/');
   };
 
-  // Dynamic component to switch between Login/Join and Logout
   const AuthButton = () => {
-    // If logged in, show the Logout button
     if (isLoggedIn) {
       return (
         <button
-          onClick={() => setShowLogoutModal(true)} // 👈 OPEN MODAL INSTEAD OF DIRECT LOGOUT
-          className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded-lg hover:opacity-90 transition-opacity text-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+          onClick={() => setShowLogoutModal(true)}
+          className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
         >
-          {/* Display user's name (first word) for a more personal touch */}
-          Logout ({user?.name.split(' ')[0]})
+          Logout ({user?.name?.split(' ')[0]})
         </button>
       );
     }
-    // If logged out, show the Login/Join button
     return (
       <Link
         to="/login"
-        className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-2 rounded-lg hover:opacity-90 transition-opacity text-lg shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+        className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
       >
         Login / Join
       </Link>
@@ -88,13 +85,13 @@ const Header: React.FC = () => {
   return (
     <>
       <motion.header
-        className="w-full bg-brand-dark text-white h-24 px-8 md:px-16 flex items-center justify-between z-50 relative"
+        className="w-full bg-brand-dark text-white h-24 px-8 md:px-12 flex items-center z-50 relative"
         initial="hidden"
         animate="visible"
         variants={headerContainerVariants}
       >
         {/* 1. --- Logo Section --- */}
-        <motion.div className="flex-shrink-0 relative" variants={majorItemVariants}>
+        <motion.div className="flex-shrink-0 relative mr-4" variants={majorItemVariants}>
           <Link to="/" className="block relative">
             <img
               src="/images/tvk-logo.png"
@@ -109,8 +106,6 @@ const Header: React.FC = () => {
                 }
               `}
             />
-
-            {/* PHANTOM LOGO (Desktop Home Only): */}
             {isHome && (
               <img
                 src="/images/tvk-logo.png"
@@ -123,14 +118,15 @@ const Header: React.FC = () => {
         </motion.div>
 
         {/* 2. --- Navigation Links --- */}
-        <motion.nav className="hidden md:block" variants={navStaggerVariants}>
-          <motion.ul className="flex space-x-12" variants={navStaggerVariants}>
+        {/* CHANGED: Decreased 'mr-32' to 'mr-20' to move buttons to the right (closer to login btn) */}
+        <motion.nav className="hidden md:block ml-auto mr-1" variants={navStaggerVariants}>
+          <motion.ul className="flex space-x-6" variants={navStaggerVariants}>
             {navItems.map((item) => (
               <motion.li key={item.name} variants={majorItemVariants}>
                 <Link
                   to={item.path}
                   className={`
-                    text-lg font-medium transition-colors relative group uppercase tracking-wide
+                    text-base font-bold transition-colors relative group uppercase tracking-wider
                     ${isActive(item.path) ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                   `}
                 >
@@ -147,10 +143,10 @@ const Header: React.FC = () => {
           </motion.ul>
         </motion.nav>
 
-        {/* 3. --- Login/Logout Button / Mobile Menu --- */}
-        <motion.div variants={majorItemVariants}>
-          <AuthButton /> {/* Render the dynamic button */}
-          {/* Mobile Hamburger */}
+        {/* 3. --- Login/Logout Button --- */}
+        {/* 'ml-auto' ensures this stays on the right in Mobile view */}
+        <motion.div variants={majorItemVariants} className="flex-shrink-0 ml-auto">
+          <AuthButton />
           <button
             className="md:hidden p-2 transition-colors hover:text-brand-gold"
             onClick={toggleMenu}

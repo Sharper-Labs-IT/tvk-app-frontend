@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 
 // Components
 import Loader from '../components/Loader';
@@ -24,6 +24,8 @@ const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/Membership'));
 const Game = React.lazy(() => import('../pages/Game'));
 const Events = React.lazy(() => import('../pages/Events'));
+// 🆕 New Shop Page
+// const Shop = React.lazy(() => import('../pages/Shop'));
 
 // Auth Pages
 const Login = React.lazy(() => import('../pages/Login'));
@@ -31,6 +33,10 @@ const Signup = React.lazy(() => import('../pages/Signup'));
 const VerifyOtp = React.lazy(() => import('../pages/VerifyOtp'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+
+// User Pages
+// 🆕 New User Profile Page
+// const UserProfile = React.lazy(() => import('../pages/users/UserProfile'));
 
 // Game Pages
 const MemoryChallenge = React.lazy(() => import('../pages/games/MemoryStart'));
@@ -57,7 +63,7 @@ const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) =>
 };
 
 /**
- * Route Guard: Only for Admins
+ * Route Guard: Only for Admins (Roles: admin, moderator)
  */
 const AdminRoute: React.FC = () => {
   const { isLoggedIn, user, isAuthInitialized } = useAuth();
@@ -67,13 +73,77 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Check for admin role
-  const isAdmin = user.roles?.some((role) => role.name === 'admin');
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
+  // Check for admin role (Assuming 'admin' or 'moderator' can access admin panel)
+  const isAdminAccess = user.roles?.some(
+    (role) => role.name === 'admin' || role.name === 'moderator'
+  );
+
+  if (!isAdminAccess) {
+    // If logged in but not admin, maybe redirect to user dashboard or home
+    return <Navigate to="/users/profile" replace />;
   }
 
   return <AdminLayout />;
+};
+
+/**
+ * 🆕 Route Guard: Only for Members (Roles: member, premium)
+ */
+const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
+  const { isLoggedIn, user, isAuthInitialized } = useAuth();
+  const location = useLocation();
+
+  if (!isAuthInitialized) return <Loader />;
+
+  if (!isLoggedIn || !user) {
+    // Redirect to login, but save the location they tried to access
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check if user has valid member roles
+  const isMember = user.roles?.some(
+    (role) =>
+      role.name === 'member' ||
+      role.name === 'premium' ||
+      role.name === 'admin' ||
+      role.name === 'moderator'
+  );
+
+  if (!isMember) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <>{element}</>;
+};
+
+/**
+ * 🆕 Component: Handles logic for "Dashboard" button click
+ * - Not Logged In -> Login
+ * - Admin/Mod -> /admin/dashboard
+ * - Member/Premium -> /users/profile
+ */
+const DashboardRedirect: React.FC = () => {
+  const { isLoggedIn, user, isAuthInitialized } = useAuth();
+
+  if (!isAuthInitialized) return <Loader />;
+
+  if (!isLoggedIn) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // Check Roles
+  const roles = user?.roles?.map((r) => r.name) || [];
+
+  if (roles.includes('admin') || roles.includes('moderator')) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
+
+  if (roles.includes('member') || roles.includes('premium')) {
+    return <Navigate to="/users/profile" replace />;
+  }
+
+  // Fallback
+  return <Navigate to="/" replace />;
 };
 
 const AppRoutes: React.FC = () => {
@@ -86,6 +156,16 @@ const AppRoutes: React.FC = () => {
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<Events />} />
+
+          {/* 🆕 Shop Route */}
+          {/* <Route path="/shop" element={<Shop />} /> */}
+
+          {/* 🆕 Dashboard Intelligent Redirect */}
+          <Route path="/dashboard-access" element={<DashboardRedirect />} />
+
+          {/* --- USER DASHBOARD ROUTES --- */}
+          {/* 🆕 Protected Member Route */}
+          {/* <Route path="/users/profile" element={<UserRoute element={<UserProfile />} />} /> */}
 
           {/* --- GAME ROUTES --- */}
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
