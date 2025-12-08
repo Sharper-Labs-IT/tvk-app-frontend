@@ -35,6 +35,8 @@ const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/Membership'));
 const Game = React.lazy(() => import('../pages/Game'));
 const Events = React.lazy(() => import('../pages/Events'));
+const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
+const Store = React.lazy(() => import('../pages/Store'));
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const VerifyOtp = React.lazy(() => import('../pages/VerifyOtp'));
@@ -99,6 +101,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
+
+          <Route path="/leaderboard" element={<Leaderboards />} />
+          <Route path="/store" element={<Store />} />
+
 
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
           <Route path="/game/memory-challenge/start" element={<MemoryGame />} />

@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 
 // --- Utility for cleaner tailwind classes ---
 function cn(...inputs: ClassValue[]) {
@@ -615,7 +616,40 @@ const JigsawPuzzleGame: React.FC = () => {
                         <Zap className="w-4 h-4" /> {earnedCoins}
                       </div>
                     </div>
+                    <div className="col-span-2 bg-slate-800/50 p-3 rounded-xl border border-white/5">
+                      <div className="text-xs text-slate-400 uppercase font-bold">Total Trophies</div>
+                      <div className="text-xl font-mono text-white flex items-center justify-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        {getUserTotalTrophies() + (getTrophyFromScore('jigsaw', score) !== 'NONE' ? 1 : 0)}
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Trophy Section */}
+                  <div className="mb-6">
+                    {(() => {
+                      const trophy = getTrophyFromScore('jigsaw', score);
+                      if (trophy !== 'NONE') {
+                        return (
+                          <div className="flex flex-col items-center animate-bounce-slow">
+                            <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                            <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                              {trophy} TROPHY
+                            </span>
+                            <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                          </div>
+                        );
+                      }
+                      return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                    })()}
+                  </div>
+                  
+                  {/* 
+                    TODO: Send score and trophy to backend
+                    POST /api/scores
+                    Body: { game: 'jigsaw', score: score, trophy: getTrophyFromScore('jigsaw', score) }
+                  */}
+
                 </>
               ) : (
                 <>
