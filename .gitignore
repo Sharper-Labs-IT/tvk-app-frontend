@@ -30,3 +30,7 @@ nginx.conf
 docker-compose.yml
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
+
+vitest.config.ts
+setupTests.ts
+App.test.tsx
