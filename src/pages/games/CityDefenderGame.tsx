@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Zap, RotateCcw, Home, Trophy, Shield, Clock, Bomb, Crosshair, Play, Skull, Timer } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
 
 // --- Types ---
 type GameMode = 'classic' | 'blitz' | 'hardcore';
@@ -444,6 +446,28 @@ const CityDefenderGame: React.FC = () => {
       confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 } });
     }
   };
+
+  // --- Backend Integration ---
+  useEffect(() => {
+    if (gameState === 'gameover') {
+      // TODO: Uncomment when backend is ready
+      /*
+      const submitGameScore = async () => {
+        try {
+          // Assuming gameId for City Defender is 2
+          await gameService.submitScore(2, {
+            score: score,
+            coins: 0, // City Defender doesn't seem to have coins in state
+            data: { rage: rage }
+          });
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+        }
+      };
+      submitGameScore();
+      */
+    }
+  }, [gameState, score, rage]);
 
   // --- Effects ---
   useEffect(() => {
@@ -894,23 +918,44 @@ const CityDefenderGame: React.FC = () => {
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-500 via-red-500 to-yellow-500 animate-gradient" />
               
-              <h2 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-br from-yellow-400 to-orange-600 mb-2 uppercase italic">
-                {gameMode === 'blitz' && timeLeft <= 0 ? "Time's Up!" : "Mission Failed"}
-              </h2>
-              <p className="text-gray-400 mb-8">
-                {gameMode === 'blitz' ? "Great hustle, Hero!" : "The innocent need a hero!"}
-              </p>
-              
               <div className="grid grid-cols-2 gap-4 mb-8">
-                <div className="bg-gray-800 rounded-xl p-3 md:p-4">
-                    <p className="text-[10px] md:text-xs text-gray-400 uppercase">Score</p>
-                    <p className="text-2xl md:text-3xl font-bold text-white">{score}</p>
+                <div className="bg-gray-800 rounded-xl p-6">
+                  <p className="text-sm text-gray-400 uppercase tracking-wider mb-1">Final Score</p>
+                  <p className="text-4xl font-bold text-yellow-400">{score}</p>
                 </div>
-                <div className="bg-gray-800 rounded-xl p-3 md:p-4">
-                    <p className="text-[10px] md:text-xs text-gray-400 uppercase">Max Combo</p>
-                    <p className="text-2xl md:text-3xl font-bold text-purple-400">x{1 + Math.floor(combo/5)*0.5}</p>
+                <div className="bg-gray-800 rounded-xl p-6">
+                  <p className="text-sm text-gray-400 uppercase tracking-wider mb-1">Total Trophies</p>
+                  <p className="text-4xl font-bold text-white flex items-center gap-2">
+                    <Trophy className="w-8 h-8 text-yellow-500" />
+                    {getUserTotalTrophies() + (getTrophyFromScore('city-defender', score) !== 'NONE' ? 1 : 0)}
+                  </p>
                 </div>
               </div>
+
+              {/* Trophy Section */}
+              <div className="mb-8">
+                {(() => {
+                  const trophy = getTrophyFromScore('city-defender', score);
+                  if (trophy !== 'NONE') {
+                    return (
+                      <div className="flex flex-col items-center animate-bounce-slow">
+                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                          {trophy} TROPHY
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                      </div>
+                    );
+                  }
+                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                })()}
+              </div>
+
+              {/* 
+                TODO: Send score and trophy to backend
+                POST /api/scores
+                Body: { game: 'city-defender', score: score, trophy: getTrophyFromScore('city-defender', score) }
+              */}
 
               <div className="flex gap-4 justify-center">
                 <button 

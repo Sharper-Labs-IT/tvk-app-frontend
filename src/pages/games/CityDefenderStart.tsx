@@ -57,6 +57,20 @@ const CityDefenderStart: React.FC = () => {
 
       <div className="relative z-10 container mx-auto px-4 h-screen flex flex-col items-center justify-center">
         
+        {/* Hero Image / Icon */}
+        {/* <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-8 relative"
+        >
+          <div className="absolute inset-0 bg-yellow-500 blur-3xl opacity-20 rounded-full" />
+          <img 
+            src="/img/hero.webp" 
+            alt="Thalapathy Hero" 
+            className="w-64 h-64 object-contain drop-shadow-[0_0_30px_rgba(234,179,8,0.5)]"
+          />
+        </motion.div> */}
         {/* Title */}
         <motion.h1 
           initial={{ y: -50, opacity: 0 }}

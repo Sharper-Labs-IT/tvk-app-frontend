@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
 
 // --- STORY CONTENT ---
 const STORY_LINES = [
@@ -127,6 +129,29 @@ const SpaceInvadersGame: React.FC = () => {
   >('intro');
   const [isMuted, setIsMuted] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+
+  // --- Backend Integration ---
+  useEffect(() => {
+    if (gameState === 'gameover' || gameState === 'victory') {
+      // TODO: Uncomment when backend is ready
+      /*
+      const submitGameScore = async () => {
+        try {
+          // Assuming gameId for Space Invaders is 1 (Replace with actual ID)
+          await gameService.submitScore(1, {
+            score: score,
+            coins: collectedCoins,
+            data: { lives: lives }
+          });
+          console.log("Score submitted successfully");
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+        }
+      };
+      submitGameScore();
+      */
+    }
+  }, [gameState, score, collectedCoins, lives]);
 
   // --- Story State ---
   const [storyIndex, setStoryIndex] = useState(0);
@@ -901,14 +926,47 @@ const SpaceInvadersGame: React.FC = () => {
                 I AM WAITING...
               </h2>
               <p className="text-xl text-gray-400 mb-6">Mission Failed</p>
-              <div className="flex gap-8 mb-8">
-                <p className="text-3xl font-mono">
-                  Score: <span className="text-yellow-400">{score}</span>
-                </p>
-                <p className="text-3xl font-mono">
-                  Coins: <span className="text-yellow-400">{collectedCoins}</span>
-                </p>
+              <div className="flex flex-col gap-4 mb-8">
+                <div className="flex gap-8 justify-center">
+                  <p className="text-3xl font-mono">
+                    Score: <span className="text-yellow-400">{score}</span>
+                  </p>
+                  <p className="text-3xl font-mono">
+                    Coins: <span className="text-yellow-400">{collectedCoins}</span>
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <p className="text-2xl font-mono flex items-center gap-2">
+                    Total Trophies: <span className="text-yellow-400">{getUserTotalTrophies() + (getTrophyFromScore('space-invaders', score) !== 'NONE' ? 1 : 0)}</span>
+                  </p>
+                </div>
               </div>
+
+              {/* Trophy Section */}
+              <div className="mb-8">
+                {(() => {
+                  const trophy = getTrophyFromScore('space-invaders', score);
+                  if (trophy !== 'NONE') {
+                    return (
+                      <div className="flex flex-col items-center animate-bounce-slow">
+                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                          {trophy} TROPHY
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                      </div>
+                    );
+                  }
+                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                })()}
+              </div>
+              
+              {/* 
+                TODO: Send score and trophy to backend
+                POST /api/scores
+                Body: { game: 'space-invaders', score: score, trophy: getTrophyFromScore('space-invaders', score) }
+              */}
+
               <div className="flex gap-4">
                 <button
                   onClick={initGame}
@@ -946,14 +1004,47 @@ const SpaceInvadersGame: React.FC = () => {
                 VERITHANAM!
               </h2>
               <p className="text-xl text-gray-300 mb-6">Mission Accomplished</p>
-              <div className="flex gap-8 mb-8">
-                <p className="text-3xl font-mono">
-                  Score: <span className="text-yellow-400">{score}</span>
-                </p>
-                <p className="text-3xl font-mono">
-                  Coins: <span className="text-yellow-400">{collectedCoins}</span>
-                </p>
+              <div className="flex flex-col gap-4 mb-8">
+                <div className="flex gap-8 justify-center">
+                  <p className="text-3xl font-mono">
+                    Score: <span className="text-yellow-400">{score}</span>
+                  </p>
+                  <p className="text-3xl font-mono">
+                    Coins: <span className="text-yellow-400">{collectedCoins}</span>
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <p className="text-2xl font-mono flex items-center gap-2">
+                    Total Trophies: <span className="text-yellow-400">{getUserTotalTrophies() + (getTrophyFromScore('space-invaders', score) !== 'NONE' ? 1 : 0)}</span>
+                  </p>
+                </div>
               </div>
+
+              {/* Trophy Section */}
+              <div className="mb-8">
+                {(() => {
+                  const trophy = getTrophyFromScore('space-invaders', score);
+                  if (trophy !== 'NONE') {
+                    return (
+                      <div className="flex flex-col items-center animate-bounce-slow">
+                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                          {trophy} TROPHY
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                      </div>
+                    );
+                  }
+                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                })()}
+              </div>
+              
+              {/* 
+                TODO: Send score and trophy to backend
+                POST /api/scores
+                Body: { game: 'space-invaders', score: score, trophy: getTrophyFromScore('space-invaders', score) }
+              */}
+
               <div className="flex gap-4">
                 <button
                   onClick={initGame}
