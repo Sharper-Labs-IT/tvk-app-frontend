@@ -9,9 +9,61 @@ import type { ISignupPayload, ISignupResponse } from '../types/auth';
 
 /**
  * @fileoverview Signup Page component - Dark Theme Redesign
- * Handles form submission, communicates with /v1/auth/register,
- * and matches the visual style of the Login page.
+ * Updated with Country Code Selector and Enhanced Validation
  */
+
+// --- Country Data (Comprehensive List) ---
+const COUNTRY_CODES = [
+  { code: '+1', country: 'USA/Canada' },
+  { code: '+44', country: 'UK' },
+  { code: '+91', country: 'India' },
+  { code: '+94', country: 'Sri Lanka' },
+  { code: '+61', country: 'Australia' },
+  { code: '+81', country: 'Japan' },
+  { code: '+49', country: 'Germany' },
+  { code: '+33', country: 'France' },
+  { code: '+86', country: 'China' },
+  { code: '+971', country: 'UAE' },
+  { code: '+966', country: 'Saudi Arabia' },
+  { code: '+65', country: 'Singapore' },
+  { code: '+60', country: 'Malaysia' },
+  { code: '+7', country: 'Russia' },
+  { code: '+55', country: 'Brazil' },
+  { code: '+52', country: 'Mexico' },
+  { code: '+39', country: 'Italy' },
+  { code: '+34', country: 'Spain' },
+  { code: '+82', country: 'South Korea' },
+  { code: '+31', country: 'Netherlands' },
+  { code: '+46', country: 'Sweden' },
+  { code: '+41', country: 'Switzerland' },
+  { code: '+27', country: 'South Africa' },
+  { code: '+20', country: 'Egypt' },
+  { code: '+92', country: 'Pakistan' },
+  { code: '+880', country: 'Bangladesh' },
+  { code: '+62', country: 'Indonesia' },
+  { code: '+63', country: 'Philippines' },
+  { code: '+84', country: 'Vietnam' },
+  { code: '+66', country: 'Thailand' },
+  { code: '+90', country: 'Turkey' },
+  { code: '+98', country: 'Iran' },
+  { code: '+234', country: 'Nigeria' },
+  { code: '+254', country: 'Kenya' },
+  { code: '+351', country: 'Portugal' },
+  { code: '+30', country: 'Greece' },
+  { code: '+48', country: 'Poland' },
+  { code: '+43', country: 'Austria' },
+  { code: '+32', country: 'Belgium' },
+  { code: '+45', country: 'Denmark' },
+  { code: '+358', country: 'Finland' },
+  { code: '+47', country: 'Norway' },
+  { code: '+353', country: 'Ireland' },
+  { code: '+64', country: 'New Zealand' },
+  { code: '+974', country: 'Qatar' },
+  { code: '+973', country: 'Bahrain' },
+  { code: '+968', country: 'Oman' },
+  { code: '+965', country: 'Kuwait' },
+  // Add more as needed
+].sort((a, b) => a.country.localeCompare(b.country));
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -24,8 +76,15 @@ const Signup: React.FC = () => {
     password: '',
     password_confirmation: '',
   });
+
+  // Specific state for Country Code
+  const [countryCode, setCountryCode] = useState('+94'); // Default to Sri Lanka or your target region
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Validation Error State for individual fields
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
   // Success Flow State
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
@@ -35,7 +94,7 @@ const Signup: React.FC = () => {
   // Animation State
   const [isVisible, setIsVisible] = useState(false);
 
-  // 1. Trigger animations after 0.5s initial delay
+  // 1. Trigger animations
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -43,14 +102,12 @@ const Signup: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // 2. Manage the display of the modal after a successful API response
+  // 2. Manage Success Modal
   useEffect(() => {
     if (successData) {
-      // Save user details to sessionStorage before redirection
       sessionStorage.setItem('temp_signup_email', formData.email);
       sessionStorage.setItem('temp_signup_name', formData.name);
 
-      // Set the success message and display the modal immediately
       setSuccessMessage(
         `${successData.message} Click 'Close' below to go to the OTP verification screen.`
       );
@@ -58,13 +115,26 @@ const Signup: React.FC = () => {
     }
   }, [successData, formData.email, formData.name]);
 
-  // Handle form input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Input Change
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Clear specific field error when user types
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+
+    if (name === 'countryCode') {
+      setCountryCode(value);
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Handler for manually closing the modal
   const handleSuccessModalClose = () => {
     if (successData) {
       setSuccessData(null);
@@ -73,22 +143,79 @@ const Signup: React.FC = () => {
     }
   };
 
-  // Handle form submission
+  // --- Validation Logic ---
+  const validateForm = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+    let isValid = true;
+
+    // Name Validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+      isValid = false;
+    }
+
+    // Email Validation (Strict Regex)
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!emailRegex.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    // Mobile Validation
+    if (!formData.mobile.trim()) {
+      newErrors.mobile = 'Mobile number is required';
+      isValid = false;
+    } else if (!/^\d+$/.test(formData.mobile)) {
+      newErrors.mobile = 'Mobile number must contain only digits';
+      isValid = false;
+    } else if (formData.mobile.length < 7 || formData.mobile.length > 15) {
+      newErrors.mobile = 'Invalid mobile number length';
+      isValid = false;
+    }
+
+    // Password Validation
+    if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+      isValid = false;
+    }
+
+    // Password Match Validation
+    if (formData.password !== formData.password_confirmation) {
+      newErrors.password_confirmation = 'Passwords do not match';
+      isValid = false;
+    }
+
+    setFieldErrors(newErrors);
+    return isValid;
+  };
+
+  // Handle Form Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccessData(null);
 
-    // Basic frontend check
-    if (formData.password !== formData.password_confirmation) {
-      setError('Passwords do not match.');
+    // Run Validation
+    if (!validateForm()) {
       setLoading(false);
       return;
     }
 
+    // Combine Country Code and Mobile Number
+    // Ensure we don't duplicate code if user typed it
+    const finalMobile = `${countryCode}${formData.mobile}`;
+
+    const payload = {
+      ...formData,
+      mobile: finalMobile,
+    };
+
     try {
-      const response = await api.post<ISignupResponse>('/v1/auth/register', formData);
+      const response = await api.post<ISignupResponse>('/v1/auth/register', payload);
       setSuccessData(response.data);
     } catch (err: any) {
       let errorMessage = 'Registration failed. Please check your details.';
@@ -107,7 +234,7 @@ const Signup: React.FC = () => {
     }
   };
 
-  // --- Visual & Animation Helpers ---
+  // --- Visual Helpers ---
 
   const getAnimationClass = (delayClass: string) => {
     return `transform transition-all duration-700 ease-out ${
@@ -207,7 +334,7 @@ const Signup: React.FC = () => {
                 <p className="text-gray-400 text-sm">Join the TVK Membership Program today</p>
               </div>
 
-              {/* Error Message */}
+              {/* General Error Message */}
               {error && (
                 <div className="mb-6 bg-red-900/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm text-center animate-pulse">
                   {error}
@@ -219,65 +346,130 @@ const Signup: React.FC = () => {
                 className={`space-y-5 ${getAnimationClass('delay-[300ms]')}`}
                 onSubmit={handleSubmit}
               >
-                <InputField
-                  label="Full Name"
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Your Name"
-                  icon={UserIcon}
-                />
+                <div>
+                  <InputField
+                    label="Full Name"
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={handleChange}
+                    placeholder="Your Name"
+                    icon={UserIcon}
+                  />
+                  {fieldErrors.name && (
+                    <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.name}</p>
+                  )}
+                </div>
 
-                <InputField
-                  label="Email Address"
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  icon={MailIcon}
-                />
+                <div>
+                  <InputField
+                    label="Email Address"
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    icon={MailIcon}
+                  />
+                  {fieldErrors.email && (
+                    <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.email}</p>
+                  )}
+                </div>
 
-                <InputField
-                  label="Mobile Number"
-                  id="mobile"
-                  name="mobile"
-                  type="tel"
-                  required
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  placeholder="e.g., 94771234567"
-                  icon={PhoneIcon}
-                />
+                {/* Modified Mobile Section with Country Code */}
+                <div>
+                  <label htmlFor="mobile" className="block text-sm font-medium text-gray-300 mb-1">
+                    Mobile Number
+                  </label>
+                  <div className="relative flex rounded-lg shadow-sm">
+                    {/* Country Code Select */}
+                    <div className="relative">
+                      <select
+                        name="countryCode"
+                        value={countryCode}
+                        onChange={handleChange}
+                        className="h-full rounded-l-lg border-r-0 border border-gray-600 bg-[#2C2C2C] text-gray-200 sm:text-sm focus:ring-tvk-accent-gold focus:border-tvk-accent-gold py-3 pl-3 pr-7 appearance-none cursor-pointer outline-none"
+                        style={{ minWidth: '80px' }}
+                      >
+                        {COUNTRY_CODES.map((country) => (
+                          <option key={country.code} value={country.code}>
+                            {country.code} ({country.country})
+                          </option>
+                        ))}
+                      </select>
+                      {/* Dropdown Arrow */}
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
+                        <svg
+                          className="h-4 w-4 fill-current"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
+                        </svg>
+                      </div>
+                    </div>
 
-                <InputField
-                  label="Password (min 6 chars)"
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  icon={LockIcon}
-                />
+                    {/* Mobile Input */}
+                    <div className="relative flex-grow">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        {PhoneIcon}
+                      </div>
+                      <input
+                        type="tel"
+                        name="mobile"
+                        id="mobile"
+                        required
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-600 border-l-0 rounded-r-lg bg-[#2C2C2C] placeholder-gray-500 text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm transition-colors"
+                        placeholder="771234567"
+                        value={formData.mobile}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+                  {fieldErrors.mobile && (
+                    <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.mobile}</p>
+                  )}
+                </div>
 
-                <InputField
-                  label="Confirm Password"
-                  id="password_confirmation"
-                  name="password_confirmation"
-                  type="password"
-                  required
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  icon={LockIcon}
-                />
+                <div>
+                  <InputField
+                    label="Password (min 6 chars)"
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    icon={LockIcon}
+                  />
+                  {fieldErrors.password && (
+                    <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.password}</p>
+                  )}
+                </div>
+
+                <div>
+                  <InputField
+                    label="Confirm Password"
+                    id="password_confirmation"
+                    name="password_confirmation"
+                    type="password"
+                    required
+                    value={formData.password_confirmation}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    icon={LockIcon}
+                  />
+                  {fieldErrors.password_confirmation && (
+                    <p className="text-red-400 text-xs mt-1 ml-1">
+                      {fieldErrors.password_confirmation}
+                    </p>
+                  )}
+                </div>
 
                 <div className="pt-4">
                   <Button

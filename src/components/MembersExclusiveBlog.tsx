@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Lock, ArrowRight } from 'lucide-react';
 
-// 1. Interface for TypeScript safety
+// 1. Interface
 interface BlogPost {
   id: number;
   category: string;
@@ -89,9 +89,34 @@ const blogPosts: BlogPost[] = [
 ];
 
 const MembersExclusiveBlog: React.FC = () => {
+  // Animation State
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer for Scroll Animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 } // Trigger when 10% visible
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) observer.unobserve(sectionRef.current);
+    };
+  }, []);
+
   return (
     <section
-      className="relative w-full py-16 bg-cover bg-center bg-no-repeat min-h-screen"
+      ref={sectionRef}
+      className="relative w-full py-16 bg-cover bg-center bg-no-repeat min-h-screen overflow-hidden"
       style={{
         backgroundImage: "url('/images/BackImg1.png')",
         backgroundAttachment: 'fixed',
@@ -99,14 +124,18 @@ const MembersExclusiveBlog: React.FC = () => {
     >
       {/* Container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header Section */}
-        <div className="text-center mb-12 relative">
+        {/* Header Section - Animated */}
+        <div
+          className={`text-center mb-12 relative transition-all duration-1000 ease-out transform ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`}
+        >
           <div className="flex items-center justify-center gap-4 mb-2">
-            <div className="h-[1px] w-12 sm:w-24 bg-gradient-to-r from-transparent to-brand-gold"></div>
-            <h2 className="text-2xl sm:text-4xl font-serif text-brand-gold tracking-widest uppercase drop-shadow-md">
+            <div className="h-[1px] w-12 sm:w-24 bg-gradient-to-r from-transparent to-yellow-500"></div>
+            <h2 className="text-2xl sm:text-4xl font-serif text-yellow-500 tracking-widest uppercase drop-shadow-md">
               Members Exclusive Blog
             </h2>
-            <div className="h-[1px] w-12 sm:w-24 bg-gradient-to-l from-transparent to-brand-gold"></div>
+            <div className="h-[1px] w-12 sm:w-24 bg-gradient-to-l from-transparent to-yellow-500"></div>
           </div>
           <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
             Unlock premium content, global updates, and behind-the-scenes access. For TVK Members
@@ -116,8 +145,8 @@ const MembersExclusiveBlog: React.FC = () => {
 
         {/* Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {blogPosts.map((post) => (
-            <BlogCard key={post.id} post={post} />
+          {blogPosts.map((post, index) => (
+            <BlogCard key={post.id} post={post} index={index} isVisible={isVisible} />
           ))}
         </div>
       </div>
@@ -126,50 +155,64 @@ const MembersExclusiveBlog: React.FC = () => {
 };
 
 // Sub-component
-const BlogCard: React.FC<{ post: BlogPost }> = ({ post }) => {
+const BlogCard: React.FC<{ post: BlogPost; index: number; isVisible: boolean }> = ({
+  post,
+  index,
+  isVisible,
+}) => {
   return (
-    <div className="group relative flex h-48 border border-brand-gold/40 bg-black/40 backdrop-blur-sm rounded-xl overflow-hidden hover:border-brand-gold hover:shadow-[0_0_15px_rgba(230,198,91,0.2)] transition-all duration-300">
-      {/* Left Side: Image */}
-      <div className="w-2/5 relative h-full overflow-hidden">
+    <div
+      className={`group relative flex items-center p-3 rounded-xl border border-yellow-600/40 
+        bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-black 
+        shadow-lg hover:shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:border-yellow-500 
+        transition-all duration-700 ease-out transform
+        ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}
+      `}
+      style={{ transitionDelay: `${index * 150}ms` }} // Staggered animation delay
+    >
+      {/* Image Container - Square 1:1, Padded inside Card */}
+      <div className="relative w-1/3 aspect-square shrink-0 overflow-hidden rounded-lg border border-yellow-500/20 group-hover:border-yellow-500/60 transition-colors">
         <img
           src={post.imageUrl}
           alt={post.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-90 group-hover:opacity-100"
           onError={(e) => {
-            e.currentTarget.src = 'https://placehold.co/400x600/111/gold?text=TVK';
+            e.currentTarget.src = 'https://placehold.co/400x400/111/gold?text=TVK';
           }}
         />
 
-        {/* Category Tag */}
-        <div className="absolute top-2 left-2">
-          <span className="bg-brand-gold text-brand-dark text-[10px] font-bold px-2 py-1 rounded shadow-md uppercase tracking-wider">
+        {/* Category Tag - Absolute on Image */}
+        <div className="absolute top-0 left-0 w-full p-1">
+          <div className="bg-yellow-600/90 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider text-center shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
             {post.category}
-          </span>
+          </div>
         </div>
       </div>
 
-      {/* Right Side: Content */}
-      <div className="w-3/5 p-4 flex flex-col justify-between bg-gradient-to-r from-black/80 to-transparent">
-        {/* Members Only Badge */}
+      {/* Content Side */}
+      <div className="w-2/3 pl-4 flex flex-col justify-between h-full py-1">
+        {/* Top: Members Only Badge */}
         <div className="flex justify-end mb-1">
-          <div className="flex items-center gap-1 text-xs text-brand-gold/80 font-medium">
-            <Lock size={12} />
+          <div className="flex items-center gap-1 text-[10px] text-yellow-500/80 font-medium">
+            <Lock size={10} />
             <span>Members Only</span>
           </div>
         </div>
 
-        {/* Title & Description */}
-        <div>
-          <h3 className="text-brand-gold font-serif text-sm sm:text-base font-semibold leading-tight mb-2 line-clamp-2 group-hover:text-white transition-colors">
+        {/* Middle: Title & Desc */}
+        <div className="flex-grow flex flex-col justify-center">
+          <h3 className="text-yellow-500 font-serif text-sm font-bold leading-tight mb-1.5 line-clamp-2 group-hover:text-white transition-colors">
             {post.title}
           </h3>
-          <p className="text-gray-400 text-xs leading-relaxed line-clamp-3">{post.description}</p>
+          <p className="text-gray-400 text-[11px] leading-relaxed line-clamp-2">
+            {post.description}
+          </p>
         </div>
 
-        {/* Read More */}
-        <div className="flex justify-end mt-2">
-          <button className="flex items-center gap-1 text-xs text-brand-gold font-bold uppercase tracking-wide hover:text-white transition-colors">
-            Read More <ArrowRight size={12} />
+        {/* Bottom: Read More */}
+        <div className="flex justify-end mt-2 pt-2 border-t border-white/5">
+          <button className="flex items-center gap-1 text-[10px] text-yellow-500 font-bold uppercase tracking-wide hover:text-white transition-colors">
+            Read More <ArrowRight size={10} />
           </button>
         </div>
       </div>
