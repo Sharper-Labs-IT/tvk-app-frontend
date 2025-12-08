@@ -15,23 +15,6 @@ export interface ISignupPayload {
   password_confirmation: string;
 }
 
-// 3. User & Role Structure
-export interface IRole {
-  id: number;
-  name: string;
-}
-
-export interface IUser {
-  id: number;
-  name: string;
-  email: string;
-  mobile: string;
-  is_verified: boolean;
-  status: 'active' | 'inactive';
-  roles?: IRole[]; // Added roles array
-  // Add other user fields as needed
-}
-
 // 4. Login Success Response (Modified for 2FA)
 export interface ILoginResponse {
   token?: string; // Optional because 2FA response won't have it
@@ -80,4 +63,21 @@ export interface IResetPasswordPayload {
 // 10. Generic Message Response
 export interface IMessageResponse {
   message: string;
+}
+
+export interface IRole {
+  id: number;
+  name: string;
+}
+
+export interface IUser {
+  id: number;
+  name: string;
+  email: string;
+  mobile?: string;
+  avatar_url?: string | null;
+  created_at?: string;
+  email_verified_at?: string | null;
+  roles: IRole[];
+  status?: string;
 }

@@ -1,19 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
 import ConfirmationModal from '../components/common/ConfirmationModal';
-
-// Navigation Items
-const navItems = [
-  { name: 'HOME', path: '/' },
-  { name: 'MEMBERSHIP', path: '/membership' },
-  { name: 'SHOP', path: '/shop' },
-  { name: 'GAME', path: '/game' },
-  { name: 'EVENTS', path: '/events' },
-  { name: 'DASHBOARD', path: '/dashboard-access' },
-];
 
 const headerContainerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -50,6 +40,32 @@ const Header: React.FC = () => {
 
   const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
+
+  // --- 1. DYNAMIC NAVIGATION LOGIC ---
+  const navItems = useMemo(() => {
+    // Determine where the "DASHBOARD" button should point
+    let dashboardPath = '/login'; // Default for guests
+
+    if (isLoggedIn && user?.roles) {
+      // Check roles (Case insensitive safe check)
+      const roleNames = user.roles.map((r) => r.name.toLowerCase());
+
+      if (roleNames.includes('admin') || roleNames.includes('moderator')) {
+        dashboardPath = '/admin/dashboard';
+      } else {
+        dashboardPath = '/dashboard';
+      }
+    }
+
+    return [
+      { name: 'HOME', path: '/' },
+      { name: 'MEMBERSHIP', path: '/membership' },
+      { name: 'SHOP', path: '/shop' },
+      { name: 'GAME', path: '/game' },
+      { name: 'EVENTS', path: '/events' },
+      { name: 'DASHBOARD', path: dashboardPath }, // 👈 Dynamic Path
+    ];
+  }, [isLoggedIn, user]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -90,7 +106,7 @@ const Header: React.FC = () => {
         animate="visible"
         variants={headerContainerVariants}
       >
-        {/* 1. --- Logo Section --- */}
+        {/* Logo Section */}
         <motion.div className="flex-shrink-0 relative mr-4" variants={majorItemVariants}>
           <Link to="/" className="block relative">
             <img
@@ -117,8 +133,7 @@ const Header: React.FC = () => {
           </Link>
         </motion.div>
 
-        {/* 2. --- Navigation Links --- */}
-        {/* CHANGED: Decreased 'mr-32' to 'mr-20' to move buttons to the right (closer to login btn) */}
+        {/* Navigation Links */}
         <motion.nav className="hidden md:block ml-auto mr-1" variants={navStaggerVariants}>
           <motion.ul className="flex space-x-6" variants={navStaggerVariants}>
             {navItems.map((item) => (
@@ -143,8 +158,7 @@ const Header: React.FC = () => {
           </motion.ul>
         </motion.nav>
 
-        {/* 3. --- Login/Logout Button --- */}
-        {/* 'ml-auto' ensures this stays on the right in Mobile view */}
+        {/* Login/Logout Button */}
         <motion.div variants={majorItemVariants} className="flex-shrink-0 ml-auto">
           <AuthButton />
           <button
@@ -170,7 +184,6 @@ const Header: React.FC = () => {
         </motion.div>
       </motion.header>
 
-      {/* Logout Confirmation Modal */}
       <ConfirmationModal
         isOpen={showLogoutModal}
         title="Confirm Logout"
@@ -181,7 +194,7 @@ const Header: React.FC = () => {
         cancelText="Stay Logged In"
       />
 
-      {/* Mobile Menu Component */}
+      {/* Mobile Menu Component - Passing the dynamic items */}
       <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} navItems={navItems} />
     </>
   );

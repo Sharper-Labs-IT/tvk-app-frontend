@@ -5,10 +5,11 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Loader from '../components/Loader';
 import { AuthProvider, useAuth } from '../context/AuthContext';
 
-// Admin Layout
+// Layouts
 import AdminLayout from '../layout/admin/AdminLayout';
+import MemberLayout from '../layout/MemberLayout';
 
-// Admin Pages (Static Imports)
+// Static Admin Pages
 import DashboardPage from '../pages/admin/DashboardPage';
 import AdminProfile from '../pages/admin/profile/AdminProfile';
 import PostListPage from '../pages/admin/posts/PostListPage';
@@ -17,26 +18,22 @@ import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
 import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
 
-// --- LAZY LOADED PAGES ---
-
-// Public Pages
+// Lazy Loaded Pages
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/Membership'));
 const Game = React.lazy(() => import('../pages/Game'));
 const Events = React.lazy(() => import('../pages/Events'));
-// 🆕 New Shop Page
-// const Shop = React.lazy(() => import('../pages/Shop'));
 
-// Auth Pages
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
 const VerifyOtp = React.lazy(() => import('../pages/VerifyOtp'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 
-// User Pages
-// 🆕 New User Profile Page
-// const UserProfile = React.lazy(() => import('../pages/users/UserProfile'));
+// Member Dashboard Pages
+const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
+// 🆕 ADDED: Member Feed Page
+const MemberFeed = React.lazy(() => import('../pages/dashboard/MemberFeed'));
 
 // Game Pages
 const MemoryChallenge = React.lazy(() => import('../pages/games/MemoryStart'));
@@ -63,7 +60,7 @@ const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) =>
 };
 
 /**
- * Route Guard: Only for Admins (Roles: admin, moderator)
+ * Route Guard: Only for Admins
  */
 const AdminRoute: React.FC = () => {
   const { isLoggedIn, user, isAuthInitialized } = useAuth();
@@ -73,21 +70,19 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Check for admin role (Assuming 'admin' or 'moderator' can access admin panel)
-  const isAdminAccess = user.roles?.some(
-    (role) => role.name === 'admin' || role.name === 'moderator'
+  const isAdminAccess = user.roles?.some((role) =>
+    ['admin', 'moderator'].includes(role.name.toLowerCase())
   );
 
   if (!isAdminAccess) {
-    // If logged in but not admin, maybe redirect to user dashboard or home
-    return <Navigate to="/users/profile" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <AdminLayout />;
 };
 
 /**
- * 🆕 Route Guard: Only for Members (Roles: member, premium)
+ * Route Guard: For Members (Protects the Dashboard)
  */
 const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, user, isAuthInitialized } = useAuth();
@@ -96,20 +91,14 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   if (!isAuthInitialized) return <Loader />;
 
   if (!isLoggedIn || !user) {
-    // Redirect to login, but save the location they tried to access
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Check if user has valid member roles
-  const isMember = user.roles?.some(
-    (role) =>
-      role.name === 'member' ||
-      role.name === 'premium' ||
-      role.name === 'admin' ||
-      role.name === 'moderator'
-  );
+  const allowedRoles = ['member', 'premium', 'admin', 'moderator'];
+  const isMember = user.roles?.some((role) => allowedRoles.includes(role.name.toLowerCase()));
 
   if (!isMember) {
+    console.warn('Access Denied: User does not have member role.', user.roles);
     return <Navigate to="/" replace />;
   }
 
@@ -117,32 +106,24 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
 };
 
 /**
- * 🆕 Component: Handles logic for "Dashboard" button click
- * - Not Logged In -> Login
- * - Admin/Mod -> /admin/dashboard
- * - Member/Premium -> /users/profile
+ * Intelligent Redirect Logic
  */
 const DashboardRedirect: React.FC = () => {
   const { isLoggedIn, user, isAuthInitialized } = useAuth();
 
   if (!isAuthInitialized) return <Loader />;
+  if (!isLoggedIn) return <Navigate to="/login" replace />;
 
-  if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
-  }
-
-  // Check Roles
-  const roles = user?.roles?.map((r) => r.name) || [];
+  const roles = user?.roles?.map((r) => r.name.toLowerCase()) || [];
 
   if (roles.includes('admin') || roles.includes('moderator')) {
     return <Navigate to="/admin/dashboard" replace />;
   }
 
   if (roles.includes('member') || roles.includes('premium')) {
-    return <Navigate to="/users/profile" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
-  // Fallback
   return <Navigate to="/" replace />;
 };
 
@@ -151,23 +132,32 @@ const AppRoutes: React.FC = () => {
     <AuthProvider>
       <Suspense fallback={<Loader />}>
         <Routes>
-          {/* --- PUBLIC ROUTES --- */}
+          {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<Events />} />
-
-          {/* 🆕 Shop Route */}
-          {/* <Route path="/shop" element={<Shop />} /> */}
-
-          {/* 🆕 Dashboard Intelligent Redirect */}
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
 
-          {/* --- USER DASHBOARD ROUTES --- */}
-          {/* 🆕 Protected Member Route */}
-          {/* <Route path="/users/profile" element={<UserRoute element={<UserProfile />} />} /> */}
+          {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
+          <Route path="/dashboard" element={<UserRoute element={<MemberLayout />} />}>
+            {/* 1. Profile Page (Default) */}
+            <Route index element={<MemberProfile />} />
+            {/* 2. Feed Page (New) */}
+            <Route path="feed" element={<MemberFeed />} />
+          </Route>
 
-          {/* --- GAME ROUTES --- */}
+          {/* Auth Routes */}
+          <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
+          <Route path="/signup" element={<PublicOnlyRoute element={<Signup />} />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route
+            path="/forgot-password"
+            element={<PublicOnlyRoute element={<ForgotPassword />} />}
+          />
+          <Route path="/reset-password" element={<PublicOnlyRoute element={<ResetPassword />} />} />
+
+          {/* Game Routes */}
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
           <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
           <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
@@ -182,50 +172,23 @@ const AppRoutes: React.FC = () => {
           <Route path="/game/city-defender" element={<CityDefenderStart />} />
           <Route path="/game/city-defender/start" element={<CityDefenderGame />} />
 
-          {/* --- AUTH ROUTES --- */}
-          <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
-          <Route path="/signup" element={<PublicOnlyRoute element={<Signup />} />} />
-
-          {/* Verify OTP is public */}
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-
-          <Route
-            path="/forgot-password"
-            element={<PublicOnlyRoute element={<ForgotPassword />} />}
-          />
-          <Route path="/reset-password" element={<PublicOnlyRoute element={<ResetPassword />} />} />
-
-          {/* --- ADMIN PANEL ROUTES --- */}
+          {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute />}>
-            {/* Default redirect to dashboard */}
             <Route index element={<Navigate to="dashboard" replace />} />
-
             <Route path="dashboard" element={<DashboardPage />} />
-
-            {/* Profile Route linked to Header click */}
             <Route path="profile" element={<AdminProfile />} />
-
-            {/* Post Management */}
             <Route path="posts" element={<PostListPage />} />
             <Route path="posts/create" element={<PostCreatePage />} />
             <Route path="posts/:id" element={<PostDetailsPage />} />
-
-            {/* Membership Management */}
             <Route path="membership" element={<MembershipPlanList />} />
             <Route path="membership/create" element={<MembershipPlanCreate />} />
-
-            {/* Placeholders for future pages */}
             <Route
               path="members"
-              element={<div className="text-white p-8">Member Management (Coming Soon)</div>}
+              element={<div className="text-white p-8">Member Management</div>}
             />
-            <Route
-              path="settings"
-              element={<div className="text-white p-8">Settings (Coming Soon)</div>}
-            />
+            <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
 
-          {/* Catch-all Route - Redirects to Home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
