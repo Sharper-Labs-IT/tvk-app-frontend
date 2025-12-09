@@ -11,40 +11,6 @@ import MembershipTireCard, {
 } from '../components/MembershipTireCard';
 
 import BenefitCard from '../components/BenefitCard';
-import { motion, type Variants } from "framer-motion";
-import type {Plan} from '../types/plan';
-import axiosClient from "../api/axiosClient";
-import MembershipPaymentModal from "../components/MembershipPaymentModal";
-
-
-
-// ---------- Framer Motion variants ----------
-const benefitsContainerVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      staggerChildren: 0.12,
-      delayChildren: 0.1,
-      duration: 0.4,
-      ease: "easeOut",
-    },
-  },
-};
-
-const benefitItemVariants: Variants = {
-  hidden: { opacity: 0, y: 20, scale: 0.98 },
-  show: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.35,
-      ease: "easeOut",
-    },
-  },
-};
 
 const MembershipPage: React.FC = () => {
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
@@ -216,74 +182,46 @@ const MembershipPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Why choose section */}
-      <section className="mx-auto max-w-6xl px-4 pb-20">
-        <div className='mt-10 text-center md:mt-16'>
-          <h2 className='text-3xl font-bold md:text-4xl'>
-            Why Choose TVK Membership?
-          </h2>
-          <p className="mt-3 text-base text-slate-300">
-            Explore the exclusive benefits that come with every membership tier.
-          </p>
-        </div>
+                {/*why choose section*/}
+                <section className="mx-auto max-w-6xl px-4 pb-20">
+                    <div className='mt-10 text-center md:mt-16'>
+                        <h2 className='text-3xl font-bold md:text-4xl'>
+                            Why Choose TVK Membership?
+                        </h2>
+                        <p className="mt-3 text-base text-slate-300">
+                            Explore the exclusive benefits that come with every membership tier.
+                        </p>
+                    </div>
+                            {/*Benefits grid*/}
+                    <div className='mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
+                        <BenefitCard
+                            title="Exclusive Contents"
+                            description= "Join live streams and special TVK events from wherever you are"
+                            tags={["Free", "Super Fan"]}
+                        />
+                        <BenefitCard
+                            title="Priority Fan Meetups"
+                            description= "Super Fans get priority entry and access to special sessions & Q&A."
+                            tags={["Super Fan"]}
+                        />
+                        <BenefitCard
+                            title="Early Announcements"
+                            description= "Be the first to know about drops, events, and releases."
+                            tags={["Super Fan"]}
+                        />
+                        <BenefitCard
+                            title="Premium Video Content"
+                            description= "Unlock HD/4K documentaries, behind-the-scenes content and more."
+                            tags={["Super Fan"]}
+                        />
 
-        {/* Benefits grid with Framer Motion */}
-        <motion.div
-          className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
-          variants={benefitsContainerVariants}
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          <motion.div variants={benefitItemVariants}>
-            <BenefitCard
-              icon={<Star />}
-              title="Exclusive Contents"
-              description="Join live streams and special TVK events from wherever you are"
-              tags={["Free", "Super Fan"]}
-            />
-          </motion.div>
+                    </div>
 
-          <motion.div variants={benefitItemVariants}>
-            <BenefitCard
-              icon={<Users />}
-              title="Priority Fan Meetups"
-              description="Super Fans get priority entry and access to special sessions"
-              tags={["Super Fan"]}
-            />
-          </motion.div>
+                </section>
 
-          <motion.div variants={benefitItemVariants}>
-            <BenefitCard
-              icon={<Bell />}
-              title="Early Announcements"
-              description="Be the first to know about drops, events, and releases."
-              tags={["Super Fan"]}
-            />
-          </motion.div>
 
-          <motion.div variants={benefitItemVariants}>
-            <BenefitCard
-              icon={<Video />}
-              title="Premium Video Content"
-              description="Unlock HD/4K documentaries, behind-the-scenes content."
-              tags={["Super Fan"]}
-            />
-          </motion.div>
-        </motion.div>
-      </section>
-
-      {/* Payment modal (Stripe Elements) */}
-      <MembershipPaymentModal
-        isOpen={isPaymentOpen}
-        onClose={() => setIsPaymentOpen(false)}
-        plan={selectedPlan}
-        onSuccess={handlePaymentSuccess}
-      />
-
-      <Footer />
-    </div>
-  );
-};
+            </div>
+        )
+}
 
 export default MembershipPage;
