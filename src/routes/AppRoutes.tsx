@@ -32,7 +32,7 @@ import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
 
 // Lazy load pages
 const Home = React.lazy(() => import('../pages/Home'));
-const Membership = React.lazy(() => import('../pages/Membership'));
+const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
 const Events = React.lazy(() => import('../pages/Events'));
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
