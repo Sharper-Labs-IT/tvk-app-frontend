@@ -14,7 +14,7 @@
     "axios": "^1.13.2",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.23.24",
+    "framer-motion": "^12.23.25",
     "gsap": "^3.13.0",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.554.0",
