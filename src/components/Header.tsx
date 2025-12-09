@@ -10,6 +10,8 @@ const navItems = [
   { name: 'MEMBERSHIP', path: '/membership' },
   { name: 'GAME', path: '/game' },
   { name: 'EVENTS', path: '/events' },
+  { name: 'LEADERBOARD', path: '/leaderboard' },
+  { name: 'STORE', path: '/store' },
 ];
 
 const headerContainerVariants: Variants = {

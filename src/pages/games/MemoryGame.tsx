@@ -3,9 +3,68 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { Timer, Heart, Coins, Trophy, RotateCcw, Zap, ArrowLeft, Home } from 'lucide-react';
 import Card from '../../components/gameone/Card';
-import { getMovies } from '../../utils/movies';
+import { getMovies, TVK_MOVIES } from '../../utils/movies';
 import type { CardData, CardStatus } from '../../utils/types';
 import { useNavigate } from 'react-router-dom';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+
+// --- Gaming Loader Component ---
+const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-90" />
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+      
+      <div className="relative z-10 flex flex-col items-center w-full max-w-md px-6">
+        {/* Logo / Title */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12 text-center"
+        >
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+            TVK MEMORY
+          </h1>
+          <p className="text-slate-400 text-sm tracking-[0.3em] uppercase mt-2 font-bold">
+            System Initialization
+          </p>
+        </motion.div>
+
+        {/* Progress Bar Container */}
+        <div className="w-full h-4 bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          {/* Animated Progress Fill */}
+          <motion.div 
+            className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-300 relative"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+          >
+            {/* Glare effect on bar */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-white/50" />
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-black/20" />
+            
+            {/* Moving shine effect */}
+            <motion.div 
+              className="absolute top-0 bottom-0 w-10 bg-white/30 skew-x-[-20deg] blur-sm"
+              animate={{ x: ["-100%", "500%"] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+            />
+          </motion.div>
+        </div>
+
+        {/* Percentage & Status Text */}
+        <div className="w-full flex justify-between items-center mt-3 font-mono text-xs md:text-sm text-yellow-500/80">
+          <span className="animate-pulse">LOADING ASSETS...</span>
+          <span className="font-bold">{Math.round(progress)}%</span>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute -z-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-[80px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      </div>
+    </div>
+  );
+};
 
 const MAX_CARDS = 6; 
 const INITIAL_TIME = 30;
@@ -14,21 +73,23 @@ const TIME_PENALTY = 1;
 const REVEAL_TIME_MS = 3000;
 
 const SUCCESS_MESSAGES = [
-  "Verithanam!",
-  "Mass Nanba!",
-  "Wow, Great!",
+  "Verithanam! (Epic Play!)",
+  "Mass Nanba! (You’re cracked!)",
+  "God Tier Move!",
   "Super!",
+  "Clean Finish!",
   "Nice One!",
-  "Theri Baby!"
+  "Smooth Combo!",
+  "Theri Baby! (You’re on fire!)"
 ];
 
 const ERROR_MESSAGES = [
-  "Ayyayo!",
-  "Focus Mate!",
-  "I am waiting...",
-  "Missed it!",
-  "Pathu pannu!",
-  "Don't worry!"
+  "Ayyayo! (Epic Fail!)",
+  "Focus Mate! (Stay Locked In!)",
+  "I am waiting... (Load that brain!)",
+  "Missed it! Try Again!",
+  "Pathu pannu! (Watch your moves!)",
+  "Don't worry! (You can clutch this!)"
 ];
 
 const MemoryGame: React.FC = () => {
@@ -47,6 +108,10 @@ const MemoryGame: React.FC = () => {
   const [shakeBoard, setShakeBoard] = useState(false);
   const [isCollecting, setIsCollecting] = useState(false);
 
+  // --- Loading State ---
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   // --- Feedback State ---
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState<'success' | 'error'>('success');
@@ -59,14 +124,48 @@ const MemoryGame: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // --- Preload Images ---
   useEffect(() => {
-    startNewGame();
+    const preloadImages = async () => {
+      const imageUrls = TVK_MOVIES.map(m => m.image);
+      // Add other critical assets if needed (e.g., feedback images)
+      imageUrls.push("/img/happy.webp", "/img/sad.png", "/img/game-1.webp");
+
+      let loadedCount = 0;
+      const total = imageUrls.length;
+
+      const updateProgress = () => {
+        loadedCount++;
+        const progress = (loadedCount / total) * 100;
+        setLoadingProgress(progress);
+        if (loadedCount === total) {
+          setTimeout(() => {
+            setAssetsLoaded(true);
+          }, 500); // Small delay for smooth transition
+        }
+      };
+
+      imageUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+        img.onload = updateProgress;
+        img.onerror = updateProgress; // Proceed even if one fails
+      });
+    };
+
+    preloadImages();
+  }, []);
+
+  useEffect(() => {
+    if (assetsLoaded) {
+      startNewGame();
+    }
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
       if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
     };
-  }, []);
+  }, [assetsLoaded]);
 
   useEffect(() => {
     if (gameStarted && !gameCompleted && !gameOver && !isRevealing) {
@@ -289,6 +388,21 @@ const MemoryGame: React.FC = () => {
 
   return (
     <div className="min-h-screen text-white p-4 pb-24 font-sans overflow-x-hidden relative flex flex-col items-center">
+      {/* --- Gaming Loader Overlay --- */}
+      <AnimatePresence>
+        {!assetsLoaded && (
+          <motion.div
+            key="loader"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+            className="fixed inset-0 z-[9999]"
+          >
+            <GamingLoader progress={loadingProgress} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div 
         className="absolute inset-0 z-0"
         style={{
@@ -476,7 +590,7 @@ const MemoryGame: React.FC = () => {
           </div>
         </motion.div>
 
-        <motion.button
+        {/* <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={startNewGame}
@@ -484,7 +598,7 @@ const MemoryGame: React.FC = () => {
         >
           <RotateCcw className="mr-2 h-5 w-5 group-hover:rotate-180 transition-transform duration-500" />
           {gameCompleted || gameOver ? "Play Again" : "Reset Game"}
-        </motion.button>
+        </motion.button> */}
       </div>
 
       <AnimatePresence>
@@ -540,7 +654,39 @@ const MemoryGame: React.FC = () => {
                         {Math.round((matches / (moves || 1)) * 100)}%
                     </div>
                  </div>
+                 <div className="text-center col-span-2 mt-2 border-t border-slate-700 pt-2">
+                    <div className="text-xs text-slate-500 uppercase font-bold">Total Trophies</div>
+                    <div className="text-xl font-bold text-white flex items-center justify-center gap-2">
+                        <Trophy className="w-5 h-5 text-yellow-500" />
+                        {getUserTotalTrophies() + (getTrophyFromScore('memory', coins) !== 'NONE' ? 1 : 0)}
+                    </div>
+                 </div>
               </div>
+
+              {/* Trophy Section */}
+              <div className="mb-8">
+                {(() => {
+                  const trophy = getTrophyFromScore('memory', coins);
+                  if (trophy !== 'NONE') {
+                    return (
+                      <div className="flex flex-col items-center animate-bounce-slow">
+                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                          {trophy} TROPHY
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                      </div>
+                    );
+                  }
+                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                })()}
+              </div>
+              
+              {/* 
+                TODO: Send score and trophy to backend
+                POST /api/scores
+                Body: { game: 'memory', score: coins, trophy: getTrophyFromScore('memory', coins) }
+              */}
 
               <div className="grid grid-cols-2 gap-3">
                 <motion.button
