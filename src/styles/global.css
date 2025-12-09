@@ -234,3 +234,10 @@
 .shake-animation {
   animation: shake 0.4s ease-in-out;
 }
+
+.gold-border {
+  position: relative;
+  border-radius: 24px; /* same as rounded-3xl */
+  background: linear-gradient(135deg, #ffe08a, #f7c948, #ffda6e);
+  box-shadow: 0 0 15px rgba(247, 201, 72, 0.3);
+}

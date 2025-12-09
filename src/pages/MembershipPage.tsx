@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import Header from '../components/Header';
+import { Star, Users, Video, Bell } from "lucide-react";
 import Footer from '../components/Footer';
 
 
@@ -9,6 +10,34 @@ import MembershipTireCard, {
 } from '../components/MembershipTireCard';
 
 import BenefitCard from '../components/BenefitCard';
+import { motion, type Variants } from "framer-motion"; 
+
+const benefitsContainerVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.1,
+      duration: 0.4,
+      ease: "easeOut",
+    },
+  },
+};
+
+const benefitItemVariants: Variants = {
+  hidden: { opacity: 0, y: 20, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.35,
+      ease: "easeOut",
+    },
+  },
+};
 
 const MembershipPage: React.FC = () => {
     const [billing, setBilling] = useState<BillingPeriod>("monthly");
@@ -129,33 +158,54 @@ const MembershipPage: React.FC = () => {
                         </p>
                     </div>
                             {/*Benefits grid*/}
-                    <div className='mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4'>
+                    <motion.div 
+                       className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+                       variants={benefitsContainerVariants}
+                       initial="hidden"
+                       whileInView="show"
+                       viewport={{ once: true, amount: 0.3 }}
+                    >
+                        <motion.div variants={benefitItemVariants}>
                         <BenefitCard
+                            icon={<Star />}
                             title="Exclusive Contents"
                             description= "Join live streams and special TVK events from wherever you are"
                             tags={["Free", "Super Fan"]}
                         />
+                        </motion.div>
+
+                        <motion.div variants={benefitItemVariants}>
                         <BenefitCard
+                            icon={<Users />}
                             title="Priority Fan Meetups"
-                            description= "Super Fans get priority entry and access to special sessions & Q&A."
+                            description= "Super Fans get priority entry and access to special sessions"
                             tags={["Super Fan"]}
                         />
+                        </motion.div>
+
+                        <motion.div variants={benefitItemVariants}>
                         <BenefitCard
+                            icon={<Bell />}
                             title="Early Announcements"
                             description= "Be the first to know about drops, events, and releases."
                             tags={["Super Fan"]}
                         />
+                        </motion.div>
+
+                        <motion.div variants={benefitItemVariants}>
                         <BenefitCard
+                            icon={<Video />}
                             title="Premium Video Content"
-                            description= "Unlock HD/4K documentaries, behind-the-scenes content and more."
+                            description= "Unlock HD/4K documentaries, behind-the-scenes content."
                             tags={["Super Fan"]}
                         />
+                        </motion.div>
 
-                    </div>
+                    </motion.div>
 
                 </section>
 
-
+                <Footer />
             </div>
         )
 }
