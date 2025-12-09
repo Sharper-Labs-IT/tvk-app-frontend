@@ -17,7 +17,7 @@ interface MembershipTireCardprops{
     priceLabel: string;
     priceSuffix: string;
     highlight?: boolean;
-    badgeLabel: string;
+    badgeLabel?: string;
     features: TierFeature[];
 }
 
