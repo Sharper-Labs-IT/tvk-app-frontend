@@ -32,9 +32,13 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
 
 }) => {
     return (
-        <div className={["relative flex flex-col rounded-3xl border bg-[#07091a] p-6 shadow-xl transition-transform hover:-translate-y-1 hover:shadow-2-xl",
-            highlight ? "border-[#f7c948] bg-gradient-to-b from-[#1a1430] to-[#07091a]" : "border-[#1d2340]"
-        ].join("")}>
+        <div
+            className={[
+                "relative flex flex-col rounded-3xl p-[2px] transition-transform hover:-translate-y-1 hover:shadow-xl",
+                highlight ? "gold-border" : "border border-[#1d2340]"
+            ].join(" ")}
+            >
+        <div className="rounded-3xl bg-[#07091a] p-6 flex flex-col h-full">
 
             {/*Badge*/}
             {highlight && badgeLabel && (
@@ -70,9 +74,10 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
                 highlight
             ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a]"
             : "bg-[#111827] text-slate-100 hover:bg-[#181e37]"
-            ].join("")}>
+            ].join(" ")}>
                Subscribe Now
             </button>
+        </div>
         </div>
     )
 }
