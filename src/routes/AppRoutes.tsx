@@ -20,7 +20,7 @@ import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate
 
 // Lazy Loaded Pages
 const Home = React.lazy(() => import('../pages/Home'));
-const Membership = React.lazy(() => import('../pages/Membership'));
+const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
 const Events = React.lazy(() => import('../pages/Events'));
 
