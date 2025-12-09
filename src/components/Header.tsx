@@ -47,8 +47,14 @@ const Header: React.FC = () => {
     let dashboardPath = '/login'; // Default for guests
 
     if (isLoggedIn && user?.roles) {
-      // Check roles (Case insensitive safe check)
-      const roleNames = user.roles.map((r) => r.name.toLowerCase());
+      // 🛑 FIX: Handle roles as strings (New Backend) instead of objects (Old Backend)
+      // We map directly to lowercase strings.
+      // We use 'any' cast on 'r' just to be safe if types aren't fully synced yet.
+      const roleNames = user.roles.map((r: any) => {
+        if (typeof r === 'string') return r.toLowerCase();
+        if (typeof r === 'object' && r.name) return r.name.toLowerCase();
+        return '';
+      });
 
       if (roleNames.includes('admin') || roleNames.includes('moderator')) {
         dashboardPath = '/admin/dashboard';

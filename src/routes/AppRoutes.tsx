@@ -32,7 +32,6 @@ const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
-// 🆕 ADDED: Member Feed Page
 const MemberFeed = React.lazy(() => import('../pages/dashboard/MemberFeed'));
 
 // Game Pages
@@ -49,6 +48,15 @@ const JigsawPuzzleStart = React.lazy(() => import('../pages/games/JigsawPuzzleSt
 const JigsawPuzzleGame = React.lazy(() => import('../pages/games/JigsawPuzzleGame'));
 const CityDefenderStart = React.lazy(() => import('../pages/games/CityDefenderStart'));
 const CityDefenderGame = React.lazy(() => import('../pages/games/CityDefenderGame'));
+
+/**
+ * Helper to safely get role name string
+ */
+const getRoleName = (role: any): string => {
+  if (typeof role === 'string') return role.toLowerCase();
+  if (typeof role === 'object' && role.name) return role.name.toLowerCase();
+  return '';
+};
 
 /**
  * Route Guard: Only for logged-out users
@@ -70,8 +78,9 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
+  // FIXED: Handle both string and object roles
   const isAdminAccess = user.roles?.some((role) =>
-    ['admin', 'moderator'].includes(role.name.toLowerCase())
+    ['admin', 'moderator'].includes(getRoleName(role))
   );
 
   if (!isAdminAccess) {
@@ -95,7 +104,9 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   }
 
   const allowedRoles = ['member', 'premium', 'admin', 'moderator'];
-  const isMember = user.roles?.some((role) => allowedRoles.includes(role.name.toLowerCase()));
+
+  // FIXED: Handle both string and object roles
+  const isMember = user.roles?.some((role) => allowedRoles.includes(getRoleName(role)));
 
   if (!isMember) {
     console.warn('Access Denied: User does not have member role.', user.roles);
@@ -114,7 +125,8 @@ const DashboardRedirect: React.FC = () => {
   if (!isAuthInitialized) return <Loader />;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
-  const roles = user?.roles?.map((r) => r.name.toLowerCase()) || [];
+  // FIXED: Handle both string and object roles
+  const roles = user?.roles?.map((r) => getRoleName(r)) || [];
 
   if (roles.includes('admin') || roles.includes('moderator')) {
     return <Navigate to="/admin/dashboard" replace />;

@@ -1,11 +1,52 @@
-import React from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { MapPin, Calendar, Mail, Phone, Edit, ShieldCheck, Trophy, Crown } from 'lucide-react';
+import {
+  MapPin,
+  Calendar,
+  Mail,
+  Phone,
+  Edit,
+  ShieldCheck,
+  Trophy,
+  Crown,
+  Camera,
+  Lock,
+  Star,
+  Gamepad2,
+} from 'lucide-react';
+import { userService } from '../../services/userService';
+import EditProfileModal from '../../components/dashboard/EditProfileModal';
+import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
 
 const MemberProfile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, login, token } = useAuth();
 
-  // Helper for formatting date
+  // Modals state
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isResetPassOpen, setIsResetPassOpen] = useState(false);
+
+  // File upload state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // --- 1. CALCULATE REAL STATS FROM CONTEXT ---
+  // We no longer need to fetch this separately because 'me()' returns it all.
+
+  const totalPoints = user?.points || 0;
+  const gamesPlayed = user?.game_participation?.length || 0;
+  const badgeCount = user?.badges?.length || 0;
+
+  // Calculate Trophies (Handle if it comes as Array or Object)
+  const trophyCount = useMemo(() => {
+    if (!user?.trophies) return 0;
+    if (Array.isArray(user.trophies)) return user.trophies.length;
+    // If grouped by tier (object), sum all arrays
+    return Object.values(user.trophies).reduce((acc: number, group: any) => acc + group.length, 0);
+  }, [user?.trophies]);
+
+  // --- 2. HELPER FUNCTIONS ---
+
+  // Format Date
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -15,50 +56,91 @@ const MemberProfile: React.FC = () => {
     });
   };
 
+  // Avatar Upload
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const response = await userService.updateAvatar(file);
+      if (token && user) {
+        login(token, { ...user, avatar_url: response.avatar_url });
+      }
+    } catch (error) {
+      console.error('Failed to upload avatar', error);
+      alert('Failed to update profile picture.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  // Subscription Logic
+  const isPremium = user?.membership_tier && user.membership_tier !== 'Free';
+
+  const calculateDaysLeft = () => {
+    if (!user?.membership?.end_date) return 0;
+    const end = new Date(user.membership.end_date).getTime();
+    const now = new Date().getTime();
+    const diff = Math.ceil((end - now) / (1000 * 3600 * 24));
+    return diff > 0 ? diff : 0;
+  };
+
   return (
     <div className="space-y-6">
       {/* --- Main Profile Card --- */}
-      {/* CHANGED: Used bg-[#1E1E1E] (Dark Grey) to pop against the black background */}
-      {/* ADDED: Gold border and shadow for visibility */}
       <div className="relative bg-[#1E1E1E] rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-gold/20">
-        {/* 1. Cover Photo Section */}
+        {/* Cover Photo */}
         <div className="h-48 md:h-64 bg-gradient-to-b from-gray-800 to-[#1E1E1E] relative group">
-          {/* Pattern overlay for texture */}
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
-
-          {/* Edit Cover Button */}
-          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <button className="bg-black/60 hover:bg-black/80 text-white px-4 py-2 rounded-lg text-sm backdrop-blur-sm flex items-center gap-2 border border-white/10 shadow-lg">
-              <Edit size={14} /> Edit Cover
-            </button>
-          </div>
         </div>
 
-        {/* 2. Profile Info Area */}
+        {/* Profile Info Area */}
         <div className="px-6 pb-8 pt-0 relative">
-          {/* Header Layout: Avatar + Name + Actions */}
+          {/* Header: Avatar + Name + Actions */}
           <div className="flex flex-col md:flex-row items-start md:items-end -mt-16 mb-6">
             {/* Avatar Image */}
             <div className="relative group">
               <div className="w-32 h-32 md:w-44 md:h-44 rounded-full p-1 bg-[#1E1E1E]">
-                {' '}
-                {/* Ring to match card bg */}
                 <img
                   src={
                     user?.avatar_url ||
                     `https://ui-avatars.com/api/?name=${user?.name}&background=E6C65B&color=000&size=128`
                   }
                   alt="Profile"
-                  className="w-full h-full rounded-full object-cover border-4 border-gold shadow-lg bg-black"
+                  className={`w-full h-full rounded-full object-cover border-4 border-gold shadow-lg bg-black ${
+                    isUploadingAvatar ? 'opacity-50' : ''
+                  }`}
                 />
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gold"></div>
+                  </div>
+                )}
               </div>
-              {/* Edit Avatar Button */}
-              <button className="absolute bottom-2 right-2 bg-gold text-black p-2.5 rounded-full hover:bg-white hover:scale-110 transition shadow-lg border-2 border-[#1E1E1E]">
-                <Edit size={18} />
+
+              {/* Edit Avatar Trigger */}
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept="image/png, image/jpeg, image/jpg"
+              />
+              <button
+                onClick={handleAvatarClick}
+                disabled={isUploadingAvatar}
+                className="absolute bottom-2 right-2 bg-gold text-black p-2.5 rounded-full hover:bg-white hover:scale-110 transition shadow-lg border-2 border-[#1E1E1E]"
+              >
+                <Camera size={18} />
               </button>
             </div>
 
-            {/* Name & Role Section */}
+            {/* Name & Role */}
             <div className="mt-4 md:mt-0 md:ml-6 flex-1 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -66,20 +148,40 @@ const MemberProfile: React.FC = () => {
                     {user?.name}
                   </h1>
                   <div className="flex flex-wrap items-center gap-3 mt-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-sm font-bold">
-                      <ShieldCheck size={14} />
-                      {user?.roles?.map((r) => r.name).join(' & ') || 'Member'}
-                    </span>
+                    {/* Render Roles Safely */}
+                    {user?.roles?.map((role, idx) => {
+                      const roleName = typeof role === 'string' ? role : role.name;
+                      return (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-sm font-bold capitalize"
+                        >
+                          <ShieldCheck size={14} />
+                          {roleName}
+                        </span>
+                      );
+                    })}
+
                     <span className="text-gray-400 text-sm flex items-center gap-1">
                       <MapPin size={14} /> Sri Lanka
                     </span>
                   </div>
                 </div>
 
-                {/* Main Action Buttons */}
+                {/* Buttons */}
                 <div className="flex gap-3 mt-2 md:mt-0">
-                  <button className="px-6 py-2.5 bg-gold hover:bg-goldDark text-black font-bold rounded-xl transition shadow-lg shadow-gold/10 transform hover:-translate-y-0.5">
-                    Edit Profile
+                  <button
+                    onClick={() => setIsEditProfileOpen(true)}
+                    className="px-6 py-2.5 bg-white/5 hover:bg-gold hover:text-black border border-white/10 hover:border-gold text-white font-bold rounded-xl transition flex items-center gap-2"
+                  >
+                    <Edit size={16} /> Edit Profile
+                  </button>
+                  <button
+                    onClick={() => setIsResetPassOpen(true)}
+                    className="px-4 py-2.5 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-white border border-white/10 rounded-xl transition"
+                    title="Change Password"
+                  >
+                    <Lock size={18} />
                   </button>
                 </div>
               </div>
@@ -88,12 +190,12 @@ const MemberProfile: React.FC = () => {
 
           <hr className="border-white/10 mb-8" />
 
-          {/* 3. Content Grid */}
+          {/* Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left Column: Stats & Intro */}
+            {/* Left Column: Info & Subscription */}
             <div className="lg:col-span-1 space-y-6">
-              {/* About / Intro Box */}
-              <div className="bg-black/40 p-5 rounded-xl border border-white/5 hover:border-gold/20 transition-colors">
+              {/* Info Box */}
+              <div className="bg-black/40 p-5 rounded-xl border border-white/5">
                 <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">About</h3>
                 <ul className="space-y-4 text-gray-300 text-sm">
                   <li className="flex items-center gap-3 p-2 hover:bg-white/5 rounded-lg transition">
@@ -113,22 +215,54 @@ const MemberProfile: React.FC = () => {
                 </ul>
               </div>
 
-              {/* Membership Status Widget */}
-              <div className="bg-gradient-to-br from-gold/10 to-transparent p-5 rounded-xl border border-gold/30 relative overflow-hidden">
+              {/* DYNAMIC SUBSCRIPTION WIDGET */}
+              <div
+                className={`p-5 rounded-xl border relative overflow-hidden ${
+                  isPremium
+                    ? 'bg-gradient-to-br from-purple-900/40 to-black border-purple-500/50'
+                    : 'bg-black/40 border-white/10'
+                }`}
+              >
                 <div className="absolute top-0 right-0 p-3 opacity-10">
-                  <Crown size={64} className="text-gold" />
+                  <Crown size={64} className={isPremium ? 'text-purple-500' : 'text-gray-500'} />
                 </div>
-                <h3 className="text-lg font-bold text-gold mb-1">Current Plan</h3>
-                <p className="text-2xl font-bold text-white mb-1">Free Tier</p>
-                <p className="text-xs text-gray-400 mb-4">Upgrade to unlock exclusive contents.</p>
 
-                <button className="w-full py-2.5 bg-transparent border border-gold text-gold hover:bg-gold hover:text-black transition rounded-lg font-bold text-sm uppercase tracking-wider">
-                  Upgrade Now
-                </button>
+                <h3
+                  className={`text-lg font-bold mb-1 ${
+                    isPremium ? 'text-purple-400' : 'text-gray-400'
+                  }`}
+                >
+                  Current Plan
+                </h3>
+
+                <p className="text-2xl font-bold text-white mb-1 capitalize">
+                  {user?.membership_tier} Tier
+                </p>
+
+                {isPremium ? (
+                  <>
+                    <p className="text-sm text-green-400 mb-4 flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      Active • {calculateDaysLeft()} days left
+                    </p>
+                    <button className="w-full py-2.5 bg-purple-600 hover:bg-purple-500 text-white transition rounded-lg font-bold text-sm">
+                      Manage Subscription
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-xs text-gray-400 mb-4">
+                      Upgrade to unlock exclusive contents.
+                    </p>
+                    <button className="w-full py-2.5 bg-transparent border border-gold text-gold hover:bg-gold hover:text-black transition rounded-lg font-bold text-sm uppercase tracking-wider">
+                      Upgrade Now
+                    </button>
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Right Column: Game History / Feed Placeholder */}
+            {/* Right Column: Game Stats */}
             <div className="lg:col-span-2 space-y-6">
               {/* Stats Row */}
               <div className="grid grid-cols-3 gap-4 mb-6">
@@ -136,37 +270,102 @@ const MemberProfile: React.FC = () => {
                   <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
                     Total Points
                   </p>
-                  <p className="text-2xl font-bold text-gold">0</p>
+                  <p className="text-2xl font-bold text-gold">{totalPoints}</p>
                 </div>
                 <div className="bg-black/40 p-4 rounded-xl border border-white/5 text-center">
                   <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">
                     Games Played
                   </p>
-                  <p className="text-2xl font-bold text-white">0</p>
+                  <p className="text-2xl font-bold text-white">{gamesPlayed}</p>
                 </div>
                 <div className="bg-black/40 p-4 rounded-xl border border-white/5 text-center">
-                  <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Events Won</p>
-                  <p className="text-2xl font-bold text-white">0</p>
+                  <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Trophies</p>
+                  <p className="text-2xl font-bold text-white">{trophyCount}</p>
                 </div>
               </div>
 
-              {/* Game History Empty State */}
-              <div className="bg-black/40 rounded-xl border border-white/5 p-8 text-center flex flex-col items-center justify-center min-h-[300px]">
-                <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-500">
-                  <Trophy size={32} />
-                </div>
-                <h3 className="text-xl font-bold text-white mb-2">No Game History Yet</h3>
-                <p className="text-gray-400 max-w-sm mx-auto mb-6">
-                  Start playing games to earn points, unlock badges, and climb the leaderboard!
-                </p>
-                <button className="px-6 py-2 bg-white/10 hover:bg-gold hover:text-black text-white rounded-lg transition font-medium border border-white/10 hover:border-gold">
-                  Browse Games Library
-                </button>
+              {/* Achievements Section */}
+              <div className="bg-black/40 rounded-xl border border-white/5 p-6">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  <Trophy className="text-gold" size={20} /> Achievements
+                </h3>
+
+                {badgeCount === 0 && trophyCount === 0 ? (
+                  <div className="text-center py-4 text-gray-500 text-sm">
+                    <p>No achievements yet. Play games to earn them!</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Render Badges */}
+                    {user?.badges?.map((badge) => (
+                      <div
+                        key={badge.id}
+                        className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center"
+                      >
+                        <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center text-gold mb-2">
+                          <Star size={16} />
+                        </div>
+                        <span className="text-white text-sm font-bold">{badge.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
+
+              {/* Game History List */}
+              {user?.game_participation && user.game_participation.length > 0 ? (
+                <div className="bg-black/40 rounded-xl border border-white/5 p-6">
+                  <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <Gamepad2 className="text-purple-400" size={20} /> Recent Games
+                  </h3>
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                    {user.game_participation.map((game, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/5 hover:border-purple-500/30 transition"
+                      >
+                        <div>
+                          <p className="text-white font-bold">
+                            {game.game?.name || 'Unknown Game'}
+                          </p>
+                          <p className="text-xs text-gray-400">Score: {game.score}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-gold font-bold">+{game.coins} Coins</p>
+                          <p className="text-xs text-green-400 uppercase">{game.status}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* Empty State if no games */
+                <div className="bg-black/40 rounded-xl border border-white/5 p-8 text-center flex flex-col items-center justify-center min-h-[200px]">
+                  <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-4 text-gray-500">
+                    <Trophy size={32} />
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">Game History</h3>
+                  <p className="text-gray-400 max-w-sm mx-auto mb-6">
+                    Start playing games to earn points, unlock badges, and climb the leaderboard!
+                  </p>
+                  <button className="px-6 py-2 bg-white/10 hover:bg-gold hover:text-black text-white rounded-lg transition font-medium border border-white/10 hover:border-gold">
+                    Browse Games Library
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
+
+      {/* Render Modals */}
+      <EditProfileModal
+        isOpen={isEditProfileOpen}
+        onClose={() => setIsEditProfileOpen(false)}
+        currentName={user?.name || ''}
+      />
+
+      <ResetPasswordModal isOpen={isResetPassOpen} onClose={() => setIsResetPassOpen(false)} />
     </div>
   );
 };

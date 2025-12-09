@@ -15,11 +15,109 @@ export interface ISignupPayload {
   password_confirmation: string;
 }
 
-// 4. Login Success Response (Modified for 2FA)
+// --- NEW HELPERS FOR DASHBOARD (Backend V2 Support) ---
+
+export interface IMembershipPlan {
+  id: number;
+  name: string;
+  price: number;
+  duration_days: number;
+}
+
+export interface IMembership {
+  id: number;
+  plan_id: number;
+  status: string;
+  start_date: string;
+  end_date: string;
+  plan?: IMembershipPlan;
+}
+
+export interface IBadge {
+  id: number;
+  name: string;
+  icon?: string;
+  points_required: number;
+}
+
+export interface IGameParticipation {
+  id: number;
+  game_id: number;
+  score: number;
+  coins: number;
+  status: string;
+  game?: {
+    id: number;
+    name: string;
+    is_premium: number;
+  };
+}
+
+// Trophies can be an array or an object grouped by tier
+export interface ITrophies {
+  [tier: string]: any[];
+}
+
+// --- OLD HELPERS (Kept for compatibility) ---
+
+export interface ISubscriptionDetails {
+  plan_name: string;
+  status: 'active' | 'expired' | 'cancelled';
+  end_date: string;
+}
+
+export interface IUserStats {
+  points: number;
+  games_played: number;
+  rank: number;
+}
+
+export interface IRole {
+  id: number;
+  name: string;
+}
+
+// --- CORE TYPES ---
+
+// UPDATED IUser: Support for both Old and New Backend Structures
+export interface IUser {
+  id: number;
+  name: string;
+  email: string;
+  mobile?: string;
+
+  // Images
+  avatar_url?: string | null;
+  avatar?: string | null;
+
+  created_at?: string;
+  last_login_at?: string;
+  email_verified_at?: string | null;
+  status?: string;
+
+  // ⚠️ CRITICAL UPDATE: Roles can now be objects (Old) OR strings (New Backend)
+  // We allow both types here so your app doesn't crash if data format changes.
+  roles: (IRole | string)[];
+
+  // --- OPTIONAL FIELDS (Old Dashboard Logic) ---
+  subscription?: ISubscriptionDetails;
+  stats?: IUserStats;
+
+  // --- NEW FIELDS (New Backend Logic) ---
+  // These match the new 'me()' response from your Controller
+  membership_tier?: string;
+  membership?: IMembership | null;
+  points?: number;
+  badges?: IBadge[];
+  game_participation?: IGameParticipation[];
+  trophies?: ITrophies | any[];
+}
+
+// 4. Login Success Response
 export interface ILoginResponse {
-  token?: string; // Optional because 2FA response won't have it
-  user?: IUser; // Optional because 2FA response won't have it
-  two_factor_required?: boolean; // NEW: Detection flag
+  token?: string;
+  user?: IUser;
+  two_factor_required?: boolean;
   message?: string;
 }
 
@@ -63,21 +161,4 @@ export interface IResetPasswordPayload {
 // 10. Generic Message Response
 export interface IMessageResponse {
   message: string;
-}
-
-export interface IRole {
-  id: number;
-  name: string;
-}
-
-export interface IUser {
-  id: number;
-  name: string;
-  email: string;
-  mobile?: string;
-  avatar_url?: string | null;
-  created_at?: string;
-  email_verified_at?: string | null;
-  roles: IRole[];
-  status?: string;
 }
