@@ -1,17 +1,21 @@
-import React, {useState} from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/Header';
 import { Star, Users, Video, Bell } from "lucide-react";
 import Footer from '../components/Footer';
 
-
 import MembershipTireCard, {
-    type BillingPeriod,
-    type TierFeature,
+  type BillingPeriod,
+  type TierFeature,
 } from '../components/MembershipTireCard';
 
 import BenefitCard from '../components/BenefitCard';
-import { motion, type Variants } from "framer-motion"; 
+import { motion, type Variants } from "framer-motion";
+import type {Plan} from '../types/plan';
+import axiosClient from "../api/axiosClient";
 
+
+
+// ---------- Framer Motion variants ----------
 const benefitsContainerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   show: {
@@ -40,174 +44,199 @@ const benefitItemVariants: Variants = {
 };
 
 const MembershipPage: React.FC = () => {
-    const [billing, setBilling] = useState<BillingPeriod>("monthly");
+  const [billing, setBilling] = useState<BillingPeriod>("monthly");
 
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const baseFeatures: {[tier: string]: TierFeature[]} = {
-        free: [
-            { label: "Access to selected live event streams (limited view)", available: true },
-            { label: "Access to a basic media content library", available: true },
-            { label: "Standard member badge", available: true },
-            { label: "Community updates & newsletter", available: true },
-            { label: "Priority RSVPs for meetups", available: false },
-            { label: "Early announcements access", available: false },
-        ],
-        superFan:[
-            { label: "Access to all live events streams (Full HD / replay access)", available: true },
-            { label: "Full access to media content library + behind-the-scenes", available: true },
-            { label: "Super Fan animated badge", available: true },
-            { label: "Discount voucher for merchandise (25%)", available: true },
-            { label: "Priority RSVPs for special fan meetups", available: true },
-            { label: "Early announcements access (24–48 hours prior)", available: true },
-            { label: "Exclusive Super Fan community polls & Q&A", available: true },
-            { label: "Occasional surprise drops & digital assets", available: true },
-        ]  
+  // ---------- Fetch membership plans via Axios ----------
+  useEffect(() => {
+    const fetchPlans = async () => {
+      try {
+        const response = await axiosClient.get<{ plans: Plan[] }>("/membership/plans");
+
+        const activePlans = (response.data.plans || []).filter(
+          (p) => p.status === 1
+        );
+
+        setPlans(activePlans);
+      } catch (err) {
+        console.error(err);
+        setError("Unable to load membership plans.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    //pricing for each billing period
+    fetchPlans();
+  }, []);
 
-    const priceByBilling: Record<
-        BillingPeriod,
-        { free: string; superFan: string; suffix: string}
-        > = {
-            monthly: {
-                free: "Free",
-                superFan: "$9.99",
-                suffix: "/ Monthly",
-            },
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#050716] to-[#02030b] text-slate-100">
+      <Header />
 
-            yearly: {
-                free: "Free",
-                superFan: "$99",
-                suffix: "/ Yearly",
-            },
-        };
+      {/* Main Section */}
+      <section className='mx-auto max-w-6xl px-4 py-16'>
+        {/* Heading */}
+        <div className='text-center'>
+          <h1 className="text-4xl font-bold md:text-5xl">
+            Choose Your Membership Plan
+          </h1>
+          <p className='mt-4 text-base text-slate-300 md:text-lg'>
+            Unlock exclusive TVK experiences, events, and Super Fan-only benefits.
+          </p>
+        </div>
 
-        const prices = priceByBilling[billing];
+        {/* Billing Toggle (UI-only; affects suffix for paid plans) */}
+        <div className='mt-10 flex justify-center'>
+          <div className='inline-flex rounded-full bg-[#07091a] p-1'>
+            {([
+              { id: "monthly", label: "Monthly" },
+              { id: "yearly", label: "Yearly" },
+            ] as { id: BillingPeriod; label: string }[]).map((opt) => {
+              const active = billing === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setBilling(opt.id)}
+                  className={[
+                    "rounded-full px-5 py-2 text-sm font-medium transition-colors",
+                    active
+                      ? "bg-[#f7c948] text-[#111827]"
+                      : "text-slate-200 hover:bg-[#181e37]",
+                  ].join(" ")}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-        const billingOption: {id: BillingPeriod; label: string}[] = [
-            {id: "monthly", label: "Monthly"},
-            {id: "yearly", label: "Yearly"},
-        ];
+        {/* Membership Tier Cards (API-driven) */}
+        <div className='mt-10 grid gap-6 md:grid-cols-2'>
+          {loading && (
+            <p className="col-span-2 text-center text-slate-300">
+              Loading membership plans...
+            </p>
+          )}
 
-        return (
-            <div className="min-h-screen bg-gradient-to-b from-[#050716] to-[#02030b] text-slate-100">
-                <Header />
-                {/*Main Section*/}
-                <section className='mx-auto max-w-6xl px-4 py-16'>
-                    {/*Heading*/}
-                <div className='text-center'>
-                    <h1 className="text-4xl font-bold md:text-5xl">
-                        Choose Your Membership Plan
-                    </h1>
-                    <p className='mt-4 text-base text-slate-300 md:text-lg'>
-                        Unlock exclusive TVK experiences, events, and Super Fan-only benefits.
-                    </p>
-                </div>
+          {error && !loading && (
+            <p className="col-span-2 text-center text-red-400">
+              {error}
+            </p>
+          )}
 
-                {/*Billing Toggle*/}
-                <div className='mt-10 flex justify-center'>
-                    <div className='inline-flex rounded-full bg-[#07091a] p-1'>
-                        {billingOption.map((opt) => {
-                            const active = billing === opt.id;
-                            return (
-                                <button key={opt.id} type="button" onClick={()=> setBilling(opt.id)}
-                                className={[
-                                    "rounded-full px-5 py-2 text-sm font-medium transition-colors",
-                                    active
-                                    ? "bg-[#f7c948] text-[#111827]"
-                                    : "text-slate-200 hover:bg-[#181e37]",
-                                ].join(" ")}>{opt.label}</button>
-                            );
-                        })}
-                    </div>
-                </div>
+          {!loading && !error && plans.length === 0 && (
+            <p className="col-span-2 text-center text-slate-400">
+              No membership plans available.
+            </p>
+          )}
 
-                {/*Membership Tier Cards*/}
-                <div className='mt-10 grid gap-6 md:grid-cols-2'>
-                    {/*Free Plan*/}
-                    <MembershipTireCard
-                        name="Free"
-                        tagline='Start your journey with essential community access.'
-                        priceLabel={prices.free}
-                        priceSuffix={prices.suffix}
-                        features={baseFeatures.free}
-                    />
-                    {/*Super Fan  plan*/}
-                    <MembershipTireCard
-                        name='Super Fan'
-                        tagline='For the fans who never miss a moment. Get the full TVK experience.'
-                        priceLabel= {prices.superFan}
-                        priceSuffix={prices.suffix}
-                        highlight
-                        badgeLabel='Most Popular'
-                        features={baseFeatures.superFan}
-                        />
+          {!loading && !error && plans.map((plan) => {
+            const isFree = plan.price === "0.00";
 
-                </div>
-                </section>
+            const priceLabel = isFree ? "Free" : `$${plan.price}`;
 
-                {/*why choose section*/}
-                <section className="mx-auto max-w-6xl px-4 pb-20">
-                    <div className='mt-10 text-center md:mt-16'>
-                        <h2 className='text-3xl font-bold md:text-4xl'>
-                            Why Choose TVK Membership?
-                        </h2>
-                        <p className="mt-3 text-base text-slate-300">
-                            Explore the exclusive benefits that come with every membership tier.
-                        </p>
-                    </div>
-                            {/*Benefits grid*/}
-                    <motion.div 
-                       className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
-                       variants={benefitsContainerVariants}
-                       initial="hidden"
-                       whileInView="show"
-                       viewport={{ once: true, amount: 0.3 }}
-                    >
-                        <motion.div variants={benefitItemVariants}>
-                        <BenefitCard
-                            icon={<Star />}
-                            title="Exclusive Contents"
-                            description= "Join live streams and special TVK events from wherever you are"
-                            tags={["Free", "Super Fan"]}
-                        />
-                        </motion.div>
+            // Price suffix logic:
+            // - Free Tier: based on duration_days ("Lifetime" for 36500)
+            // - Paid tiers (e.g. Super Fan): suffix changes with billing toggle
+            let priceSuffix: string;
+            if (isFree) {
+              if (plan.duration_days >= 36500) {
+                priceSuffix = "/ Lifetime";
+              } else {
+                priceSuffix = `/ ${plan.duration_days}-Days`;
+              }
+            } else {
+              priceSuffix = billing === "monthly" ? "/ Monthly" : "/ Yearly";
+            }
 
-                        <motion.div variants={benefitItemVariants}>
-                        <BenefitCard
-                            icon={<Users />}
-                            title="Priority Fan Meetups"
-                            description= "Super Fans get priority entry and access to special sessions"
-                            tags={["Super Fan"]}
-                        />
-                        </motion.div>
+            const features: TierFeature[] = (plan.benefits || []).map((b) => ({
+              label: b,
+              available: true,
+            }));
 
-                        <motion.div variants={benefitItemVariants}>
-                        <BenefitCard
-                            icon={<Bell />}
-                            title="Early Announcements"
-                            description= "Be the first to know about drops, events, and releases."
-                            tags={["Super Fan"]}
-                        />
-                        </motion.div>
+            const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
 
-                        <motion.div variants={benefitItemVariants}>
-                        <BenefitCard
-                            icon={<Video />}
-                            title="Premium Video Content"
-                            description= "Unlock HD/4K documentaries, behind-the-scenes content."
-                            tags={["Super Fan"]}
-                        />
-                        </motion.div>
+            return (
+              <MembershipTireCard
+                key={plan.id}
+                name={plan.name}
+                tagline={plan.description}
+                priceLabel={priceLabel}
+                priceSuffix={priceSuffix}
+                features={features}
+                highlight={isHighlighted}
+                badgeLabel={isHighlighted ? "Most Popular" : undefined}
+              />
+            );
+          })}
+        </div>
+      </section>
 
-                    </motion.div>
+      {/* Why choose section */}
+      <section className="mx-auto max-w-6xl px-4 pb-20">
+        <div className='mt-10 text-center md:mt-16'>
+          <h2 className='text-3xl font-bold md:text-4xl'>
+            Why Choose TVK Membership?
+          </h2>
+          <p className="mt-3 text-base text-slate-300">
+            Explore the exclusive benefits that come with every membership tier.
+          </p>
+        </div>
 
-                </section>
+        {/* Benefits grid with Framer Motion */}
+        <motion.div
+          className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          variants={benefitsContainerVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.3 }}
+        >
+          <motion.div variants={benefitItemVariants}>
+            <BenefitCard
+              icon={<Star />}
+              title="Exclusive Contents"
+              description="Join live streams and special TVK events from wherever you are"
+              tags={["Free", "Super Fan"]}
+            />
+          </motion.div>
 
-                <Footer />
-            </div>
-        )
-}
+          <motion.div variants={benefitItemVariants}>
+            <BenefitCard
+              icon={<Users />}
+              title="Priority Fan Meetups"
+              description="Super Fans get priority entry and access to special sessions"
+              tags={["Super Fan"]}
+            />
+          </motion.div>
+
+          <motion.div variants={benefitItemVariants}>
+            <BenefitCard
+              icon={<Bell />}
+              title="Early Announcements"
+              description="Be the first to know about drops, events, and releases."
+              tags={["Super Fan"]}
+            />
+          </motion.div>
+
+          <motion.div variants={benefitItemVariants}>
+            <BenefitCard
+              icon={<Video />}
+              title="Premium Video Content"
+              description="Unlock HD/4K documentaries, behind-the-scenes content."
+              tags={["Super Fan"]}
+            />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+};
 
 export default MembershipPage;
