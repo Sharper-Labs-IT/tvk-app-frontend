@@ -1,4 +1,4 @@
-// Define the structure of the data the frontend sends to the backend
+// src/types/auth.ts
 
 // 1. Login Request Payload
 export interface ILoginPayload {
@@ -12,11 +12,15 @@ export interface ISignupPayload {
   email: string;
   mobile: string;
   password: string;
-  // This must match the backend's 'password_confirmation' requirement for the 'confirmed' rule
   password_confirmation: string;
 }
 
-// 3. User object structure (from successful login response)
+// 3. User & Role Structure
+export interface IRole {
+  id: number;
+  name: string;
+}
+
 export interface IUser {
   id: number;
   name: string;
@@ -24,13 +28,16 @@ export interface IUser {
   mobile: string;
   is_verified: boolean;
   status: 'active' | 'inactive';
+  roles?: IRole[]; // Added roles array
   // Add other user fields as needed
 }
 
-// 4. Login Success Response
+// 4. Login Success Response (Modified for 2FA)
 export interface ILoginResponse {
-  token: string;
-  user: IUser;
+  token?: string; // Optional because 2FA response won't have it
+  user?: IUser; // Optional because 2FA response won't have it
+  two_factor_required?: boolean; // NEW: Detection flag
+  message?: string;
 }
 
 // 5. Signup Success Response
@@ -39,15 +46,22 @@ export interface ISignupResponse {
   user_id: number;
 }
 
-// 6. Verification Payload
+// 6. Verification Payloads
 export interface IVerifyOtpPayload {
   user_id: number;
   otp: string;
 }
 
-// 7. Resend OTP Payload (NEW)
+// NEW: Admin 2FA Payload
+export interface IVerifyAdmin2FaPayload {
+  email: string;
+  otp: string;
+}
+
+// 7. Resend OTP Payload
 export interface IResendOtpPayload {
-  user_id: number;
+  user_id?: number;
+  email?: string;
 }
 
 // 8. Forgot Password Request Payload
@@ -63,7 +77,7 @@ export interface IResetPasswordPayload {
   password_confirmation: string;
 }
 
-// 10. Generic Message Response (Used for Forgot Password and Reset Password success)
+// 10. Generic Message Response
 export interface IMessageResponse {
   message: string;
 }

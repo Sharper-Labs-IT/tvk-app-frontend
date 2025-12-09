@@ -3,14 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../utils/api';
 import InputField from '../components/common/InputField';
 import Button from '../components/common/Button';
-import LogoHeader from '../components/common/LogoHeader'; // Import the new component
+import LogoHeader from '../components/common/LogoHeader';
 import MessageModal from '../components/common/MessageModal';
 import type { ILoginPayload, ILoginResponse } from '../types/auth';
 import { useAuth } from '../context/AuthContext';
-
-/**
- * @fileoverview Login Page component - Dark Theme Redesign with Reusable Header
- */
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -22,6 +18,8 @@ const Login: React.FC = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // RESTORED: Success/Welcome Modal State
   const [successData, setSuccessData] = useState<ILoginResponse | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState('');
@@ -29,7 +27,6 @@ const Login: React.FC = () => {
   // Animation State
   const [isVisible, setIsVisible] = useState(false);
 
-  // Trigger animations after 0.5s initial delay
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -37,29 +34,30 @@ const Login: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Effect for successful login redirection
+  // RESTORED: Effect to handle delay after successful login (for normal members)
   useEffect(() => {
     let timer: number;
-    if (successData) {
-      setWelcomeMessage(`Welcome back, ${successData.user.name}!`);
-      setShowWelcomeModal(true);
+    if (successData && showWelcomeModal) {
+      // We wait 2 seconds so the user can see the "Welcome" message
       timer = setTimeout(() => {
-        login(successData.token, successData.user);
-        setShowWelcomeModal(false);
-        navigate('/');
+        if (successData.token && successData.user) {
+          login(successData.token, successData.user);
+          setShowWelcomeModal(false);
+          navigate('/');
+        }
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [successData, navigate, login]);
+  }, [successData, showWelcomeModal, navigate, login]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // RESTORED: Handle manual close of modal
   const handleWelcomeModalClose = () => {
-    if (successData) {
-      setSuccessData(null);
+    if (successData && successData.token && successData.user) {
       login(successData.token, successData.user);
       setShowWelcomeModal(false);
       navigate('/');
@@ -74,15 +72,33 @@ const Login: React.FC = () => {
 
     try {
       const response = await api.post<ILoginResponse>('/v1/auth/login', formData);
-      setSuccessData(response.data);
+      const data = response.data;
+
+      // 1. CHECK: Is this an Admin requiring 2FA?
+      if (data.two_factor_required) {
+        // Redirect IMMEDIATELY to OTP page (No welcome modal yet)
+        navigate('/verify-otp', {
+          state: {
+            email: formData.email,
+            context: 'admin-login',
+          },
+        });
+        return;
+      }
+
+      // 2. Normal Login (Member) -> Show Welcome Modal
+      if (data.token && data.user) {
+        // Trigger the Welcome Modal Effect
+        setSuccessData(data);
+        setWelcomeMessage(`Welcome back, ${data.user.name}!`);
+        setShowWelcomeModal(true);
+      }
     } catch (err: any) {
       let errorMessage = 'Login failed. Please try again.';
       if (err.response) {
-        if (err.response.status === 401 && err.response.data.error) {
+        if (err.response.data.error) {
           errorMessage = err.response.data.error;
-        } else if (err.response.status === 403 && err.response.data.error) {
-          errorMessage = err.response.data.error;
-        } else if (err.response.status === 422 && err.response.data.errors) {
+        } else if (err.response.data.errors) {
           errorMessage = Object.values(err.response.data.errors).flat().join(' ');
         }
       }
@@ -92,14 +108,13 @@ const Login: React.FC = () => {
     }
   };
 
-  // Helper for staggered animation classes (for local elements)
   const getAnimationClass = (delayClass: string) => {
     return `transform transition-all duration-700 ease-out ${
       isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
     } ${delayClass}`;
   };
 
-  // Icons for Inputs
+  // Icons
   const MailIcon = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -137,35 +152,27 @@ const Login: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-tvk-dark flex flex-col relative overflow-hidden font-sans">
-        {/* Background Glow Effect */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold/10 rounded-full blur-[100px] animate-pulse-slow"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[100px] animate-pulse-slow"></div>
         </div>
 
-        {/* REUSABLE HEADER COMPONENT */}
-        {/* Passes isVisible state and delay-0 to start the animation sequence */}
         <LogoHeader isVisible={isVisible} delayClass="delay-0" />
 
-        {/* MAIN CONTENT */}
         <div className="flex-grow flex items-center justify-center px-4 sm:px-6 z-10">
           <div className={`max-w-md w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
-            {/* Card Container */}
             <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl">
-              {/* Header Text */}
               <div className={`text-center mb-10 ${getAnimationClass('delay-[200ms]')}`}>
                 <h2 className="text-3xl font-bold text-tvk-accent-gold mb-2">Welcome Back</h2>
                 <p className="text-gray-400 text-sm">Sign in to your TVK Membership Dashboard</p>
               </div>
 
-              {/* Error Message */}
               {error && (
                 <div className="mb-6 bg-red-900/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm text-center animate-pulse">
                   {error}
                 </div>
               )}
 
-              {/* Form */}
               <form
                 className={`space-y-6 ${getAnimationClass('delay-[300ms]')}`}
                 onSubmit={handleSubmit}
@@ -244,7 +251,6 @@ const Login: React.FC = () => {
                 </div>
               </form>
 
-              {/* Footer / Sign Up Link */}
               <div className={`text-center text-sm mt-8 ${getAnimationClass('delay-[400ms]')}`}>
                 <p className="text-gray-500">
                   Don't have a membership?{' '}
@@ -260,7 +266,6 @@ const Login: React.FC = () => {
           </div>
         </div>
 
-        {/* Footer Copyright */}
         <div
           className={`text-center py-6 text-xs text-gray-600 z-10 ${getAnimationClass(
             'delay-[500ms]'
@@ -270,6 +275,7 @@ const Login: React.FC = () => {
         </div>
       </div>
 
+      {/* RESTORED: Welcome Modal */}
       <MessageModal
         isOpen={showWelcomeModal}
         title="Login Successful!"

@@ -1,7 +1,6 @@
 import gsap from "gsap";
 import { useRef, type MouseEvent } from "react";
 
-import Button from "./Button";
 import AnimatedTitle from "./AnimatedTitle";
 
 const FloatingImage = () => {
