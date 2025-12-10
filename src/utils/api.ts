@@ -3,7 +3,7 @@ import Cookies from 'js-cookie';
 
 // 🚨 IMPORTANT: Replace with your actual backend base URL
 // Using relative path '/api' to leverage Vite proxy in development
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://api.tvkmembers.com/api';
 
 /**
  * @fileoverview Axios Instance for API communication.
