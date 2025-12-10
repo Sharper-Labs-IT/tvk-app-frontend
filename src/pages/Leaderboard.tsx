@@ -10,6 +10,7 @@ import { gameService, type LeaderboardEntry } from '../services/gameService'; //
 interface UserTrophyData {
   userId: string;
   username: string;
+  nickname?: string; // Display name
   avatar: string;
   totalTrophies: number;
   trophyBreakdown: {
@@ -97,7 +98,8 @@ const Leaderboard: React.FC = () => {
         const formattedData: UserTrophyData[] = data.map((entry: any) => ({
           userId: entry.user_id.toString(),
           username: entry.username,
-          avatar: entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.username}`,
+          nickname: entry.nickname || null,
+          avatar: entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.nickname || entry.username}`,
           totalTrophies: entry.total_trophies,
           trophyBreakdown: entry.trophy_breakdown,
           rank: entry.rank
@@ -313,7 +315,7 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                 {/* Info */}
                 <div className="text-center mt-2">
                     <h3 className={`font-black tracking-tight ${isFirst ? 'text-2xl text-white' : 'text-xl text-zinc-200'}`}>
-                        {user.username}
+                        {user.nickname || 'usernull'}
                     </h3>
                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1">Level {Math.floor(user.totalTrophies / 5) + 1}</p>
                 </div>
@@ -346,9 +348,9 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
 
             {/* User Info */}
             <div className="flex-1 flex items-center gap-4">
-                <img src={user.avatar} alt={user.username} className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors" />
+                <img src={user.avatar} alt={user.nickname || 'usernull'} className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors" />
                 <div>
-                    <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.username}</h4>
+                    <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.nickname || 'usernull'}</h4>
                     <div className="flex gap-3 text-xs text-zinc-500">
                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />{user.trophyBreakdown.PLATINUM} Plat</span>
                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />{user.trophyBreakdown.GOLD} Gold</span>

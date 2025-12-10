@@ -99,10 +99,10 @@ const JigsawPuzzleStart: React.FC = () => {
             {/* User Profile */}
             <button className="hidden md:flex items-center gap-3 pl-1 pr-4 py-1 bg-gradient-to-r from-zinc-800 to-zinc-900 border border-white/10 rounded-full hover:border-amber-500/50 transition-all">
               <div className="w-8 h-8 bg-gradient-to-br from-red-600 to-amber-600 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                {user?.name?.charAt(0).toUpperCase() || 'V'}
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
               </div>
               <span className="text-sm font-medium text-zinc-300">
-                {user?.name?.split(' ')[0] || 'VijayFan'}
+                {user?.nickname || 'usernull'}
               </span>
             </button>
           </nav>

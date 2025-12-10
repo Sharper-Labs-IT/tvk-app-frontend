@@ -76,6 +76,14 @@ const WhackAMoleStart: React.FC = () => {
               <span className="text-yellow-400 font-bold text-lg">🪙</span>
               <span className="text-white font-semibold">{userCoins.toLocaleString()}</span>
             </div>
+            
+            {/* User Profile */}
+            <button className="flex items-center gap-2 hover:bg-white/10 transition-all px-4 py-2 rounded-full">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
+              </div>
+              <span className="text-white">{user?.nickname || 'usernull'}</span>
+            </button>
           </nav>
         </header>
 

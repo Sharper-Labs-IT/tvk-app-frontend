@@ -114,9 +114,9 @@ const TriviaGameStart: React.FC = () => {
             
             <button className="flex items-center gap-3 hover:bg-white/5 transition-all px-4 py-2 rounded-full border border-transparent hover:border-white/10">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white/20">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
               </div>
-              <span className="text-gray-200">{user?.name?.split(' ')[0] || 'Profile'}</span>
+              <span className="text-gray-200">{user?.nickname || 'usernull'}</span>
             </button>
           </nav>
         </header>

@@ -78,14 +78,25 @@ const CityDefenderStart: React.FC = () => {
         <motion.div
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-yellow-500/30 rounded-full shadow-lg shadow-yellow-500/10"
+          className="flex items-center gap-4"
         >
-          <div className="bg-yellow-500/20 p-1.5 rounded-full">
-            <Coins className="w-5 h-5 text-yellow-400" />
+          {/* User Profile */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/20 rounded-full">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
+              {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
+            </div>
+            <span className="text-white font-medium">{user?.nickname || 'usernull'}</span>
           </div>
-          <span className="font-bold text-xl text-yellow-400 tracking-wide">
-            {userCoins.toLocaleString()}
-          </span>
+          
+          {/* Coins */}
+          <div className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-yellow-500/30 rounded-full shadow-lg shadow-yellow-500/10">
+            <div className="bg-yellow-500/20 p-1.5 rounded-full">
+              <Coins className="w-5 h-5 text-yellow-400" />
+            </div>
+            <span className="font-bold text-xl text-yellow-400 tracking-wide">
+              {userCoins.toLocaleString()}
+            </span>
+          </div>
         </motion.div>
       </div>
 

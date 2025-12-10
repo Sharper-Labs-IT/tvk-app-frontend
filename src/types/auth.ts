@@ -24,6 +24,7 @@ export interface IRole {
 export interface IUser {
   id: number;
   name: string;
+  nickname?: string; // Display name (shown instead of username)
   email: string;
   mobile: string;
   is_verified: boolean;

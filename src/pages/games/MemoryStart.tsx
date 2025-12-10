@@ -88,9 +88,9 @@ const GameLandingPage: React.FC = () => {
             
             <button className="flex items-center gap-2 hover:bg-white/10 transition-all px-4 py-2 rounded-full">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                {user?.name?.charAt(0).toUpperCase() || 'U'}
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
               </div>
-              <span className="text-white">{user?.name?.split(' ')[0] || 'Profile'}</span>
+              <span className="text-white">{user?.nickname || 'usernull'}</span>
             </button>
             
             <button className="text-gray-300 hover:text-white transition-colors flex items-center gap-2">
