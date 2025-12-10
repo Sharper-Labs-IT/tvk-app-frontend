@@ -22,7 +22,7 @@ import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
-const Events = React.lazy(() => import('../pages/Events'));
+const EventPage = React.lazy(() => import('../pages/EventPage'));
 
 
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
@@ -152,7 +152,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
-          <Route path="/events" element={<Events />} />
+          <Route path="/events" element={<EventPage />} />
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
 
           {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
