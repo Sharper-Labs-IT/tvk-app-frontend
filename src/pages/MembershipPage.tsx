@@ -90,7 +90,6 @@ const MembershipPage: React.FC = () => {
     setBilling(period);
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050716] to-[#02030b] text-slate-100">
       <Header />
