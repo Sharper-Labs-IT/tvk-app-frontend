@@ -83,7 +83,16 @@ export interface IRole {
 export interface IUser {
   id: number;
   name: string;
+  nickname?: string; // Display name (shown instead of username)
   email: string;
+  mobile: string;
+  is_verified: boolean;
+  status: 'active' | 'inactive';
+  roles?: IRole[]; // Added roles array
+  coins?: number; // Added coins
+  membership_type?: 'free' | 'premium' | 'vip'; // Frontend field
+  membership_tier?: 'free' | 'super_fan'; // Backend field
+
   mobile?: string;
 
   // Images

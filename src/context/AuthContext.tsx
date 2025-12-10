@@ -22,7 +22,7 @@ interface AuthContextType {
 
 // --- 2. Create Context ---
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // --- 3. Create Auth Provider Component ---
 

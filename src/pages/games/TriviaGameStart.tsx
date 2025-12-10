@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   Gamepad2,
   Youtube,
@@ -17,13 +17,53 @@ import {
 import { useNavigate } from "react-router-dom";
 import BlurText from "../../components/BlurText"; // Assuming this exists
 import TextType from "../../components/TextType"; // Assuming this exists
+import { useGameAccess } from '../../hooks/useGameAccess';
+import GameAccessModal from '../../components/common/GameAccessModal';
+import { AuthContext } from '../../context/AuthContext';
 
 const TriviaGameStart: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCost, setAccessCost] = useState(0);
+  const { user } = useContext(AuthContext) || {};
+  const userCoins = user?.coins || 0;
+
+  const handlePlayClick = () => {
+    const { allowed, reason, cost } = checkAccess();
+    if (allowed) {
+      consumePlay(false);
+      navigate('/game/trivia/start');
+    } else {
+      if (reason === 'limit_reached' || reason === 'no_coins') {
+        setAccessCost(cost);
+        setShowAccessModal(true);
+      } else if (reason === 'not_logged_in') {
+          navigate('/login');
+      }
+    }
+  };
+
+  const handlePayToPlay = async () => {
+      const success = await consumePlay(true);
+      if (success) {
+          setShowAccessModal(false);
+          navigate('/game/trivia/start');
+      } else {
+          alert("Not enough coins!");
+      }
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-slate-900 text-white font-sans overflow-hidden selection:bg-yellow-500/30">
+      <GameAccessModal 
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        onPay={handlePayToPlay}
+        cost={accessCost}
+        userCoins={userCoins}
+      />
       {/* --- BACKGROUND LAYERS --- */}
       
       {/* 1. Main Hero Image */}
@@ -69,14 +109,14 @@ const TriviaGameStart: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-5 py-2 rounded-full shadow-lg shadow-black/20">
               <span className="text-yellow-400 drop-shadow-glow">🪙</span>
-              <span className="text-white font-bold tracking-wide">1,250</span>
+              <span className="text-white font-bold tracking-wide">{userCoins.toLocaleString()}</span>
             </div>
             
             <button className="flex items-center gap-3 hover:bg-white/5 transition-all px-4 py-2 rounded-full border border-transparent hover:border-white/10">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white/20">
-                U
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
               </div>
-              <span className="text-gray-200">Profile</span>
+              <span className="text-gray-200">{user?.nickname || 'usernull'}</span>
             </button>
           </nav>
         </header>
@@ -125,7 +165,7 @@ const TriviaGameStart: React.FC = () => {
             
             {/* Primary Button */}
             <button 
-                onClick={() => navigate("/game/trivia/start")} 
+                onClick={handlePlayClick} 
                 className="cursor-target group relative w-full md:w-auto px-10 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-lg uppercase tracking-widest clip-path-slant transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_30px_rgba(234,179,8,0.6)]"
                 style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%)' }}
             >
@@ -145,6 +185,16 @@ const TriviaGameStart: React.FC = () => {
               </span>
             </button>
           </div>
+          {!isPremium && (
+            <p className="mt-4 text-gray-400 text-sm">
+              Free Plays Remaining: <span className="text-yellow-400 font-bold">{remainingFreePlays}</span>
+            </p>
+          )}
+          {isPremium && (
+            <p className="mt-4 text-green-400 text-sm flex items-center gap-2">
+              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+            </p>
+          )}
 
           {/* Daily Challenge Card - Floating Effect */}
           {/* <div className="mt-16 md:mt-24 w-full max-w-2xl animate-bounce-slow">

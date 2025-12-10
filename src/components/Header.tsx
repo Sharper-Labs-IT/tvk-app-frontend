@@ -4,7 +4,10 @@ import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
 
+import ConfirmationModal from '../components/common/ConfirmationModal'; 
+
 import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
+
 
 const navItems = [
   { name: 'HOME', path: '/' },
