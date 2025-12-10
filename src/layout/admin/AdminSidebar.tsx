@@ -10,6 +10,7 @@ import {
   ChevronRight,
   List,
   PlusCircle,
+  CreditCard, // <--- Imported CreditCard icon
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -20,7 +21,7 @@ interface SubNavItem {
 
 interface NavItem {
   name: string;
-  path?: string; // Optional because parent items might not be links themselves
+  path?: string;
   icon: React.ElementType;
   subItems?: SubNavItem[];
 }
@@ -35,13 +36,23 @@ const navItems: NavItem[] = [
       { name: 'Add New Post', path: '/admin/posts/create', icon: PlusCircle },
     ],
   },
+  // --- NEW SECTION: Membership Management ---
+  {
+    name: 'Membership Plans',
+    icon: CreditCard,
+    subItems: [
+      { name: 'View All Plans', path: '/admin/membership', icon: List },
+      { name: 'Add New Plan', path: '/admin/membership/create', icon: PlusCircle },
+    ],
+  },
+  // ------------------------------------------
   { name: 'Member Management', path: '/admin/members', icon: Users },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  // State to track which menu is open (e.g. 'Post Management')
+  // Changed default open menu to null or keep 'Post Management' if you prefer
   const [openMenu, setOpenMenu] = useState<string | null>('Post Management');
 
   const toggleMenu = (name: string) => {
@@ -60,7 +71,6 @@ const AdminSidebar: React.FC = () => {
       {/* Navigation Links */}
       <nav className="flex-1 py-6 px-3 space-y-1">
         {navItems.map((item) => {
-          // Check if parent or any child is active
           const isParentActive = item.subItems
             ? item.subItems.some((sub) => location.pathname === sub.path)
             : location.pathname === item.path;
