@@ -19,9 +19,8 @@ interface MembershipTireCardprops{
     highlight?: boolean;
     badgeLabel?: string;
     features: TierFeature[];
-    onSubscribe?: () => void;
-  isCurrent?: boolean;
-  loading?: boolean;
+     onSubscribe?: () => void;
+
 }
 
 const MembershipTireCard: React.FC<MembershipTireCardprops> =({
@@ -33,15 +32,8 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
     badgeLabel,
     features,
     onSubscribe,
-  isCurrent = false,
-  loading = false,
 
 }) => {
-    const buttonLabel = isCurrent
-    ? "Current Plan"
-    : loading
-    ? "Processing..."
-    : "Subscribe Now";
     return (
         <div
             className={[
@@ -81,12 +73,12 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
                 ))}
             </ul>
 
-            <button type="button" onClick={onSubscribe} disabled={isCurrent || loading} className={["mt-auto w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
+            <button type="button"  onClick={onSubscribe} className={["mt-auto w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
                 highlight
             ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a]"
             : "bg-[#111827] text-slate-100 hover:bg-[#181e37]"
             ].join(" ")}>
-               {buttonLabel}
+               Subscribe Now
             </button>
         </div>
         </div>
@@ -94,3 +86,4 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
 }
 
 export default MembershipTireCard;
+
