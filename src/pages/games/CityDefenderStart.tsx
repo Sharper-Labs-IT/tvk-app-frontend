@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Play, Trophy, Users } from 'lucide-react';
+import { Shield, Play, Trophy, Users, ArrowLeft, Coins } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const CityDefenderStart: React.FC = () => {
   const navigate = useNavigate();
+  const [userCoins, setUserCoins] = useState(0);
+
+  // Simulate fetching coins (Replace this with your actual context/store/localStorage logic)
+  useEffect(() => {
+    const savedCoins = localStorage.getItem('tvk_coins'); // Example key
+    setUserCoins(savedCoins ? parseInt(savedCoins) : 1250); // Default to 1250 for display if empty
+  }, []);
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden font-sans">
@@ -12,17 +19,46 @@ const CityDefenderStart: React.FC = () => {
       <div 
         className="absolute inset-0 z-0 opacity-40"
         style={{
-          backgroundImage: "url('/img/bg-game3.webp')",
+          backgroundImage: "url('/img/bg-game6-start.webp')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black z-0" />
 
+      {/* --- TOP NAVIGATION BAR --- */}
+      <div className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-start">
+        {/* Back Button */}
+        <motion.button
+          initial={{ x: -50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => navigate('/game')}
+          className="flex items-center justify-center p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all shadow-lg group"
+        >
+          <ArrowLeft className="w-6 h-6 text-white group-hover:text-yellow-400 transition-colors" />
+        </motion.button>
+
+        {/* Coin Display */}
+        <motion.div
+          initial={{ x: 50, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-yellow-500/30 rounded-full shadow-lg shadow-yellow-500/10"
+        >
+          <div className="bg-yellow-500/20 p-1.5 rounded-full">
+            <Coins className="w-5 h-5 text-yellow-400" />
+          </div>
+          <span className="font-bold text-xl text-yellow-400 tracking-wide">
+            {userCoins.toLocaleString()}
+          </span>
+        </motion.div>
+      </div>
+
       <div className="relative z-10 container mx-auto px-4 h-screen flex flex-col items-center justify-center">
         
         {/* Hero Image / Icon */}
-        <motion.div
+        {/* <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.8 }}
@@ -34,8 +70,7 @@ const CityDefenderStart: React.FC = () => {
             alt="Thalapathy Hero" 
             className="w-64 h-64 object-contain drop-shadow-[0_0_30px_rgba(234,179,8,0.5)]"
           />
-        </motion.div>
-
+        </motion.div> */}
         {/* Title */}
         <motion.h1 
           initial={{ y: -50, opacity: 0 }}

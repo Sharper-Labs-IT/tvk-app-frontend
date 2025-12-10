@@ -3,7 +3,18 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
-import ConfirmationModal from '../components/common/ConfirmationModal';
+
+import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
+
+const navItems = [
+  { name: 'HOME', path: '/' },
+  { name: 'MEMBERSHIP', path: '/membership' },
+  { name: 'GAME', path: '/game' },
+  { name: 'EVENTS', path: '/events' },
+  { name: 'LEADERBOARD', path: '/leaderboard' },
+  { name: 'STORE', path: '/store' },
+];
+
 
 const headerContainerVariants: Variants = {
   hidden: { opacity: 0 },

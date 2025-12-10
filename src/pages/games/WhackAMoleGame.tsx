@@ -3,6 +3,8 @@ import { motion, AnimatePresence, useAnimation, useMotionValue } from 'framer-mo
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Trophy, Home, Zap, Volume2, VolumeX, Bomb, Play, Coins, Clock, Shield, Snowflake, Skull, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
 
 // --- Constants ---
 const GAME_DURATION = 60; // Increased duration
@@ -213,6 +215,28 @@ const WhackAMoleGame: React.FC = () => {
       triggerWinConfetti();
     }
   };
+
+  // --- Backend Integration ---
+  useEffect(() => {
+    if (gameState === 'gameover') {
+      // TODO: Uncomment when backend is ready
+      /*
+      const submitGameScore = async () => {
+        try {
+          // Assuming gameId for Whack-A-Mole is 3
+          await gameService.submitScore(3, {
+            score: score,
+            coins: coins,
+            data: { level: level, highScore: highScore }
+          });
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+        }
+      };
+      submitGameScore();
+      */
+    }
+  }, [gameState, score, coins, level, highScore]);
 
   const scheduleNextMole = () => {
     if (gameState === 'gameover') return;
@@ -986,7 +1010,39 @@ const WhackAMoleGame: React.FC = () => {
                         <Coins className="w-6 h-6" /> {coins}
                     </div>
                  </div>
+                 <div className="text-center col-span-2 mt-2 border-t border-slate-700 pt-2">
+                    <div className="text-xs text-slate-500 uppercase font-bold">Total Trophies</div>
+                    <div className="text-2xl font-black text-white flex items-center justify-center gap-2">
+                        <Trophy className="w-6 h-6 text-yellow-500" /> 
+                        {getUserTotalTrophies() + (getTrophyFromScore('whack-a-mole', score) !== 'NONE' ? 1 : 0)}
+                    </div>
+                 </div>
               </div>
+
+              {/* Trophy Section */}
+              <div className="mb-8">
+                {(() => {
+                  const trophy = getTrophyFromScore('whack-a-mole', score);
+                  if (trophy !== 'NONE') {
+                    return (
+                      <div className="flex flex-col items-center animate-bounce-slow">
+                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                          {trophy} TROPHY
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                      </div>
+                    );
+                  }
+                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                })()}
+              </div>
+              
+              {/* 
+                TODO: Send score and trophy to backend
+                POST /api/scores
+                Body: { game: 'whack-a-mole', score: score, trophy: getTrophyFromScore('whack-a-mole', score) }
+              */}
 
               <div className="grid grid-cols-2 gap-3">
                 <button

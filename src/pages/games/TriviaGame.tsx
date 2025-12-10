@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
 
 // --- Types ---
 interface Question {
@@ -260,6 +262,28 @@ const TriviaGame: React.FC = () => {
     setIsFrozen(false);
     setAudienceData(null);
   };
+
+  // --- Backend Integration ---
+  useEffect(() => {
+    if (isGameOver) {
+      // TODO: Uncomment when backend is ready
+      /*
+      const submitGameScore = async () => {
+        try {
+          // Assuming gameId for Trivia is 4
+          await gameService.submitScore(4, {
+            score: score,
+            coins: coins,
+            data: { streak: streak }
+          });
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+        }
+      };
+      submitGameScore();
+      */
+    }
+  }, [isGameOver, score, coins, streak]);
 
   const handleCollectCoins = () => {
     if (isCollecting) return;
@@ -560,7 +584,38 @@ const TriviaGame: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 mb-10">
                 <StatBox label="Final Score" value={score.toLocaleString()} />
                 <StatBox label="Coins Earned" value={coins} />
+                <div className="col-span-2">
+                  <StatBox 
+                    label="Total Trophies" 
+                    value={getUserTotalTrophies() + (getTrophyFromScore('trivia', score) !== 'NONE' ? 1 : 0)} 
+                  />
+                </div>
               </div>
+
+              {/* Trophy Section */}
+              <div className="mb-8">
+                {(() => {
+                  const trophy = getTrophyFromScore('trivia', score);
+                  if (trophy !== 'NONE') {
+                    return (
+                      <div className="flex flex-col items-center animate-bounce-slow">
+                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                          {trophy} TROPHY
+                        </span>
+                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                      </div>
+                    );
+                  }
+                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                })()}
+              </div>
+              
+              {/* 
+                TODO: Send score and trophy to backend
+                POST /api/scores
+                Body: { game: 'trivia', score: score, trophy: getTrophyFromScore('trivia', score) }
+              */}
 
               <div className="space-y-3">
                 <button
