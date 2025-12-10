@@ -129,16 +129,14 @@ const SpaceInvadersGame: React.FC = () => {
   >('intro');
   const [isMuted, setIsMuted] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+  const [participantId, setParticipantId] = useState<number | null>(null);
 
   // --- Backend Integration ---
   useEffect(() => {
-    if (gameState === 'gameover' || gameState === 'victory') {
-      // TODO: Uncomment when backend is ready
-      /*
+    if ((gameState === 'gameover' || gameState === 'victory') && participantId) {
       const submitGameScore = async () => {
         try {
-          // Assuming gameId for Space Invaders is 1 (Replace with actual ID)
-          await gameService.submitScore(1, {
+          await gameService.submitScore(participantId, {
             score: score,
             coins: collectedCoins,
             data: { lives: lives }
@@ -149,9 +147,8 @@ const SpaceInvadersGame: React.FC = () => {
         }
       };
       submitGameScore();
-      */
     }
-  }, [gameState, score, collectedCoins, lives]);
+  }, [gameState, score, collectedCoins, lives, participantId]);
 
   // --- Story State ---
   const [storyIndex, setStoryIndex] = useState(0);
@@ -285,7 +282,15 @@ const SpaceInvadersGame: React.FC = () => {
     enemyMoveIntervalRef.current = 800;
   };
 
-  const initGame = () => {
+  const initGame = async () => {
+    try {
+      const data = await gameService.joinGame(1);
+      setParticipantId(data.participant_id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     setScore(0);
     setLives(3);
     setCollectedCoins(0);

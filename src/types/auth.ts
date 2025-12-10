@@ -29,6 +29,9 @@ export interface IUser {
   is_verified: boolean;
   status: 'active' | 'inactive';
   roles?: IRole[]; // Added roles array
+  coins?: number; // Added coins
+  membership_type?: 'free' | 'premium' | 'vip'; // Frontend field
+  membership_tier?: 'free' | 'super_fan'; // Backend field
   // Add other user fields as needed
 }
 

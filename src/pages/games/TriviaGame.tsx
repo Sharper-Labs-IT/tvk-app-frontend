@@ -97,6 +97,19 @@ const TriviaGame: React.FC = () => {
   const [hiddenOptions, setHiddenOptions] = useState<number[]>([]); 
   const [isFrozen, setIsFrozen] = useState(false);
   const [audienceData, setAudienceData] = useState<number[] | null>(null);
+  const [participantId, setParticipantId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const data = await gameService.joinGame(4);
+        setParticipantId(data.participant_id);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    init();
+  }, []);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -248,7 +261,14 @@ const TriviaGame: React.FC = () => {
     }
   };
 
-  const restartGame = () => {
+  const restartGame = async () => {
+    try {
+      const data = await gameService.joinGame(4);
+      setParticipantId(data.participant_id);
+    } catch (e) {
+      console.error(e);
+      return;
+    }
     setCurrentQuestionIndex(0);
     setScore(0);
     setCoins(0);
@@ -265,13 +285,10 @@ const TriviaGame: React.FC = () => {
 
   // --- Backend Integration ---
   useEffect(() => {
-    if (isGameOver) {
-      // TODO: Uncomment when backend is ready
-      /*
+    if (isGameOver && participantId) {
       const submitGameScore = async () => {
         try {
-          // Assuming gameId for Trivia is 4
-          await gameService.submitScore(4, {
+          await gameService.submitScore(participantId, {
             score: score,
             coins: coins,
             data: { streak: streak }
@@ -281,7 +298,6 @@ const TriviaGame: React.FC = () => {
         }
       };
       submitGameScore();
-      */
     }
   }, [isGameOver, score, coins, streak]);
 

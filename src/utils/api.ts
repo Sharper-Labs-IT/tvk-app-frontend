@@ -2,7 +2,8 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 // 🚨 IMPORTANT: Replace with your actual backend base URL
-const API_BASE_URL = 'http://127.0.0.1:8000/api';
+// Using relative path '/api' to leverage Vite proxy in development
+const API_BASE_URL = '/api';
 
 /**
  * @fileoverview Axios Instance for API communication.

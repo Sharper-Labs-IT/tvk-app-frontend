@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
-import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
+import ConfirmationModal from '../components/common/ConfirmationModal'; 
 
 const navItems = [
   { name: 'HOME', path: '/' },

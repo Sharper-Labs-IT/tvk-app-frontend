@@ -94,6 +94,7 @@ const CityDefenderGame: React.FC = () => {
   const [feedbackType, setFeedbackType] = useState<'vijay' | 'alien'>('vijay');
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSide, setFeedbackSide] = useState<'left' | 'right'>('right'); 
+  const [participantId, setParticipantId] = useState<number | null>(null);
 
   // Refs
   const enemiesRef = useRef<Enemy[]>([]);
@@ -398,7 +399,15 @@ const CityDefenderGame: React.FC = () => {
     }, 4000);
   };
 
-  const startGame = (mode: GameMode) => {
+  const startGame = async (mode: GameMode) => {
+    try {
+      const data = await gameService.joinGame(2);
+      setParticipantId(data.participant_id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     setGameMode(mode);
     gameModeRef.current = mode;
     setGameState('playing');
@@ -449,13 +458,10 @@ const CityDefenderGame: React.FC = () => {
 
   // --- Backend Integration ---
   useEffect(() => {
-    if (gameState === 'gameover') {
-      // TODO: Uncomment when backend is ready
-      /*
+    if (gameState === 'gameover' && participantId) {
       const submitGameScore = async () => {
         try {
-          // Assuming gameId for City Defender is 2
-          await gameService.submitScore(2, {
+          await gameService.submitScore(participantId, {
             score: score,
             coins: 0, // City Defender doesn't seem to have coins in state
             data: { rage: rage }
@@ -465,7 +471,6 @@ const CityDefenderGame: React.FC = () => {
         }
       };
       submitGameScore();
-      */
     }
   }, [gameState, score, rage]);
 

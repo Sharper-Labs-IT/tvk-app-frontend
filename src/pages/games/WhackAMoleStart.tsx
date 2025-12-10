@@ -1,12 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Gamepad2, Triangle, X, Target, Shield, Coins, Hammer } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TextType from '../../components/TextType';
 import TrueFocus from '../../components/TrueFocus';
+import { useGameAccess } from '../../hooks/useGameAccess';
+import GameAccessModal from '../../components/common/GameAccessModal';
+import { AuthContext } from '../../context/AuthContext';
 
 const WhackAMoleStart: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCost, setAccessCost] = useState(0);
+  const { user } = useContext(AuthContext) || {};
+  const userCoins = user?.coins || 0;
+
+  const handlePlayClick = () => {
+    const { allowed, reason, cost } = checkAccess();
+    if (allowed) {
+      consumePlay(false);
+      navigate('/game/villain-hunt/start');
+    } else {
+      if (reason === 'limit_reached' || reason === 'no_coins') {
+        setAccessCost(cost);
+        setShowAccessModal(true);
+      } else if (reason === 'not_logged_in') {
+          navigate('/login');
+      }
+    }
+  };
+
+  const handlePayToPlay = async () => {
+      const success = await consumePlay(true);
+      if (success) {
+          setShowAccessModal(false);
+          navigate('/game/villain-hunt/start');
+      } else {
+          alert("Not enough coins!");
+      }
+  }
 
   return (
     <div
@@ -15,6 +48,13 @@ const WhackAMoleStart: React.FC = () => {
         backgroundImage: "url('/img/bg-game3.webp')", // Reusing existing background
       }}
     >
+      <GameAccessModal 
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        onPay={handlePayToPlay}
+        cost={accessCost}
+        userCoins={userCoins}
+      />
       <div className="absolute inset-0 bg-slate-900/70 mix-blend-multiply" />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/30" />
 
@@ -34,7 +74,7 @@ const WhackAMoleStart: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
               <span className="text-yellow-400 font-bold text-lg">🪙</span>
-              <span className="text-white font-semibold">850</span>
+              <span className="text-white font-semibold">{userCoins.toLocaleString()}</span>
             </div>
           </nav>
         </header>
@@ -70,7 +110,7 @@ const WhackAMoleStart: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => navigate('/game/villain-hunt/start')}
+              onClick={handlePlayClick}
               className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 shadow-[0_0_30px_rgba(220,38,38,0.5)] transform hover:scale-105 text-lg md:text-xl border-2 border-white/20 uppercase tracking-wider"
             >
               Start Hunt
@@ -83,6 +123,16 @@ const WhackAMoleStart: React.FC = () => {
               Briefing
             </button>
           </div>
+          {!isPremium && (
+            <p className="mt-4 text-gray-400 text-sm">
+              Free Plays Remaining: <span className="text-yellow-400 font-bold">{remainingFreePlays}</span>
+            </p>
+          )}
+          {isPremium && (
+            <p className="mt-4 text-green-400 text-sm flex items-center gap-2">
+              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+            </p>
+          )}
         </main>
 
         {/* Footer */}

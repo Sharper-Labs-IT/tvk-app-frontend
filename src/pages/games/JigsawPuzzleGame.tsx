@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowLeft, RefreshCw, Trophy, AlertCircle, 
@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
+import { AuthContext } from '../../context/AuthContext';
 
 // --- Utility for cleaner tailwind classes ---
 function cn(...inputs: ClassValue[]) {
@@ -61,6 +63,8 @@ const JigsawPuzzleGame: React.FC = () => {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [currentImage, setCurrentImage] = useState<string>(PUZZLE_IMAGES[0]);
   
+  const { user } = useContext(AuthContext) || {};
+  
   // --- Stats & Progress ---
   const [timeLeft, setTimeLeft] = useState(0);
   const [moves, setMoves] = useState(0);
@@ -78,6 +82,7 @@ const JigsawPuzzleGame: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [lockMode, setLockMode] = useState(false); // If true, correct pieces lock in place
+  const [participantId, setParticipantId] = useState<number | null>(null);
 
   // --- Combo System ---
   const [combo, setCombo] = useState(0);
@@ -91,10 +96,31 @@ const JigsawPuzzleGame: React.FC = () => {
   useEffect(() => {
     const saved = localStorage.getItem('puzzle_highscore');
     if (saved) setHighScore(parseInt(saved));
-
-    const savedCoins = localStorage.getItem('tvk_coins');
-    if (savedCoins) setTotalCoins(parseInt(savedCoins));
   }, []);
+
+  useEffect(() => {
+    if (user?.coins !== undefined) {
+      setTotalCoins(user.coins);
+    }
+  }, [user]);
+
+  // --- Backend Integration ---
+  useEffect(() => {
+    if (isGameOver && participantId) {
+      const submitGameScore = async () => {
+        try {
+          await gameService.submitScore(participantId, {
+            score: score,
+            coins: earnedCoins,
+            data: { moves: moves, timeLeft: timeLeft, difficulty: difficulty.label }
+          });
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+        }
+      };
+      submitGameScore();
+    }
+  }, [isGameOver, score, earnedCoins, moves, timeLeft, difficulty, participantId]);
 
   // --- Initialize game ---
   useEffect(() => {
@@ -140,7 +166,15 @@ const JigsawPuzzleGame: React.FC = () => {
     };
   }, [gameStarted, isGameOver, isWon, isPaused]);
 
-  const startNewGame = () => {
+  const startNewGame = async () => {
+    try {
+      const data = await gameService.joinGame(6);
+      setParticipantId(data.participant_id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     playSound('tap');
     const randomImage = PUZZLE_IMAGES[Math.floor(Math.random() * PUZZLE_IMAGES.length)];
     setCurrentImage(randomImage);

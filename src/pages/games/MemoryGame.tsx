@@ -7,6 +7,7 @@ import { getMovies, TVK_MOVIES } from '../../utils/movies';
 import type { CardData, CardStatus } from '../../utils/types';
 import { useNavigate } from 'react-router-dom';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -97,6 +98,7 @@ const MemoryGame: React.FC = () => {
   const [flippedCard, setFlippedCard] = useState<number>(-1);
   const [coins, setCoins] = useState<number>(0);
   const [moves, setMoves] = useState<number>(0);
+  const [participantId, setParticipantId] = useState<number | null>(null);
   const [matches, setMatches] = useState<number>(0);
   const [gameCompleted, setGameCompleted] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(INITIAL_TIME);
@@ -202,7 +204,33 @@ const MemoryGame: React.FC = () => {
     }
   }, [chances, gameCompleted]);
 
-  const startNewGame = () => {
+  // --- Backend Integration ---
+  useEffect(() => {
+    if ((gameCompleted || gameOver) && participantId) {
+      const submitGameScore = async () => {
+        try {
+          await gameService.submitScore(participantId, {
+            score: coins, // Using coins as score
+            coins: coins,
+            data: { moves: moves, timeLeft: timeLeft, matches: matches }
+          });
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+        }
+      };
+      submitGameScore();
+    }
+  }, [gameCompleted, gameOver, coins, moves, timeLeft, matches, participantId]);
+
+  const startNewGame = async () => {
+    try {
+      const data = await gameService.joinGame(5);
+      setParticipantId(data.participant_id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     if (timerRef.current) clearInterval(timerRef.current);
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);

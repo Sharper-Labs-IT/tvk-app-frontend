@@ -64,6 +64,7 @@ const WhackAMoleGame: React.FC = () => {
   const [isFrozen, setIsFrozen] = useState(false);
   const [selectedHammer, setSelectedHammer] = useState(HAMMER_SKINS[0]);
   const [previewHammer, setPreviewHammer] = useState<typeof HAMMER_SKINS[0] | null>(null);
+  const [participantId, setParticipantId] = useState<number | null>(null);
   
   // --- New Visual Effects State ---
   const [isHitStop, setIsHitStop] = useState(false);
@@ -175,7 +176,15 @@ const WhackAMoleGame: React.FC = () => {
   };
 
   // --- Game Logic ---
-  const startGame = () => {
+  const startGame = async () => {
+    try {
+      const data = await gameService.joinGame(3);
+      setParticipantId(data.participant_id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     cleanup();
     setScore(0);
     setLevel(1);
@@ -218,13 +227,10 @@ const WhackAMoleGame: React.FC = () => {
 
   // --- Backend Integration ---
   useEffect(() => {
-    if (gameState === 'gameover') {
-      // TODO: Uncomment when backend is ready
-      /*
+    if (gameState === 'gameover' && participantId) {
       const submitGameScore = async () => {
         try {
-          // Assuming gameId for Whack-A-Mole is 3
-          await gameService.submitScore(3, {
+          await gameService.submitScore(participantId, {
             score: score,
             coins: coins,
             data: { level: level, highScore: highScore }
@@ -234,9 +240,8 @@ const WhackAMoleGame: React.FC = () => {
         }
       };
       submitGameScore();
-      */
     }
-  }, [gameState, score, coins, level, highScore]);
+  }, [gameState, score, coins, level, highScore, participantId]);
 
   const scheduleNextMole = () => {
     if (gameState === 'gameover') return;

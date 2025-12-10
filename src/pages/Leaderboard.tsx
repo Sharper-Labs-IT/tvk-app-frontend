@@ -87,13 +87,14 @@ const Leaderboard: React.FC = () => {
 
   useEffect(() => {
     // --- Backend API Integration ---
-    // TODO: Uncomment this block when backend is ready
-    /*
     const fetchLeaderboard = async () => {
       try {
-        const data = await gameService.getLeaderboard();
+        const response = await gameService.getLeaderboard();
+        // Handle potential response wrapping (e.g. { data: [...] })
+        const data = Array.isArray(response) ? response : (response as any).data || [];
+        
         // Map backend data to frontend format if necessary
-        const formattedData: UserTrophyData[] = data.map(entry => ({
+        const formattedData: UserTrophyData[] = data.map((entry: any) => ({
           userId: entry.user_id.toString(),
           username: entry.username,
           avatar: entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.username}`,
@@ -111,13 +112,6 @@ const Leaderboard: React.FC = () => {
       }
     };
     fetchLeaderboard();
-    */
-
-    // Simulating API call (Remove this when backend is connected)
-    setTimeout(() => {
-      setLeaderboardData(DUMMY_LEADERBOARD_DATA);
-      setLoading(false);
-    }, 1000);
   }, []);
 
   const topThree = leaderboardData.slice(0, 3);
