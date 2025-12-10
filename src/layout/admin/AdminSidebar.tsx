@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -11,7 +11,8 @@ import {
   List,
   PlusCircle,
   CreditCard,
-  Gamepad2, // <--- Imported Gamepad2 icon
+  Gamepad2, // Icon for Games
+  Calendar, // Icon for Events
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -46,6 +47,15 @@ const navItems: NavItem[] = [
       { name: 'Add New Game', path: '/admin/games/create', icon: PlusCircle },
     ],
   },
+  // --- NEW SECTION: Event Management ---
+  {
+    name: 'Event Management',
+    icon: Calendar,
+    subItems: [
+      { name: 'All Events', path: '/admin/events', icon: List },
+      { name: 'Create Event', path: '/admin/events/create', icon: PlusCircle },
+    ],
+  },
   // ------------------------------------
   {
     name: 'Membership Plans',
@@ -61,10 +71,17 @@ const navItems: NavItem[] = [
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  // Keeps 'Game Management' open if we are on a game page, otherwise defaults to Post Management
-  const [openMenu, setOpenMenu] = useState<string | null>(
-    location.pathname.includes('/admin/games') ? 'Game Management' : 'Post Management'
-  );
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  // Automatically open the menu if the current path matches a sub-item
+  useEffect(() => {
+    const activeItem = navItems.find((item) =>
+      item.subItems?.some((sub) => location.pathname.startsWith(sub.path))
+    );
+    if (activeItem) {
+      setOpenMenu(activeItem.name);
+    }
+  }, [location.pathname]);
 
   const toggleMenu = (name: string) => {
     setOpenMenu(openMenu === name ? null : name);
@@ -80,7 +97,7 @@ const AdminSidebar: React.FC = () => {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 py-6 px-3 space-y-1">
+      <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => {
           const isParentActive = item.subItems
             ? item.subItems.some((sub) => location.pathname === sub.path)
