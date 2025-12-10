@@ -1,12 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Gamepad2, Youtube, MessageSquare, Smartphone, Triangle, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TextType from '../../components/TextType';
 import Shuffle from '../../components/Shufflle';
+import { useGameAccess } from '../../hooks/useGameAccess';
+import GameAccessModal from '../../components/common/GameAccessModal';
+import { AuthContext } from '../../context/AuthContext';
 
 const SpaceInvadersTVK: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCost, setAccessCost] = useState(0);
+  const { user } = useContext(AuthContext) || {};
+  const userCoins = user?.coins || 0;
+
+  const handlePlayClick = () => {
+    const { allowed, reason, cost } = checkAccess();
+    if (allowed) {
+      consumePlay(false);
+      navigate('/game/protect-area/start');
+    } else {
+      if (reason === 'limit_reached' || reason === 'no_coins') {
+        setAccessCost(cost);
+        setShowAccessModal(true);
+      } else if (reason === 'not_logged_in') {
+          navigate('/login');
+      }
+    }
+  };
+
+  const handlePayToPlay = async () => {
+      const success = await consumePlay(true);
+      if (success) {
+          setShowAccessModal(false);
+          navigate('/game/protect-area/start');
+      } else {
+          alert("Not enough coins!");
+      }
+  }
+
   return (
     <div
       className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat overflow-hidden font-sans"
@@ -14,6 +48,13 @@ const SpaceInvadersTVK: React.FC = () => {
         backgroundImage: "url('/img/space.webp')",
       }}
     >
+      <GameAccessModal 
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        onPay={handlePayToPlay}
+        cost={accessCost}
+        userCoins={userCoins}
+      />
       <div className="absolute inset-0 bg-slate-900/60 mix-blend-multiply" />
 
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/30" />
@@ -33,14 +74,14 @@ const SpaceInvadersTVK: React.FC = () => {
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
               <span className="text-yellow-400 font-bold text-lg">🪙</span>
-              <span className="text-white font-semibold">1,250</span>
+              <span className="text-white font-semibold">{userCoins.toLocaleString()}</span>
             </div>
 
             <button className="flex items-center gap-2 hover:bg-white/10 transition-all px-4 py-2 rounded-full">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                U
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
               </div>
-              <span className="text-white">Profile</span>
+              <span className="text-white">{user?.nickname || 'usernull'}</span>
             </button>
 
             <button className="text-gray-300 hover:text-white transition-colors flex items-center gap-2">
@@ -83,7 +124,7 @@ const SpaceInvadersTVK: React.FC = () => {
           <div className="flex flex-col sm:flex-row gap-4">
             
             <button
-              onClick={() => navigate('/game/protect-area/start')}
+              onClick={handlePlayClick}
               className="cursor-target bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg shadow-red-900/40 transform hover:-translate-y-0.5 text-xl md:text-2xl border-2 border-yellow-400"
             >
               Start Mission
@@ -96,6 +137,16 @@ const SpaceInvadersTVK: React.FC = () => {
               Mission Briefing
             </button>
           </div>
+          {!isPremium && (
+            <p className="mt-4 text-gray-400 text-sm">
+              Free Plays Remaining: <span className="text-yellow-400 font-bold">{remainingFreePlays}</span>
+            </p>
+          )}
+          {isPremium && (
+            <p className="mt-4 text-green-400 text-sm flex items-center gap-2">
+              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+            </p>
+          )}
         </main>
 
         {/* <div className="mt-12 relative">

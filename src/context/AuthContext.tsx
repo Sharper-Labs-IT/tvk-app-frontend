@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import api from '../utils/api'; // Import your Axios instance
 import type { IUser } from '../types/auth';
 
 /**
  * @fileoverview Global Authentication Context.
- * Provides logged-in state, user data, and global login/logout functions.
- * It handles checking cookies/localStorage on startup.
+ * FIXED: Now fetches fresh user data (with Roles) on application load.
  */
 
 // --- 1. Define Types ---
@@ -22,7 +22,7 @@ interface AuthContextType {
 
 // --- 2. Create Context ---
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // --- 3. Create Auth Provider Component ---
 
@@ -35,56 +35,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const [user, setUser] = useState<IUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [isAuthInitialized, setIsAuthInitialized] = useState(false); // State to track if initial check is done
+  const [isAuthInitialized, setIsAuthInitialized] = useState(false);
+
   const isLoggedIn = !!token;
 
   // Function called on successful login
   const login = useCallback((newToken: string, userData: IUser) => {
     setToken(newToken);
-    // Setting secure: true and sameSite: 'strict' is highly recommended for production over HTTPS
     Cookies.set('authToken', newToken, { expires: 7 });
+
+    // Note: The userData coming from login MIGHT be missing roles depending on backend.
+    // We set it for now, but the useEffect below will fix it on next reload.
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
-    console.log('User logged in successfully:', userData.name);
   }, []);
 
   // Function called to log out the user
   const logout = useCallback(() => {
-    // 1. Clear state
     setToken(null);
     setUser(null);
-    // 2. Clear token cookie and local storage
     Cookies.remove('authToken');
     localStorage.removeItem('user');
-
-    // 3. Make an optional API call to invalidate the token on the server (best practice)
-    // api.post('/v1/auth/logout').catch(err => console.error('Logout API failed:', err));
-
-    // 4. Redirect to the home page (/) - 👈 UPDATED REDIRECT TARGET
     navigate('/');
-
-    // NOTE: The alert is removed here as it is now handled by the modal confirmation in the Header component.
   }, [navigate]);
 
-  // Initial Load Effect: Check for token and user data in storage on application startup
+  // --- 🛑 CRITICAL FIX: Fetch User Data on Load ---
   useEffect(() => {
-    const storedToken = Cookies.get('authToken');
-    const storedUserJson = localStorage.getItem('user');
+    const initializeAuth = async () => {
+      const storedToken = Cookies.get('authToken');
 
-    if (storedToken && storedUserJson) {
-      try {
-        const storedUser = JSON.parse(storedUserJson) as IUser;
+      if (storedToken) {
+        // 1. Set token immediately so API calls work
         setToken(storedToken);
-        setUser(storedUser);
-      } catch (e) {
-        console.error('Error parsing stored user data:', e);
-        // Clear invalid data
-        Cookies.remove('authToken');
-        localStorage.removeItem('user');
+
+        try {
+          // 2. FORCE call the API to get the user WITH ROLES
+          // We use the Axios instance 'api' which automatically adds the Bearer token
+          const response = await api.get('/v1/auth/me');
+
+          if (response.data && response.data.user) {
+            const fullUser = response.data.user;
+
+            // 3. Update State with the FULL user object (including roles)
+            setUser(fullUser);
+
+            // 4. Update Local Storage so it's correct for next time
+            localStorage.setItem('user', JSON.stringify(fullUser));
+            console.log('Auth Initialized: User roles loaded:', fullUser.roles);
+          }
+        } catch (error) {
+          console.error('Failed to fetch user profile on load:', error);
+          // If the token is invalid/expired, log them out
+          Cookies.remove('authToken');
+          localStorage.removeItem('user');
+          setToken(null);
+          setUser(null);
+        }
       }
-    }
-    // Set initialized flag to true once the check is complete
-    setIsAuthInitialized(true);
+
+      // 5. Mark initialization as done
+      setIsAuthInitialized(true);
+    };
+
+    initializeAuth();
   }, []);
 
   const value = useMemo(

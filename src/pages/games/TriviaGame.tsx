@@ -9,6 +9,64 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
 
+// --- Gaming Loader Component ---
+const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-90" />
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+      
+      <div className="relative z-10 flex flex-col items-center w-full max-w-md px-6">
+        {/* Logo / Title */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12 text-center"
+        >
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+            TVK TRIVIA
+          </h1>
+          <p className="text-slate-400 text-sm tracking-[0.3em] uppercase mt-2 font-bold">
+            System Initialization
+          </p>
+        </motion.div>
+
+        {/* Progress Bar Container */}
+        <div className="w-full h-4 bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          {/* Animated Progress Fill */}
+          <motion.div 
+            className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-300 relative"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+          >
+            {/* Glare effect on bar */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-white/50" />
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-black/20" />
+            
+            {/* Moving shine effect */}
+            <motion.div 
+              className="absolute top-0 bottom-0 w-10 bg-white/30 skew-x-[-20deg] blur-sm"
+              animate={{ x: ["-100%", "500%"] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+            />
+          </motion.div>
+        </div>
+
+        {/* Percentage & Status Text */}
+        <div className="w-full flex justify-between items-center mt-3 font-mono text-xs md:text-sm text-yellow-500/80">
+          <span className="animate-pulse">LOADING ASSETS...</span>
+          <span className="font-bold">{Math.round(progress)}%</span>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute -z-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-[80px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      </div>
+    </div>
+  );
+};
+
 // --- Types ---
 interface Question {
   id: number;
@@ -73,6 +131,10 @@ const getRank = (score: number) => {
 const TriviaGame: React.FC = () => {
   const navigate = useNavigate();
   
+  // --- Loading State ---
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   // Game State
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -97,16 +159,68 @@ const TriviaGame: React.FC = () => {
   const [hiddenOptions, setHiddenOptions] = useState<number[]>([]); 
   const [isFrozen, setIsFrozen] = useState(false);
   const [audienceData, setAudienceData] = useState<number[] | null>(null);
+  const [participantId, setParticipantId] = useState<number | null>(null);
+
+  // --- Preload Images ---
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imageUrls = [
+        ...BACKGROUNDS,
+        '/img/master.webp',
+        '/img/happy.webp',
+        '/img/sad.png',
+        ...QUESTIONS.filter(q => q.image).map(q => q.image!)
+      ];
+
+      let loadedCount = 0;
+      const total = imageUrls.length;
+
+      const updateProgress = () => {
+        loadedCount++;
+        const progress = (loadedCount / total) * 100;
+        setLoadingProgress(progress);
+        if (loadedCount === total) {
+          setTimeout(() => {
+            setAssetsLoaded(true);
+          }, 500);
+        }
+      };
+
+      imageUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+        img.onload = updateProgress;
+        img.onerror = updateProgress;
+      });
+    };
+
+    preloadImages();
+  }, []);
+
+  useEffect(() => {
+    if (!assetsLoaded) return;
+
+    const init = async () => {
+      try {
+        const data = await gameService.joinGame(4);
+        setParticipantId(data.participant_id);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    init();
+  }, [assetsLoaded]);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Background Rotation
   useEffect(() => {
+    if (!assetsLoaded) return;
     const interval = setInterval(() => {
       setBgIndex((prev) => (prev + 1) % BACKGROUNDS.length);
     }, 8000);
     return () => clearInterval(interval);
-  }, []);
+  }, [assetsLoaded]);
 
   // Timer Logic
   useEffect(() => {
@@ -248,7 +362,14 @@ const TriviaGame: React.FC = () => {
     }
   };
 
-  const restartGame = () => {
+  const restartGame = async () => {
+    try {
+      const data = await gameService.joinGame(4);
+      setParticipantId(data.participant_id);
+    } catch (e) {
+      console.error(e);
+      return;
+    }
     setCurrentQuestionIndex(0);
     setScore(0);
     setCoins(0);
@@ -265,13 +386,10 @@ const TriviaGame: React.FC = () => {
 
   // --- Backend Integration ---
   useEffect(() => {
-    if (isGameOver) {
-      // TODO: Uncomment when backend is ready
-      /*
+    if (isGameOver && participantId) {
       const submitGameScore = async () => {
         try {
-          // Assuming gameId for Trivia is 4
-          await gameService.submitScore(4, {
+          await gameService.submitScore(participantId, {
             score: score,
             coins: coins,
             data: { streak: streak }
@@ -281,7 +399,6 @@ const TriviaGame: React.FC = () => {
         }
       };
       submitGameScore();
-      */
     }
   }, [isGameOver, score, coins, streak]);
 
@@ -331,6 +448,11 @@ const TriviaGame: React.FC = () => {
 
   const currentQ = QUESTIONS[currentQuestionIndex];
   const rank = getRank(score);
+
+  // --- Loading Screen ---
+  if (!assetsLoaded) {
+    return <GamingLoader progress={loadingProgress} />;
+  }
 
   return (
     <div className="min-h-screen bg-black text-white font-sans flex flex-col items-center justify-center p-4 relative overflow-hidden">
