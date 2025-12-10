@@ -54,16 +54,30 @@ export const gameService = {
 
   // POST /api/v1/games/{id}/join
   // Join a game session. Returns a participant ID.
+  // TODO: Backend API not yet implemented - using mock response for now
   joinGame: async (gameId: number) => {
-    const response = await api.post<{ participant_id: number }>(`/v1/games/${gameId}/join`);
-    return response.data;
+    // Temporarily return a mock participant ID until backend endpoint is ready
+    console.log(`[gameService] Mock joinGame called for gameId: ${gameId}`);
+    return { participant_id: Date.now() }; // Use timestamp as unique mock ID
+    
+    // Original API call - uncomment when backend is ready:
+    // const response = await api.post<{ participant_id: number }>(`/v1/games/${gameId}/join`);
+    // return response.data;
   },
 
   // POST /api/v1/games/participant/{participantId}/score
   // Submit score and coins for a game session.
+  // TODO: Backend API not yet implemented - using mock response for now
   submitScore: async (participantId: number, payload: GameSessionResult) => {
-    const response = await api.post(`/v1/games/participant/${participantId}/score`, payload);
-    return response.data;
+    // Temporarily return mock response until backend endpoint is ready
+    console.log(`[gameService] Mock submitScore called for participantId: ${participantId}`, payload);
+    
+    // Return the coins earned so the caller can update user state locally
+    return { success: true, message: 'Score submitted (mock)', coins_earned: payload.coins };
+    
+    // Original API call - uncomment when backend is ready:
+    // const response = await api.post(`/v1/games/participant/${participantId}/score`, payload);
+    // return response.data;
   },
 
   // GET /api/v1/games/{id}/leaderboard
