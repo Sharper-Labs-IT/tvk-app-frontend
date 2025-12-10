@@ -4,8 +4,6 @@ import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
 
-import ConfirmationModal from '../components/common/ConfirmationModal'; 
-
 import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
 
 
@@ -80,10 +78,11 @@ const Header: React.FC = () => {
     return [
       { name: 'HOME', path: '/' },
       { name: 'MEMBERSHIP', path: '/membership' },
-      { name: 'SHOP', path: '/shop' },
+      { name: 'SHOP', path: '/store' },
       { name: 'GAME', path: '/game' },
+      {name: 'LEADERBOARD', path: '/leaderboard' },
       { name: 'EVENTS', path: '/events' },
-      { name: 'DASHBOARD', path: dashboardPath }, // 👈 Dynamic Path
+      { name: 'DASHBOARD', path: dashboardPath }, 
     ];
   }, [isLoggedIn, user]);
 
