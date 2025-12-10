@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import Header from '../components/Header';
 import { Star, Users, Video, Bell } from "lucide-react";
 import Footer from '../components/Footer';
@@ -12,6 +13,7 @@ import BenefitCard from '../components/BenefitCard';
 import { motion, type Variants } from "framer-motion";
 import type {Plan} from '../types/plan';
 import axiosClient from "../api/axiosClient";
+import { toast } from "react-toastify";
 
 
 
@@ -44,11 +46,19 @@ const benefitItemVariants: Variants = {
 };
 
 const MembershipPage: React.FC = () => {
+
+   const navigate = useNavigate();
   const [billing, setBilling] = useState<BillingPeriod>("monthly");
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // which plan is currently being processed (for button loading state)
+  const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(null);
+
+  // which plan the user currently has (if you know it)
+  const [currentPlanId, setCurrentPlanId] = useState<number | null>(null);
 
   // ---------- Fetch membership plans via Axios ----------
   useEffect(() => {
@@ -71,6 +81,51 @@ const MembershipPage: React.FC = () => {
 
     fetchPlans();
   }, []);
+
+  // ---------- Single endpoint: /payments/subscribe ----------
+  const handleSubscribeClick = async (plan: Plan) => {
+    
+     // Check auth first (adjust "token" key if you use a different name)
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login");   // redirect to login page
+      return;               // stop here, don't call API
+    }
+
+
+    setError(null);
+    setSubscribingPlanId(plan.id);
+
+    try {
+      // Call the unified payment + subscription endpoint
+      const res = await axiosClient.post("/payments/subscribe", {
+        plan_id: plan.id,
+      });
+
+      // Optional: handle redirect URL (Stripe Checkout style)
+      if (res.data?.redirect_url) {
+        // If backend returns a Stripe Checkout URL or similar
+        window.location.href = res.data.redirect_url;
+        return;
+      }
+
+      // Otherwise assume subscription is completed/activated directly
+      toast?.success?.("Your membership has been updated!");
+      setCurrentPlanId(plan.id);
+      setSubscribingPlanId(null);
+    } catch (err: any) {
+      console.error(err);
+      setError(
+        err?.response?.data?.message ||
+        "Unable to start subscription for this plan."
+      );
+      setSubscribingPlanId(null);
+    }
+  };
+
+  const handleBillingToggle = (period: BillingPeriod) => {
+    setBilling(period);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050716] to-[#02030b] text-slate-100">
@@ -171,6 +226,9 @@ const MembershipPage: React.FC = () => {
                 features={features}
                 highlight={isHighlighted}
                 badgeLabel={isHighlighted ? "Most Popular" : undefined}
+                onSubscribe={() => handleSubscribeClick(plan)}
+                isCurrent={currentPlanId === plan.id}
+                loading={subscribingPlanId === plan.id}
               />
             );
           })}
