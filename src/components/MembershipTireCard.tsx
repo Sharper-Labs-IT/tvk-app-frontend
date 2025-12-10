@@ -34,6 +34,11 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
     onSubscribe,
 
 }) => {
+    const buttonLabel = isCurrent
+    ? "Current Plan"
+    : loading
+    ? "Processing..."
+    : "Subscribe Now";
     return (
         <div
             className={[
@@ -78,7 +83,7 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
             ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a]"
             : "bg-[#111827] text-slate-100 hover:bg-[#181e37]"
             ].join(" ")}>
-               Subscribe Now
+               {buttonLabel}
             </button>
         </div>
         </div>
@@ -86,4 +91,3 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
 }
 
 export default MembershipTireCard;
-
