@@ -1,33 +1,40 @@
 import api from '../utils/api';
 import { type Game, type CreateGameData } from '../types/game';
 
-// We explicitly add /v1 to ensure we hit the correct backend group
+// Base URL matches your routes/api.php: v1/admin/games
 const BASE_URL = '/v1/admin/games';
+
+export interface GameResponse {
+  games: {
+    data: Game[];
+    current_page: number;
+    last_page: number;
+    total: number;
+  };
+}
 
 export const adminGameService = {
   // GET ALL GAMES
-  // ⚠️ NOTE: This will likely fail (404) because your backend is missing "Route::get('admin/games'...)"
+  // Handles the response structure: { "games": { "data": [...] } }
   getAllGames: async () => {
-    try {
-      const response = await api.get<Game[]>(BASE_URL);
-      return response.data;
-    } catch (error) {
-      console.warn(
-        "Backend missing 'index' route for games. Returning empty list to prevent crash."
-      );
-      return []; // Return empty array so the frontend doesn't break
-    }
+    const response = await api.get<GameResponse>(BASE_URL);
+    // Return just the array of games for the list
+    return response.data.games.data;
   },
 
   // CREATE GAME
-  // This route exists in your backend: Route::post('admin/games', ...)
   createGame: async (data: CreateGameData) => {
     const response = await api.post(BASE_URL, data);
     return response.data;
   },
 
+  // UPDATE GAME (New! Backend supports this now)
+  updateGame: async (id: number, data: Partial<CreateGameData>) => {
+    const response = await api.put(`${BASE_URL}/${id}`, data);
+    return response.data;
+  },
+
   // DELETE GAME
-  // This route exists in your backend: Route::delete('admin/games/{id}', ...)
   deleteGame: async (id: number) => {
     const response = await api.delete(`${BASE_URL}/${id}`);
     return response.data;
