@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -195,8 +196,10 @@ const SpaceInvadersGame: React.FC = () => {
   const [participantId, setParticipantId] = useState<number | null>(null);
 
   // --- Backend Integration ---
+  const { user, updateUser } = useAuth();
+  
   useEffect(() => {
-    if ((gameState === 'gameover' || gameState === 'victory') && participantId) {
+    if ((gameState === 'gameover' || gameState === 'victory') && participantId && collectedCoins > 0) {
       const submitGameScore = async () => {
         try {
           await gameService.submitScore(participantId, {
@@ -205,6 +208,9 @@ const SpaceInvadersGame: React.FC = () => {
             data: { lives: lives }
           });
           console.log("Score submitted successfully");
+          // Update user coins locally (until backend API is ready)
+          const currentCoins = user?.coins || 0;
+          updateUser({ coins: currentCoins + collectedCoins });
         } catch (error) {
           console.error("Failed to submit score:", error);
         }

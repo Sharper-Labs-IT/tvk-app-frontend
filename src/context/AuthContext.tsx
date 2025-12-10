@@ -18,6 +18,7 @@ interface AuthContextType {
   isAuthInitialized: boolean;
   login: (newToken: string, userData: IUser) => void;
   logout: () => void;
+  updateUser: (updates: Partial<IUser>) => void;
 }
 
 // --- 2. Create Context ---
@@ -58,6 +59,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('user');
     navigate('/');
   }, [navigate]);
+
+  // Function to update user data (e.g., coins after game)
+  // TODO: This is a temporary local update until backend APIs are ready
+  const updateUser = useCallback((updates: Partial<IUser>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updatedUser = { ...prevUser, ...updates };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      console.log('[AuthContext] User updated locally:', updates);
+      return updatedUser;
+    });
+  }, []);
 
   // --- 🛑 CRITICAL FIX: Fetch User Data on Load ---
   useEffect(() => {
@@ -108,8 +121,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthInitialized,
       login,
       logout,
+      updateUser,
     }),
-    [user, token, isLoggedIn, isAuthInitialized, login, logout]
+    [user, token, isLoggedIn, isAuthInitialized, login, logout, updateUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

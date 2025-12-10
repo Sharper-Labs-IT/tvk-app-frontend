@@ -5,6 +5,7 @@ import { Heart, Zap, RotateCcw, Home, Trophy, Shield, Clock, Bomb, Crosshair, Pl
 import confetti from 'canvas-confetti';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -558,15 +559,24 @@ const CityDefenderGame: React.FC = () => {
   };
 
   // --- Backend Integration ---
+  const { user, updateUser } = useAuth();
+  
   useEffect(() => {
     if (gameState === 'gameover' && participantId) {
       const submitGameScore = async () => {
         try {
+          // City Defender awards score as coins
+          const earnedCoins = Math.floor(score / 10); // Convert score to coins
           await gameService.submitScore(participantId, {
             score: score,
-            coins: 0, // City Defender doesn't seem to have coins in state
+            coins: earnedCoins,
             data: { rage: rage }
           });
+          // Update user coins locally (until backend API is ready)
+          if (earnedCoins > 0) {
+            const currentCoins = user?.coins || 0;
+            updateUser({ coins: currentCoins + earnedCoins });
+          }
         } catch (error) {
           console.error("Failed to submit score:", error);
         }

@@ -8,6 +8,7 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -385,8 +386,10 @@ const TriviaGame: React.FC = () => {
   };
 
   // --- Backend Integration ---
+  const { user, updateUser } = useAuth();
+  
   useEffect(() => {
-    if (isGameOver && participantId) {
+    if (isGameOver && participantId && coins > 0) {
       const submitGameScore = async () => {
         try {
           await gameService.submitScore(participantId, {
@@ -394,6 +397,9 @@ const TriviaGame: React.FC = () => {
             coins: coins,
             data: { streak: streak }
           });
+          // Update user coins locally (until backend API is ready)
+          const currentCoins = user?.coins || 0;
+          updateUser({ coins: currentCoins + coins });
         } catch (error) {
           console.error("Failed to submit score:", error);
         }

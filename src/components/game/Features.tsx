@@ -280,7 +280,7 @@ const Features = () => {
                   <b>City</b> Defender
                 </>
               }
-              description="Defend the city from villains as the ultimate protector!"
+              description="Defend the city from villains as the ultimate protector - VJ!"
               clickToPlay
               onPlay={() => navigate("/game/city-defender")}
             />
