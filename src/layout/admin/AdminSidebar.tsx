@@ -10,7 +10,8 @@ import {
   ChevronRight,
   List,
   PlusCircle,
-  CreditCard, // <--- Imported CreditCard icon
+  CreditCard,
+  Gamepad2, // <--- Imported Gamepad2 icon
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -36,7 +37,16 @@ const navItems: NavItem[] = [
       { name: 'Add New Post', path: '/admin/posts/create', icon: PlusCircle },
     ],
   },
-  // --- NEW SECTION: Membership Management ---
+  // --- NEW SECTION: Game Management ---
+  {
+    name: 'Game Management',
+    icon: Gamepad2,
+    subItems: [
+      { name: 'All Games', path: '/admin/games', icon: List },
+      { name: 'Add New Game', path: '/admin/games/create', icon: PlusCircle },
+    ],
+  },
+  // ------------------------------------
   {
     name: 'Membership Plans',
     icon: CreditCard,
@@ -45,15 +55,16 @@ const navItems: NavItem[] = [
       { name: 'Add New Plan', path: '/admin/membership/create', icon: PlusCircle },
     ],
   },
-  // ------------------------------------------
   { name: 'Member Management', path: '/admin/members', icon: Users },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  // Changed default open menu to null or keep 'Post Management' if you prefer
-  const [openMenu, setOpenMenu] = useState<string | null>('Post Management');
+  // Keeps 'Game Management' open if we are on a game page, otherwise defaults to Post Management
+  const [openMenu, setOpenMenu] = useState<string | null>(
+    location.pathname.includes('/admin/games') ? 'Game Management' : 'Post Management'
+  );
 
   const toggleMenu = (name: string) => {
     setOpenMenu(openMenu === name ? null : name);

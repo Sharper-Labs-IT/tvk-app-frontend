@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowLeft, RefreshCw, Trophy, AlertCircle, 
@@ -10,7 +10,7 @@ import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -125,7 +125,7 @@ const JigsawPuzzleGame: React.FC = () => {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [currentImage, setCurrentImage] = useState<string>(PUZZLE_IMAGES[0]);
   
-  const { user } = useContext(AuthContext) || {};
+  const { user, updateUser } = useAuth();
   
   // --- Stats & Progress ---
   const [timeLeft, setTimeLeft] = useState(0);
@@ -203,7 +203,7 @@ const JigsawPuzzleGame: React.FC = () => {
 
   // --- Backend Integration ---
   useEffect(() => {
-    if (isGameOver && participantId) {
+    if (isGameOver && participantId && earnedCoins > 0) {
       const submitGameScore = async () => {
         try {
           await gameService.submitScore(participantId, {
@@ -211,6 +211,9 @@ const JigsawPuzzleGame: React.FC = () => {
             coins: earnedCoins,
             data: { moves: moves, timeLeft: timeLeft, difficulty: difficulty.label }
           });
+          // Update user coins locally (until backend API is ready)
+          const currentCoins = user?.coins || 0;
+          updateUser({ coins: currentCoins + earnedCoins });
         } catch (error) {
           console.error("Failed to submit score:", error);
         }
