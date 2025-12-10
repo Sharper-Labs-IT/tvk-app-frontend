@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Trash2, Gamepad2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Gamepad2, AlertCircle, Edit } from 'lucide-react';
 import { adminGameService } from '../../../services/adminGameService';
 import { type Game } from '../../../types/game';
 import Loader from '../../../components/Loader';
@@ -14,12 +14,11 @@ const GameListPage: React.FC = () => {
     try {
       setLoading(true);
       const data = await adminGameService.getAllGames();
-      // Handle case where API might wrap data in { data: [...] }
-      const gameList = Array.isArray(data) ? data : (data as any).data || [];
-      setGames(gameList);
+      setGames(data);
+      setError('');
     } catch (err) {
       console.error(err);
-      setError('Failed to load games. Ask Senior Dev if GET /api/v1/admin/games exists.');
+      setError('Failed to load games. Please check your connection.');
     } finally {
       setLoading(false);
     }
@@ -30,8 +29,8 @@ const GameListPage: React.FC = () => {
 
     try {
       await adminGameService.deleteGame(id);
-      // Remove from local state
-      setGames(games.filter((g) => g.id !== id));
+      // Remove from local state immediately
+      setGames((prev) => prev.filter((g) => g.id !== id));
     } catch (err) {
       alert('Failed to delete game');
     }
@@ -45,10 +44,11 @@ const GameListPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-white font-serif">Game Management</h1>
-          <p className="text-gray-400 mt-1">Manage arcade games and settings</p>
+          <p className="text-gray-400 mt-1">Manage arcade games, rules, and premium status.</p>
         </div>
         <Link
           to="/admin/games/create"
@@ -59,6 +59,7 @@ const GameListPage: React.FC = () => {
         </Link>
       </div>
 
+      {/* Error Banner */}
       {error && (
         <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg flex items-center gap-2">
           <AlertCircle size={20} />
@@ -66,14 +67,16 @@ const GameListPage: React.FC = () => {
         </div>
       )}
 
-      <div className="bg-tvk-dark-card rounded-lg border border-white/10 overflow-hidden">
+      {/* Games Table */}
+      <div className="bg-tvk-dark-card rounded-lg border border-white/10 overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-white/5 text-gray-400 text-sm uppercase">
+            <thead className="bg-white/5 text-gray-400 text-sm uppercase font-medium">
               <tr>
                 <th className="p-4">Game Name</th>
                 <th className="p-4">Description</th>
                 <th className="p-4 text-center">Type</th>
+                <th className="p-4 text-center">Created By</th>
                 <th className="p-4 text-center">Actions</th>
               </tr>
             </thead>
@@ -86,38 +89,66 @@ const GameListPage: React.FC = () => {
                         <div className="p-2 bg-white/10 rounded-lg text-gold">
                           <Gamepad2 size={24} />
                         </div>
-                        <span className="font-bold text-white">{game.name}</span>
+                        <div>
+                          <span className="block font-bold text-white">{game.name}</span>
+                          <span className="text-xs text-gray-500">ID: {game.id}</span>
+                        </div>
                       </div>
                     </td>
-                    <td className="p-4 text-gray-400 max-w-xs truncate">
-                      {game.description || 'No description'}
+                    <td className="p-4 text-gray-400 max-w-xs truncate" title={game.description}>
+                      {game.description || 'No description provided.'}
                     </td>
                     <td className="p-4 text-center">
-                      {game.is_premium ? (
-                        <span className="px-3 py-1 bg-gold/20 text-gold text-xs font-bold rounded-full border border-gold/30">
+                      {/* Check if 1 (true) or 0 (false) */}
+                      {Number(game.is_premium) === 1 ? (
+                        <span className="inline-flex px-3 py-1 bg-gold/20 text-gold text-xs font-bold rounded-full border border-gold/30">
                           PREMIUM
                         </span>
                       ) : (
-                        <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">
+                        <span className="inline-flex px-3 py-1 bg-green-500/20 text-green-400 text-xs font-bold rounded-full border border-green-500/30">
                           FREE
                         </span>
                       )}
                     </td>
+                    <td className="p-4 text-center text-sm text-gray-500">
+                      {/* Assuming backend sends 'creator' relation, otherwise handle gracefully */}
+                      {(game as any).creator?.name || 'Admin'}
+                    </td>
                     <td className="p-4 text-center">
-                      <button
-                        onClick={() => handleDelete(game.id)}
-                        className="text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-lg"
-                        title="Delete Game"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      <div className="flex items-center justify-center gap-2">
+                        {/* Edit Button Placeholder */}
+                        <Link
+                          to={`/admin/games/edit/${game.id}`}
+                          state={{ game }} // <-- Passing the game object here is CRITICAL
+                          className="text-gray-400 hover:text-blue-400 transition-colors p-2 hover:bg-white/5 rounded-lg inline-flex items-center justify-center"
+                          title="Edit Game"
+                        >
+                          <Edit size={18} />
+                        </Link>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => handleDelete(game.id)}
+                          className="text-gray-400 hover:text-red-400 transition-colors p-2 hover:bg-white/5 rounded-lg"
+                          title="Delete Game"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="p-8 text-center text-gray-500">
-                    No games found. Create one to get started.
+                  <td
+                    colSpan={5}
+                    className="p-12 text-center text-gray-500 flex flex-col items-center justify-center gap-2"
+                  >
+                    <Gamepad2 size={40} className="opacity-20" />
+                    <span className="text-lg">No games found.</span>
+                    <Link to="/admin/games/create" className="text-gold hover:underline text-sm">
+                      Create your first game
+                    </Link>
                   </td>
                 </tr>
               )}

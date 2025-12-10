@@ -55,6 +55,11 @@ const CityDefenderGame = React.lazy(() => import('../pages/games/CityDefenderGam
 // --- NEW ADMIN GAME PAGES ---
 const GameListPage = React.lazy(() => import('../pages/admin/games/GameListPage'));
 const CreateGamePage = React.lazy(() => import('../pages/admin/games/CreateGamePage'));
+const EditGamePage = React.lazy(() => import('../pages/admin/games/EditGamePage'));
+
+const EventListPage = React.lazy(() => import('../pages/admin/events/EventListPage'));
+const CreateEventPage = React.lazy(() => import('../pages/admin/events/CreateEventPage'));
+const EditEventPage = React.lazy(() => import('../pages/admin/events/EditEventPage')); // If created
 
 /**
  * Helper to safely get role name string
@@ -208,6 +213,11 @@ const AppRoutes: React.FC = () => {
             {/* --- NEW ROUTES FOR GAME MANAGEMENT --- */}
             <Route path="games" element={<GameListPage />} />
             <Route path="games/create" element={<CreateGamePage />} />
+            <Route path="games/edit/:id" element={<EditGamePage />} />
+
+            <Route path="events" element={<EventListPage />} />
+            <Route path="events/create" element={<CreateEventPage />} />
+            <Route path="events/edit/:id" element={<EditEventPage />} />
 
             <Route
               path="members"
