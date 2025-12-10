@@ -8,6 +8,7 @@ import type { CardData, CardStatus } from '../../utils/types';
 import { useNavigate } from 'react-router-dom';
 import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -205,8 +206,10 @@ const MemoryGame: React.FC = () => {
   }, [chances, gameCompleted]);
 
   // --- Backend Integration ---
+  const { user, updateUser } = useAuth();
+  
   useEffect(() => {
-    if ((gameCompleted || gameOver) && participantId) {
+    if ((gameCompleted || gameOver) && participantId && coins > 0) {
       const submitGameScore = async () => {
         try {
           await gameService.submitScore(participantId, {
@@ -214,6 +217,9 @@ const MemoryGame: React.FC = () => {
             coins: coins,
             data: { moves: moves, timeLeft: timeLeft, matches: matches }
           });
+          // Update user coins locally (until backend API is ready)
+          const currentCoins = user?.coins || 0;
+          updateUser({ coins: currentCoins + coins });
         } catch (error) {
           console.error("Failed to submit score:", error);
         }
