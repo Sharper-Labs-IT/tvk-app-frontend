@@ -1,5 +1,6 @@
 // src/components/events/EventCard.tsx
 import React from "react";
+import {Link} from 'react-router-dom';
 
 export interface EventCardData {
   id: number;
@@ -64,14 +65,16 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
         </p>
 
         <div className="mt-auto pt-2">
-          <button
+          <Link
+            to={`/events/${event.id}`}
+            state={{ event }}
             className="
-              w-full px-4 py-2 rounded-full bg-slate-800 text-[11px] sm:text-xs font-semibold
-              hover:bg-[#ffbf2b] hover:text-black transition
+              w-full inline-flex items-center justify-center px-4 py-2 rounded-full bg-slate-800
+              text-[11px] sm:text-xs font-semibold hover:bg-[#ffbf2b] hover:text-black transition
             "
           >
             View Details
-          </button>
+          </Link>
         </div>
       </div>
     </article>

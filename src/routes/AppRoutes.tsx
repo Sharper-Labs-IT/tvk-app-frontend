@@ -53,6 +53,9 @@ const JigsawPuzzleGame = React.lazy(() => import('../pages/games/JigsawPuzzleGam
 const CityDefenderStart = React.lazy(() => import('../pages/games/CityDefenderStart'));
 const CityDefenderGame = React.lazy(() => import('../pages/games/CityDefenderGame'));
 
+//Event details page
+const EventDetailsPage = React.lazy(() => import('../pages/EventDetailsPage'));
+
 /**
  * Helper to safely get role name string
  */
@@ -177,6 +180,9 @@ const AppRoutes: React.FC = () => {
           {/* Game Routes */}
           <Route path="/leaderboard" element={<Leaderboards />} />
           <Route path="/store" element={<Store />} />
+
+          {/* Event Details Route */}
+          <Route path="/events/:id" element={<EventDetailsPage />} />
 
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
           <Route path="/game/memory-challenge/start" element={<MemoryGame />} />

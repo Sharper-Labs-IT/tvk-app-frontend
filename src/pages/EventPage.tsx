@@ -13,7 +13,8 @@ const featuredEvent: EventCardData = {
   id: 1,
   title: "The Gilded Age Premiere Gala",
   description:
-    "Step into an evening of elegance inspired by the golden age. Live music, curated cocktails, and exclusive screenings.",
+    "Step into an evening of elegance inspired by the golden age. Live music, curated cocktails, and exclusive screenings. lorem ipsum dolor sit amet, consectetur adipiscing elit. lorem ipsum dolor sit amet, consectetur adipiscing elit.lorem ipsum dolor sit amet, consectetur adipiscing elit.lorem ipsum dolor sit amet, consectetur adipiscing elit.lorem ipsum dolor sit amet, consectetur adipiscing elit.vivamus lacinia odio vitae vestibulum vestibulum. lorem ipsum dolor sit amet, consectetur adipiscing elit. lorem ipsum dolor sit amet, consectetur adipiscing elit. lorem ipsum dolor sit amet, consectetur adipiscing elit. lorem ipsum dolor sit amet, consectetur adipiscing elit. vivamus lacinia odio vitae vestibulum vestibulum. lorem ipsum dolor sit amet, consectetur adipiscing elit.lorem ipsum dolor sit amet, consectetur adipiscing elit. lorem ipsum dolor sit amet, consectetur adipiscing elit. vivamus lacinia odio vitae vestibulum vestibulum."
+    ,
   imageUrl:
     "https://images.pexels.com/photos/799091/pexels-photo-799091.jpeg?auto=compress&cs=tinysrgb&w=1200",
   dateTime: "Friday, February 28, 2026 · 8:30 PM PST",
@@ -168,56 +169,67 @@ const EventPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid lg:grid-cols-[1.6fr,1.1fr] gap-6 rounded-3xl bg-slate-900/80 backdrop-blur-xl border border-slate-700/70 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)]">
-              <div className="relative min-h-[220px]">
-                <img
-                  src={featuredEvent.imageUrl}
-                  alt={featuredEvent.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                    Featured
-                  </span>
-                </div>
-              </div>
+          <div className="rounded-3xl bg-slate-950/90 border border-slate-800/80 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)] flex flex-col lg:flex-row">
+  {/* Left: image */}
+  <div className="relative w-full lg:w-3/5 min-h-[220px]">
+    <img
+      src={featuredEvent.imageUrl}
+      alt={featuredEvent.title}
+      className="w-full h-full object-cover"
+    />
+    <div className="absolute top-4 left-4">
+      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+        Featured
+      </span>
+    </div>
+  </div>
 
-              <div className="px-5 sm:px-6 py-5 sm:py-6 flex flex-col justify-between">
-                <div className="space-y-3">
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">
-                    {featuredEvent.title}
-                  </h2>
-                  <p className="text-[11px] sm:text-xs text-yellow-400 font-medium">
-                    Limited seats available — Registration required
-                  </p>
+  {/* Right: details */}
+  <div className="w-full lg:w-2/5 px-6 md:px-7 py-4 md:py-5 flex">
+    <div className="w-full flex flex-col gap-3 max-w-md">
+      
+      {/* TITLE — always at the very top */}
+      <h2 className="text-lg sm:text-xl md:text-2xl font-semibold leading-snug">
+        {featuredEvent.title}
+      </h2>
 
-                  <div className="space-y-3 text-[11px] sm:text-xs text-neutral-300">
-                    <div>
-                      <span className="text-neutral-400 block mb-0.5">
-                        Date & Time
-                      </span>
-                      {featuredEvent.dateTime}
-                    </div>
-                    <div>
-                      <span className="text-neutral-400 block mb-0.5">
-                        Venue
-                      </span>
-                      {featuredEvent.venue}
-                    </div>
-                  </div>
-                </div>
+      {/* Highlight */}
+      <p className="text-[11px] sm:text-xs text-yellow-400 font-semibold">
+        Limited seats available{" "}
+        <span className="text-yellow-300/90">— Registration required</span>
+      </p>
 
-                <div className="mt-4 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-                  <p className="text-[11px] sm:text-xs text-neutral-400 sm:max-w-xs">
-                    {featuredEvent.description}
-                  </p>
-                  <button className="px-4 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b]">
-                    View Details
-                  </button>
-                </div>
-              </div>
-            </div>
+      {/* Date */}
+      <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
+          Date &amp; Time
+        </span>
+        <span>{featuredEvent.dateTime}</span>
+      </div>
+
+      {/* Venue */}
+      <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
+          Venue
+        </span>
+        <span>{featuredEvent.venue}</span>
+      </div>
+
+      {/* Description */}
+      <p className="text-[11px] sm:text-xs text-neutral-400 leading-relaxed mt-1">
+        {featuredEvent.description}
+      </p>
+
+      {/* Full-width button */}
+      <button className="w-full mt-2 px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition">
+        View Details
+      </button>
+    </div>
+  </div>
+</div>
+
+
           </section>
 
           {/* ---------- FILTERS (MOVED BELOW FEATURED) ---------- */}
