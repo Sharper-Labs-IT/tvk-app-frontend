@@ -3,6 +3,7 @@ import EventCard from "../components/events/EventCard";
 import type { EventCardData } from "../components/events/EventCard";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import { Link } from "react-router-dom";
 
 const FILTERS = ["All", "Upcoming", "Live", "Fan Meetup", "Online"] as const;
 type FilterValue = (typeof FILTERS)[number];
@@ -103,7 +104,7 @@ const EventPage: React.FC = () => {
       return MOCK_EVENTS.filter((e) => e.tag === "Live");
     }
     if (activeFilter === "Upcoming") {
-      return MOCK_EVENTS;
+      return MOCK_EVENTS; // later: filter by date
     }
 
     return MOCK_EVENTS;
@@ -113,7 +114,7 @@ const EventPage: React.FC = () => {
     <div className="min-h-screen bg-[#020617] text-white">
       <Header />
 
-      <main className="bg-gradient-to-b from-[#020617] via-[#020617] to-black">
+      <main className="bg-gradient-to-b from-[#1a1407] via-[#0d0b05] to-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-6 md:pt-10 pb-12 md:pb-20">
           {/* ---------- HERO SECTION ---------- */}
           <section className="flex flex-col lg:flex-row gap-8 lg:gap-12 items-start lg:items-center mb-10 md:mb-12">
@@ -140,56 +141,22 @@ const EventPage: React.FC = () => {
               </div>
             </div>
 
-            {/* hero image */}
             <div className="flex-1 max-w-md w-full self-stretch">
-              <div className="relative rounded-3xl overflow-hidden border border-yellow-500/20 bg-gradient-to-br from-yellow-900/30 via-amber-500/10 to-slate-900/60 aspect-[4/3] shadow-[0_18px_60px_rgba(15,23,42,0.9)]">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-[10px] sm:text-xs text-neutral-300 uppercase tracking-[0.28em]">
-                    Hero Banner / Artist Image
-                  </span>
-                </div>
+              <div className="relative rounded-3xl overflow-hidden border border-yellow-500/20 aspect-[4/3] shadow-[0_18px_60px_rgba(15,23,42,0.9)]">
+                <img
+                  src="/images/event-vijay.png"
+                  alt="Event Hero"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40"></div>
               </div>
             </div>
           </section>
 
           <div className="hidden md:block h-px w-full bg-gradient-to-r from-transparent via-slate-700/60 to-transparent mb-8" />
 
-          {/* ---------- FILTERS ---------- */}
-          <section className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="w-full md:w-auto">
-              <div className="flex md:inline-flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none bg-slate-900/70 px-2 sm:px-3 py-2.5 rounded-full border border-slate-700/80">
-                {FILTERS.map((filter) => {
-                  const isActive = activeFilter === filter;
-                  return (
-                    <button
-                      key={filter}
-                      onClick={() => setActiveFilter(filter)}
-                      className={[
-                        "whitespace-nowrap px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition",
-                        isActive
-                          ? "bg-[#ffbf2b] text-black shadow-[0_0_20px_rgba(255,191,43,0.5)]"
-                          : "bg-slate-800/80 text-neutral-300 hover:bg-slate-700",
-                      ].join(" ")}
-                    >
-                      {filter}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="hidden md:block text-right">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-yellow-400/80">
-                Curated Experiences
-              </p>
-              <p className="text-xs text-neutral-400">
-                Browse by type or discover everything at once.
-              </p>
-            </div>
-          </section>
-
           {/* ---------- FEATURED BLOCK ---------- */}
-          <section className="mb-12">
+          <section className="mb-10 md:mb-12">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <p className="text-[11px] md:text-xs uppercase tracking-[0.22em] text-yellow-400/80">
@@ -253,11 +220,44 @@ const EventPage: React.FC = () => {
             </div>
           </section>
 
+          {/* ---------- FILTERS (MOVED BELOW FEATURED) ---------- */}
+          <section className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="w-full md:w-auto">
+              <div className="flex md:inline-flex gap-2 sm:gap-3 overflow-x-auto scrollbar-none bg-slate-900/70 px-2 sm:px-3 py-2.5 rounded-full border border-slate-700/80">
+                {FILTERS.map((filter) => {
+                  const isActive = activeFilter === filter;
+                  return (
+                    <button
+                      key={filter}
+                      onClick={() => setActiveFilter(filter)}
+                      className={[
+                        "whitespace-nowrap px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition",
+                        isActive
+                          ? "bg-[#ffbf2b] text-black shadow-[0_0_20px_rgba(255,191,43,0.5)]"
+                          : "bg-slate-800/80 text-neutral-300 hover:bg-slate-700",
+                      ].join(" ")}
+                    >
+                      {filter}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="hidden md:block text-right">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-yellow-400/80">
+                Curated Experiences
+              </p>
+              <p className="text-xs text-neutral-400">
+                Browse by type or discover everything at once.
+              </p>
+            </div>
+          </section>
+
           {/* ---------- EVENTS GRID ---------- */}
           <section className="mb-14 md:mb-16">
             <div className="flex items-center justify-between mb-4">
               <div>
-                {/* 🔥 Dynamic title here */}
                 <h3 className="text-base md:text-lg font-semibold">
                   {getSectionTitle(activeFilter)}
                 </h3>
@@ -290,9 +290,12 @@ const EventPage: React.FC = () => {
               Become a TVK Member and unlock access to exclusive events, live
               experiences, and our premium community.
             </p>
-            <button className="px-6 md:px-7 py-2.5 md:py-3 rounded-full bg-[#ffbf2b] text-black text-xs md:text-sm font-semibold hover:bg-[#ffd65b]">
+            <Link
+              to="/membership"
+              className="inline-block px-6 md:px-7 py-2.5 md:py-3 rounded-full bg-[#ffbf2b] text-black text-xs md:text-sm font-semibold hover:bg-[#ffd65b] transition"
+            >
               Learn More About Membership
-            </button>
+            </Link>
           </section>
         </div>
       </main>
