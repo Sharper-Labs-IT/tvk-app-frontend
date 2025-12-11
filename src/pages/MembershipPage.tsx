@@ -85,21 +85,26 @@ const MembershipPage: React.FC = () => {
   const isFree = plan.price === "0.00";
 
   if (isFree) {
-    // FREE PLAN BEHAVIOUR
+    // FREE PLAN
     if (!isLoggedIn) {
-      // not logged in -> go to login
       navigate("/login");
     } else {
-      // already logged in -> go home
       navigate("/");
     }
     return;
   }
 
-  // PAID PLAN (Super Fan) -> open payment modal
+  // SUPER FAN (PAID)
+  if (!isLoggedIn) {
+    navigate("/login");
+    return;
+  }
+
+  // logged in + paid -> open payment modal
   setSelectedPlan(plan);
   setIsPaymentOpen(true);
 };
+
 
 
   const handlePaymentSuccess = () => {
