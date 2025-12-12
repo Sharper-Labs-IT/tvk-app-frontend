@@ -161,6 +161,8 @@ const TriviaGame: React.FC = () => {
   const [isFrozen, setIsFrozen] = useState(false);
   const [audienceData, setAudienceData] = useState<number[] | null>(null);
   const [participantId, setParticipantId] = useState<number | null>(null);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
   // --- Preload Images ---
   useEffect(() => {
@@ -203,8 +205,8 @@ const TriviaGame: React.FC = () => {
 
     const init = async () => {
       try {
-        const data = await gameService.joinGame(4);
-        setParticipantId(data.participant_id);
+        const response = await gameService.joinGame(GAME_IDS.TRIVIA);
+        setParticipantId(response.participant.id);
       } catch (e) {
         console.error(e);
       }
@@ -365,12 +367,13 @@ const TriviaGame: React.FC = () => {
 
   const restartGame = async () => {
     try {
-      const data = await gameService.joinGame(4);
-      setParticipantId(data.participant_id);
+      const response = await gameService.joinGame(GAME_IDS.TRIVIA);
+      setParticipantId(response.participant.id);
     } catch (e) {
       console.error(e);
       return;
     }
+    setScoreSubmitted(false);
     setCurrentQuestionIndex(0);
     setScore(0);
     setCoins(0);
@@ -386,27 +389,54 @@ const TriviaGame: React.FC = () => {
   };
 
   // --- Backend Integration ---
-  const { user, updateUser } = useAuth();
+  const { refreshUser, user } = useAuth();
+
+  // Helper function to calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    // Handle object with tier arrays: {BRONZE: [], SILVER: [], GOLD: [], PLATINUM: []}
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    // Handle flat array of trophies
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophies when user data changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
   
   useEffect(() => {
-    if (isGameOver && participantId && coins > 0) {
+    if (isGameOver && participantId && coins > 0 && !scoreSubmitted) {
       const submitGameScore = async () => {
         try {
+          setScoreSubmitted(true);
           await gameService.submitScore(participantId, {
             score: score,
             coins: coins,
             data: { streak: streak }
           });
-          // Update user coins locally (until backend API is ready)
-          const currentCoins = user?.coins || 0;
-          updateUser({ coins: currentCoins + coins });
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
+          // Trophies will be updated automatically via useEffect when user data changes
         } catch (error) {
           console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
         }
       };
       submitGameScore();
     }
-  }, [isGameOver, score, coins, streak]);
+  }, [isGameOver, score, coins, streak, participantId, scoreSubmitted, refreshUser]);
 
   const handleCollectCoins = () => {
     if (isCollecting) return;
@@ -715,7 +745,7 @@ const TriviaGame: React.FC = () => {
                 <div className="col-span-2">
                   <StatBox 
                     label="Total Trophies" 
-                    value={getUserTotalTrophies() + (getTrophyFromScore('trivia', score) !== 'NONE' ? 1 : 0)} 
+                    value={totalTrophies} 
                   />
                 </div>
               </div>

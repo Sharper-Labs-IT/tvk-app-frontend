@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -196,28 +197,54 @@ const SpaceInvadersGame: React.FC = () => {
   const [participantId, setParticipantId] = useState<number | null>(null);
 
   // --- Backend Integration ---
-  const { user, updateUser } = useAuth();
+  const { refreshUser, user } = useAuth();
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
   
   useEffect(() => {
-    if ((gameState === 'gameover' || gameState === 'victory') && participantId && collectedCoins > 0) {
+    if ((gameState === 'gameover' || gameState === 'victory') && participantId && collectedCoins > 0 && !scoreSubmitted) {
       const submitGameScore = async () => {
         try {
+          setScoreSubmitted(true);
           await gameService.submitScore(participantId, {
             score: score,
             coins: collectedCoins,
             data: { lives: lives }
           });
           console.log("Score submitted successfully");
-          // Update user coins locally (until backend API is ready)
-          const currentCoins = user?.coins || 0;
-          updateUser({ coins: currentCoins + collectedCoins });
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
         } catch (error) {
           console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
         }
       };
       submitGameScore();
     }
-  }, [gameState, score, collectedCoins, lives, participantId]);
+  }, [gameState, score, collectedCoins, lives, participantId, scoreSubmitted, refreshUser]);
 
   // --- Story State ---
   const [storyIndex, setStoryIndex] = useState(0);
@@ -394,13 +421,14 @@ const SpaceInvadersGame: React.FC = () => {
 
   const initGame = async () => {
     try {
-      const data = await gameService.joinGame(1);
-      setParticipantId(data.participant_id);
+      const response = await gameService.joinGame(GAME_IDS.SPACE_INVADERS);
+      setParticipantId(response.participant.id);
     } catch (error) {
       console.error("Failed to join game:", error);
       return;
     }
 
+    setScoreSubmitted(false);
     setScore(0);
     setLives(3);
     setCollectedCoins(0);
@@ -1057,7 +1085,7 @@ const SpaceInvadersGame: React.FC = () => {
                 </div>
                 <div className="flex justify-center">
                   <p className="text-2xl font-mono flex items-center gap-2">
-                    Total Trophies: <span className="text-yellow-400">{getUserTotalTrophies() + (getTrophyFromScore('space-invaders', score) !== 'NONE' ? 1 : 0)}</span>
+                    Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
                   </p>
                 </div>
               </div>
@@ -1135,7 +1163,7 @@ const SpaceInvadersGame: React.FC = () => {
                 </div>
                 <div className="flex justify-center">
                   <p className="text-2xl font-mono flex items-center gap-2">
-                    Total Trophies: <span className="text-yellow-400">{getUserTotalTrophies() + (getTrophyFromScore('space-invaders', score) !== 'NONE' ? 1 : 0)}</span>
+                    Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
                   </p>
                 </div>
               </div>
