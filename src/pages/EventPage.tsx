@@ -1,15 +1,21 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import EventCard from "../components/events/EventCard";
 import type { EventCardData } from "../components/events/EventCard";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import { Link } from "react-router-dom";
 
+import {
+  fetchEvents,
+  fetchFeaturedEvents,
+  mapApiEventToCard,
+} from "../types/events";
+
 const FILTERS = ["All", "Upcoming", "Live", "Fan Meetup", "Online"] as const;
 type FilterValue = (typeof FILTERS)[number];
 
 // ---------- MOCK DATA ONLY (UI DEMO) ----------
-const featuredEvent: EventCardData = {
+/* const featuredEvent: EventCardData = {
   id: 1,
   title: "The Gilded Age Premiere Gala",
   description:
@@ -67,7 +73,7 @@ const MOCK_EVENTS: EventCardData[] = [
     venue: "Eclipse Lounge, Boston",
     tag: "Meetup",
   },
-];
+]; */
 
 // ---------- Dynamic Section Title ----------
 const getSectionTitle = (filter: FilterValue) => {
@@ -90,26 +96,69 @@ const getSectionTitle = (filter: FilterValue) => {
 const EventPage: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<FilterValue>("All");
 
+  const [events, setEvents] = useState<EventCardData[]>([]);
+  const [featuredEvent, setFeaturedEvent] = useState<EventCardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // ---------- Fetch data from API on mount ----------
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // 1) Main list from /events (paginated)
+        const paginator = await fetchEvents(1);
+        const mappedEvents = paginator.data.map(mapApiEventToCard);
+        setEvents(mappedEvents);
+
+        // 2) Featured from /events/featured (optional)
+        try {
+          const featuredApi = await fetchFeaturedEvents();
+          if (featuredApi.length > 0) {
+            setFeaturedEvent(mapApiEventToCard(featuredApi[0]));
+          } else if (mappedEvents.length > 0) {
+            // Fallback: just use first event as featured
+            setFeaturedEvent(mappedEvents[0]);
+          }
+        } catch {
+          // If featured endpoint fails, fallback to first event in main list
+          if (mappedEvents.length > 0) {
+            setFeaturedEvent(mappedEvents[0]);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load events", err);
+        setError("Unable to load events. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    load();
+  }, []);
+
   const filteredEvents = useMemo(() => {
-    if (activeFilter === "All") return MOCK_EVENTS;
+    if (activeFilter === "All") return events;
 
     if (activeFilter === "Fan Meetup") {
-      return MOCK_EVENTS.filter(
+      return events.filter(
         (e) => e.tag === "Fan Meetup" || e.tag === "Meetup"
       );
     }
     if (activeFilter === "Online") {
-      return MOCK_EVENTS.filter((e) => e.tag === "Online");
+      return events.filter((e) => e.tag === "Online");
     }
     if (activeFilter === "Live") {
-      return MOCK_EVENTS.filter((e) => e.tag === "Live");
+      return events.filter((e) => e.tag === "Live");
     }
     if (activeFilter === "Upcoming") {
-      return MOCK_EVENTS; // later: filter by date
+      return events; // later: filter by date
     }
 
-    return MOCK_EVENTS;
-  }, [activeFilter]);
+    return events;
+  }, [activeFilter, events]);
 
   return (
     <div className="min-h-screen bg-[#020617] text-white">
@@ -169,14 +218,19 @@ const EventPage: React.FC = () => {
               </div>
             </div>
 
+      {featuredEvent ? (
           <div className="rounded-3xl bg-slate-950/90 border border-slate-800/80 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)] flex flex-col lg:flex-row">
   {/* Left: image */}
   <div className="relative w-full lg:w-3/5 min-h-[220px]">
+      {featuredEvent.imageUrl ? (
     <img
       src={featuredEvent.imageUrl}
       alt={featuredEvent.title}
       className="w-full h-full object-cover"
     />
+      ) : (
+    <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
+      )}
     <div className="absolute top-4 left-4">
       <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
         <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
@@ -222,15 +276,21 @@ const EventPage: React.FC = () => {
       </p>
 
       {/* Full-width button */}
-      <button className="w-full mt-2 px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition">
-        View Details
-      </button>
+      <Link
+        to={`/events/${featuredEvent.id}`}
+        state={{ event: featuredEvent }}
+        className="w-full mt-2 px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition text-center inline-flex items-center justify-center"
+        >
+          View Details
+      </Link>
     </div>
   </div>
 </div>
+      ): loading ? (
+        <p className="text-sm text-neutral-400">Loading featured event...</p>
+      ) : null}
 
-
-          </section>
+      </section>
 
           {/* ---------- FILTERS (MOVED BELOW FEATURED) ---------- */}
           <section className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -280,7 +340,11 @@ const EventPage: React.FC = () => {
               </div>
             </div>
 
-            {filteredEvents.length === 0 ? (
+            {loading ? (
+              <p className="text-sm text-neutral-400 mt-4">Loading Events...</p>
+            ) : error ? (
+              <p className="text-sm text-red-400 mt-4">{error}</p>
+             ) : filteredEvents.length === 0 ? (
               <p className="text-sm text-neutral-400 mt-4">
                 No events available under this filter.
               </p>
