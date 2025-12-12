@@ -115,4 +115,7 @@ export async function fetchFeaturedEvents() {
 }
 
 
-
+export async function fetchEventById(id: number){
+    const res = await axiosClient.get<ApiEvent>(`/events/${id}`);
+    return res.data;
+}

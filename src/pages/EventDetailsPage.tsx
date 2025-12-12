@@ -1,8 +1,9 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import type { EventCardData } from "../components/events/EventCard";
+import {fetchEventById, mapApiEventToCard} from "../types/events"
 
 interface LocationState {
   event?: EventCardData;
@@ -12,10 +13,72 @@ const EventDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const state = location.state as LocationState | null;
-  const event = state?.event;
+  const initialEventFormState = state?.event ?? null;
+  //const event = state?.event;
+
+  const [event, setEvent] = useState<EventCardData | null>(initialEventFormState);
+  const [loading, setLoading] = useState<boolean>(!initialEventFormState);
+  const [error, setError] = useState<string | null>(null);
+
+  //parse Id safely
+  const numericId = id ? Number(id) : NaN;
+
+  useEffect(() => {
+    if(!numericId || Number.isNaN(numericId)){
+        setError("Invalid event ID.");
+        setLoading(false);
+        return;
+    }
+
+    if(event) return ;
+
+    const load = async () => {
+        try{
+            setLoading(true);
+            setError(null);
+
+            const apiEvent = await fetchEventById(numericId);
+            const mapped = mapApiEventToCard(apiEvent);
+            setEvent(mapped);
+        } catch (err) {
+            console.error("Failed to load event details", err);
+            setError("Unable to load this event. Please try again later");
+        } finally {
+            setLoading(false);
+        }
+    };
+    load();
+  },[numericId, event]);
 
   // For now we rely on router state. Later you will fetch from API using `id`.
-  if (!event) {
+  if (loading && !event) {
+    return (
+      <div className="min-h-screen bg-[#020617] text-white">
+        <Header />
+        <main className="bg-gradient-to-b from-[#1a1407] via-[#0d0b05] to-black">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 pt-10 pb-16">
+            <Link
+              to="/events"
+              className="inline-flex items-center text-xs font-semibold text-neutral-300 hover:text-white mb-6"
+            >
+              ← Back to Events
+            </Link>
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-6 py-10 text-center">
+              <p className="text-sm text-neutral-300 mb-2">
+                Loading event...
+              </p>
+              <p className="text-xs text-neutral-500">
+                Please wait loading event details.
+              </p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error && !event) {
     return (
       <div className="min-h-screen bg-[#020617] text-white">
         <Header />
@@ -31,9 +94,35 @@ const EventDetailsPage: React.FC = () => {
               <p className="text-sm text-neutral-300 mb-2">
                 Event could not be loaded.
               </p>
+              <p className="text-xs text-neutral-500 mb-2">{error}</p>
               <p className="text-xs text-neutral-500">
-                Try opening this page from the Events listing again, or refresh
-                after we connect to the API.
+                Try opening this page from the Events listing again, or check
+                your connection.
+              </p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!event) {
+    // Extremely unlikely, but just in case
+    return (
+      <div className="min-h-screen bg-[#020617] text-white">
+        <Header />
+        <main className="bg-gradient-to-b from-[#1a1407] via-[#0d0b05] to-black">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-10 pt-10 pb-16">
+            <Link
+              to="/events"
+              className="inline-flex items-center text-xs font-semibold text-neutral-300 hover:text-white mb-6"
+            >
+              ← Back to Events
+            </Link>
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-6 py-10 text-center">
+              <p className="text-sm text-neutral-300 mb-2">
+                Event not found.
               </p>
             </div>
           </div>
