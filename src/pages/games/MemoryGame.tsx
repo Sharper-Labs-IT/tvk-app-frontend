@@ -260,7 +260,6 @@ const MemoryGame: React.FC = () => {
 
   const startNewGame = async () => {
     try {
-      // Use the GAME_IDS constant to link to the Memory game in the database
       const response = await gameService.joinGame(GAME_IDS.MEMORY);
       setParticipantId(response.participant.id);
     } catch (error) {
