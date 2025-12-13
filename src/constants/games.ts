@@ -20,11 +20,11 @@ export interface GameConfig {
 
 // Game IDs - must match backend database
 export const GAME_IDS = {
-  SPACE_INVADERS: 1,
-  CITY_DEFENDER: 2,
-  WHACK_A_MOLE: 3,
-  TRIVIA: 4,
-  MEMORY: 5,
+  MEMORY: 1,          
+  SPACE_INVADERS: 5,
+  CITY_DEFENDER: 3,
+  WHACK_A_MOLE: 4,
+  TRIVIA: 7,
   JIGSAW_PUZZLE: 6,
 } as const;
 

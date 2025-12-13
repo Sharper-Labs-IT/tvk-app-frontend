@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Gamepad2,
   Youtube,
@@ -19,7 +19,7 @@ import BlurText from "../../components/BlurText"; // Assuming this exists
 import TextType from "../../components/TextType"; // Assuming this exists
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const TriviaGameStart: React.FC = () => {
   const navigate = useNavigate();
@@ -27,8 +27,71 @@ const TriviaGameStart: React.FC = () => {
   const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessCost, setAccessCost] = useState(0);
-  const { user } = useContext(AuthContext) || {};
+  const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Fetch user stats on mount and when returning from game
+  const fetchUserStats = async () => {
+    if (!user) return;
+    setIsLoadingStats(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
+
+  // Refetch when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUserStats();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchUserStats();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user?.id]);
 
   const handlePlayClick = () => {
     const { allowed, reason, cost } = checkAccess();
@@ -107,9 +170,20 @@ const TriviaGameStart: React.FC = () => {
 
           {/* Desktop Nav Stats */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            {/* Trophies Display */}
+            <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-amber-500/20 px-5 py-2 rounded-full shadow-lg shadow-black/20">
+              <Trophy className="w-5 h-5 text-amber-400" />
+              <span className="text-amber-400 font-bold tracking-wide">
+                {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Coins Display */}
             <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-5 py-2 rounded-full shadow-lg shadow-black/20">
               <span className="text-yellow-400 drop-shadow-glow">🪙</span>
-              <span className="text-white font-bold tracking-wide">{userCoins.toLocaleString()}</span>
+              <span className="text-white font-bold tracking-wide">
+                {isLoadingStats ? '...' : userCoins.toLocaleString()}
+              </span>
             </div>
             
             <button className="flex items-center gap-3 hover:bg-white/5 transition-all px-4 py-2 rounded-full border border-transparent hover:border-white/10">

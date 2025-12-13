@@ -18,6 +18,8 @@ interface AuthContextType {
   isAuthInitialized: boolean;
   login: (newToken: string, userData: IUser) => void;
   logout: () => void;
+  updateUser: (updates: Partial<IUser>) => void;
+  refreshUser: () => Promise<void>;
 }
 
 // --- 2. Create Context ---
@@ -59,6 +61,53 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     navigate('/');
   }, [navigate]);
 
+  // Function to update user data (e.g., coins after game)
+  // TODO: This is a temporary local update until backend APIs are ready
+  const updateUser = useCallback((updates: Partial<IUser>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null;
+      const updatedUser = { ...prevUser, ...updates };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      console.log('[AuthContext] User updated locally:', updates);
+      return updatedUser;
+    });
+  }, []);
+
+  // Helper function to calculate total coins from game_participation
+  const calculateTotalCoins = (userData: IUser): number => {
+    if (userData.coins !== undefined && userData.coins !== null) {
+      return userData.coins;
+    }
+    // Calculate from game_participation if coins field is not directly available
+    if (userData.game_participation && Array.isArray(userData.game_participation)) {
+      return userData.game_participation.reduce((total, participation) => {
+        return total + (participation.coins || 0);
+      }, 0);
+    }
+    return 0;
+  };
+
+  // Function to refresh user data from the backend
+  // Call this after game ends to get updated coins/trophies
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await api.get('/v1/auth/me');
+      if (response.data && response.data.user) {
+        const fullUser = response.data.user;
+        
+        // Calculate total coins from game_participation if not provided
+        const totalCoins = calculateTotalCoins(fullUser);
+        const userWithCoins = { ...fullUser, coins: totalCoins };
+        
+        setUser(userWithCoins);
+        localStorage.setItem('user', JSON.stringify(userWithCoins));
+        console.log('[AuthContext] User refreshed from API:', userWithCoins, 'Total coins:', totalCoins);
+      }
+    } catch (error) {
+      console.error('[AuthContext] Failed to refresh user:', error);
+    }
+  }, []);
+
   // --- 🛑 CRITICAL FIX: Fetch User Data on Load ---
   useEffect(() => {
     const initializeAuth = async () => {
@@ -76,12 +125,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (response.data && response.data.user) {
             const fullUser = response.data.user;
 
-            // 3. Update State with the FULL user object (including roles)
-            setUser(fullUser);
+            // 3. Calculate total coins from game_participation
+            const totalCoins = calculateTotalCoins(fullUser);
+            const userWithCoins = { ...fullUser, coins: totalCoins };
 
-            // 4. Update Local Storage so it's correct for next time
-            localStorage.setItem('user', JSON.stringify(fullUser));
-            console.log('Auth Initialized: User roles loaded:', fullUser.roles);
+            // 4. Update State with the FULL user object (including roles and coins)
+            setUser(userWithCoins);
+
+            // 5. Update Local Storage so it's correct for next time
+            localStorage.setItem('user', JSON.stringify(userWithCoins));
+            console.log('Auth Initialized: User roles loaded:', fullUser.roles, 'Total coins:', totalCoins);
           }
         } catch (error) {
           console.error('Failed to fetch user profile on load:', error);
@@ -93,7 +146,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
 
-      // 5. Mark initialization as done
+      // 6. Mark initialization as done
       setIsAuthInitialized(true);
     };
 
@@ -108,8 +161,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       isAuthInitialized,
       login,
       logout,
+      updateUser,
+      refreshUser,
     }),
-    [user, token, isLoggedIn, isAuthInitialized, login, logout]
+    [user, token, isLoggedIn, isAuthInitialized, login, logout, updateUser, refreshUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

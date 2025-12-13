@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Timer, ArrowLeft, RefreshCw, Trophy, AlertCircle, 
@@ -8,9 +8,10 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -125,7 +126,7 @@ const JigsawPuzzleGame: React.FC = () => {
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [currentImage, setCurrentImage] = useState<string>(PUZZLE_IMAGES[0]);
   
-  const { user } = useContext(AuthContext) || {};
+  const { user } = useAuth();
   
   // --- Stats & Progress ---
   const [timeLeft, setTimeLeft] = useState(0);
@@ -145,6 +146,8 @@ const JigsawPuzzleGame: React.FC = () => {
   const [isMuted, setIsMuted] = useState(false);
   const [lockMode, setLockMode] = useState(false); // If true, correct pieces lock in place
   const [participantId, setParticipantId] = useState<number | null>(null);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
   // --- Combo System ---
   const [combo, setCombo] = useState(0);
@@ -202,22 +205,54 @@ const JigsawPuzzleGame: React.FC = () => {
   }, [user]);
 
   // --- Backend Integration ---
+  const { refreshUser } = useAuth();
+
+  // Helper function to calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    // Handle object with tier arrays: {BRONZE: [], SILVER: [], GOLD: [], PLATINUM: []}
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    // Handle flat array of trophies
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophies when user data changes
   useEffect(() => {
-    if (isGameOver && participantId) {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+  
+  useEffect(() => {
+    if (isGameOver && participantId && earnedCoins > 0 && !scoreSubmitted) {
       const submitGameScore = async () => {
         try {
+          setScoreSubmitted(true);
           await gameService.submitScore(participantId, {
             score: score,
             coins: earnedCoins,
             data: { moves: moves, timeLeft: timeLeft, difficulty: difficulty.label }
           });
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
+          // Trophies will be updated automatically via useEffect when user data changes
         } catch (error) {
           console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
         }
       };
       submitGameScore();
     }
-  }, [isGameOver, score, earnedCoins, moves, timeLeft, difficulty, participantId]);
+  }, [isGameOver, score, earnedCoins, moves, timeLeft, difficulty, participantId, scoreSubmitted, refreshUser]);
 
   // --- Initialize game ---
   useEffect(() => {
@@ -265,8 +300,9 @@ const JigsawPuzzleGame: React.FC = () => {
 
   const startNewGame = async () => {
     try {
-      const data = await gameService.joinGame(6);
-      setParticipantId(data.participant_id);
+      const response = await gameService.joinGame(GAME_IDS.JIGSAW_PUZZLE);
+      setParticipantId(response.participant.id);
+      setScoreSubmitted(false);
     } catch (error) {
       console.error("Failed to join game:", error);
       return;
@@ -756,7 +792,7 @@ const JigsawPuzzleGame: React.FC = () => {
                       <div className="text-xs text-slate-400 uppercase font-bold">Total Trophies</div>
                       <div className="text-xl font-mono text-white flex items-center justify-center gap-2">
                         <Trophy className="w-5 h-5 text-yellow-500" />
-                        {getUserTotalTrophies() + (getTrophyFromScore('jigsaw', score) !== 'NONE' ? 1 : 0)}
+                        {totalTrophies}
                       </div>
                     </div>
                   </div>

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Clapperboard,
   Film,
@@ -7,13 +7,14 @@ import {
   X,
   PlayCircle,
   Star,
+  Coins,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BlurText from "../../components/BlurText";
 import TextType from "../../components/TextType";
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const JigsawPuzzleStart: React.FC = () => {
   const navigate = useNavigate();
@@ -21,8 +22,71 @@ const JigsawPuzzleStart: React.FC = () => {
   const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessCost, setAccessCost] = useState(0);
-  const { user } = useContext(AuthContext) || {};
+  const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Fetch user stats on mount and when returning from game
+  const fetchUserStats = async () => {
+    if (!user) return;
+    setIsLoadingStats(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
+
+  // Refetch when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUserStats();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchUserStats();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user?.id]);
 
   const handlePlayClick = () => {
     setShowModal(false);
@@ -88,11 +152,19 @@ const JigsawPuzzleStart: React.FC = () => {
           </div>
 
           <nav className="flex items-center gap-4 md:gap-6">
-            {/* Currency / Fan Points */}
+            {/* Trophy Display */}
             <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-amber-500/30 px-4 py-2 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
               <Trophy className="w-5 h-5 text-amber-400" />
               <span className="text-amber-100 font-bold text-lg tracking-wider">
-                {userCoins.toLocaleString()}
+                {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Coins Display */}
+            <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md border border-yellow-500/30 px-4 py-2 rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+              <Coins className="w-5 h-5 text-yellow-400" />
+              <span className="text-yellow-100 font-bold text-lg tracking-wider">
+                {isLoadingStats ? '...' : userCoins.toLocaleString()}
               </span>
             </div>
 

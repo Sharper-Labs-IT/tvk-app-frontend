@@ -24,7 +24,6 @@ const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
 const EventPage = React.lazy(() => import('../pages/EventPage'));
 
-
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
 const Store = React.lazy(() => import('../pages/Store'));
 
@@ -53,8 +52,15 @@ const JigsawPuzzleGame = React.lazy(() => import('../pages/games/JigsawPuzzleGam
 const CityDefenderStart = React.lazy(() => import('../pages/games/CityDefenderStart'));
 const CityDefenderGame = React.lazy(() => import('../pages/games/CityDefenderGame'));
 
-//Event details page
 const EventDetailsPage = React.lazy(() => import('../pages/EventDetailsPage'));
+
+const GameListPage = React.lazy(() => import('../pages/admin/games/GameListPage'));
+const CreateGamePage = React.lazy(() => import('../pages/admin/games/CreateGamePage'));
+const EditGamePage = React.lazy(() => import('../pages/admin/games/EditGamePage'));
+
+const EventListPage = React.lazy(() => import('../pages/admin/events/EventListPage'));
+const CreateEventPage = React.lazy(() => import('../pages/admin/events/CreateEventPage'));
+const EditEventPage = React.lazy(() => import('../pages/admin/events/EditEventPage'));
 
 /**
  * Helper to safely get role name string
@@ -85,7 +91,7 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // FIXED: Handle both string and object roles
+  // Handle both string and object roles
   const isAdminAccess = user.roles?.some((role) =>
     ['admin', 'moderator'].includes(getRoleName(role))
   );
@@ -112,7 +118,7 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
 
   const allowedRoles = ['member', 'premium', 'admin', 'moderator'];
 
-  // FIXED: Handle both string and object roles
+  // Handle both string and object roles
   const isMember = user.roles?.some((role) => allowedRoles.includes(getRoleName(role)));
 
   if (!isMember) {
@@ -132,7 +138,7 @@ const DashboardRedirect: React.FC = () => {
   if (!isAuthInitialized) return <Loader />;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
-  // FIXED: Handle both string and object roles
+  // Handle both string and object roles
   const roles = user?.roles?.map((r) => getRoleName(r)) || [];
 
   if (roles.includes('admin') || roles.includes('moderator')) {
@@ -165,7 +171,6 @@ const AppRoutes: React.FC = () => {
             {/* 2. Feed Page (New) */}
             <Route path="feed" element={<MemberFeed />} />
           </Route>
-
 
           {/* Auth Routes */}
           <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
@@ -208,6 +213,16 @@ const AppRoutes: React.FC = () => {
             <Route path="posts/:id" element={<PostDetailsPage />} />
             <Route path="membership" element={<MembershipPlanList />} />
             <Route path="membership/create" element={<MembershipPlanCreate />} />
+
+            {/* --- NEW ROUTES FOR GAME MANAGEMENT --- */}
+            <Route path="games" element={<GameListPage />} />
+            <Route path="games/create" element={<CreateGamePage />} />
+            <Route path="games/edit/:id" element={<EditGamePage />} />
+
+            <Route path="events" element={<EventListPage />} />
+            <Route path="events/create" element={<CreateEventPage />} />
+            <Route path="events/edit/:id" element={<EditEventPage />} />
+
             <Route
               path="members"
               element={<div className="text-white p-8">Member Management</div>}

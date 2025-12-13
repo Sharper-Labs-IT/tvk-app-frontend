@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Coins,
@@ -18,7 +18,146 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { storeService } from '../services/storeService';
 import type { CoinPackage, MerchItem } from '../services/storeService';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+
+const MerchCard = ({ item, index }: { item: any; index: number }) => {
+  // State to track which color is currently selected
+  const [activeVariantIndex, setActiveVariantIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+
+  // Determine current display data
+  const hasVariants = item.variants && item.variants.length > 0;
+  const currentVariant = hasVariants ? item.variants[activeVariantIndex] : null;
+
+  // Get images: Use variant images if available, otherwise use single image
+  const displayImages = hasVariants ? currentVariant.images : [item.image, item.image]; // Fallback: same image for front/back
+
+  // Check if using placeholder images
+  const isPlaceholder = displayImages[0]?.includes('placehold.co');
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.1 }}
+      className="group relative bg-[#0a0a0a] rounded-3xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-500 flex flex-col"
+    >
+      {/* --- Image Area --- */}
+      <div className="aspect-square overflow-hidden relative bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a]">
+        {/* Decorative background pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
+        </div>
+
+        {isPlaceholder || imageError ? (
+          // Fallback display when no real image
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+            <div className="w-20 h-20 mb-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500">
+              <ShoppingBag className="w-10 h-10 text-white/40 group-hover:text-brand-gold transition-colors" />
+            </div>
+            <p className="text-white/30 text-sm font-medium text-center">Image Coming Soon</p>
+          </div>
+        ) : (
+          <>
+            {/* Front Image (Visible by default) */}
+            <img
+              src={displayImages[0]}
+              alt={item.name}
+              onError={() => setImageError(true)}
+              className="absolute inset-0 w-full h-full object-contain p-4 transition-all duration-700 
+                group-hover:scale-105 group-hover:opacity-0"
+            />
+
+            {/* Back/Second Image (Visible on Hover) */}
+            <img
+              src={displayImages[1] || displayImages[0]}
+              alt={`${item.name} alternate view`}
+              onError={() => setImageError(true)}
+              className="absolute inset-0 w-full h-full object-contain p-4 transition-all duration-700 scale-105 opacity-0 
+                group-hover:opacity-100 group-hover:scale-100"
+            />
+          </>
+        )}
+
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-40 pointer-events-none" />
+
+        {/* Rarity Badge */}
+        <div className="absolute top-4 left-4 z-10">
+          <span
+            className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md
+            ${
+              item.rarity === 'Legendary'
+                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
+                : item.rarity === 'Epic'
+                ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
+                : 'bg-blue-500/20 border-blue-500/50 text-blue-400'
+            }`}
+          >
+            {item.rarity}
+          </span>
+        </div>
+
+        {/* Quick Action Button */}
+        <div className="absolute bottom-4 right-4 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
+          <button className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg">
+            <ShoppingBag className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* --- Content Area --- */}
+      <div className="p-6 relative flex flex-col flex-grow">
+        <div className="absolute -top-10 left-6">
+          <div className="text-2xl font-bold text-white drop-shadow-lg">{item.price}</div>
+        </div>
+
+        <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+          {item.category}
+        </p>
+
+        <div className="flex justify-between items-start mb-4">
+          <h3 className="text-lg font-bold text-white group-hover:text-brand-gold transition-colors">
+            {item.name}
+          </h3>
+        </div>
+
+        {/* Color Selector (Only if variants exist) */}
+        {hasVariants && (
+          <div className="mt-auto pt-2 flex items-center gap-3">
+            <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">
+              Select Color:
+            </span>
+            <div className="flex gap-2">
+              {item.variants.map((variant: any, idx: number) => (
+                <button
+                  key={idx}
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevent triggering parent clicks
+                    setActiveVariantIndex(idx);
+                  }}
+                  className={`w-6 h-6 rounded-full border-2 transition-all duration-300 relative
+                    ${
+                      activeVariantIndex === idx
+                        ? 'border-brand-gold scale-110 shadow-[0_0_10px_rgba(255,255,255,0.3)]'
+                        : 'border-transparent hover:border-white/50'
+                    }`}
+                  style={{ backgroundColor: variant.colorHex }}
+                  title={variant.colorName}
+                >
+                  {/* White dot for active black items to make it visible */}
+                  {activeVariantIndex === idx && variant.colorHex === '#1a1a1a' && (
+                    <div className="absolute inset-0 m-auto w-1.5 h-1.5 bg-white rounded-full" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 // --- Mock Data ---
 
@@ -61,36 +200,67 @@ const DEFAULT_COIN_PACKAGES = [
   },
 ];
 
+interface MerchVariant {
+  colorName: string;
+  colorHex: string;
+  images: string[]; // [Front View, Back/Side View]
+}
+
 const DEFAULT_MERCH_ITEMS = [
   {
     id: 1,
-    name: 'Cyber Hoodie X1',
+    name: 'TVK Signature Cap',
     price: '£49.99',
-    image: 'https://placehold.co/400x400/1a1a1a/white?text=Cyber+Hoodie',
     category: 'Apparel',
     rarity: 'Legendary',
+    // This item has variants
+    variants: [
+      {
+        colorName: 'Midnight Black',
+        colorHex: '#1a1a1a',
+        images: [
+          '/img/cap-b.png', 
+          '/img/cap-b2.png', 
+        ],
+      },
+      {
+        colorName: 'Crimson Red',
+        colorHex: '#dc2626',
+        images: [
+          '/img/cap-r.png', 
+          '/img/cap-r2.png', 
+        ],
+      },
+      {
+        colorName: 'Ghost White',
+        colorHex: '#f3f4f6',
+        images: ['/img/cap-w.png', '/img/cap-w2.png'],
+      },
+    ],
+    // Fallback for items without variants
+    image: 'https://placehold.co/400x400/1a1a1a/white?text=Cyber+Hoodie',
   },
   {
     id: 2,
-    name: 'Neon Cap',
+    name: 'Mug with TVL Design',
     price: '£24.99',
-    image: 'https://placehold.co/400x400/1a1a1a/white?text=Neon+Cap',
+    image: '/img/mug.png',
     category: 'Accessories',
     rarity: 'Rare',
   },
   {
     id: 3,
-    name: 'Holo-Tee',
+    name: 'Premium Gift Card',
     price: '£29.99',
-    image: 'https://placehold.co/400x400/1a1a1a/white?text=Holo+Tee',
+    image: '/img/gift-card.png',
     category: 'Apparel',
     rarity: 'Epic',
   },
   {
     id: 4,
-    name: 'Desk Mat Pro',
+    name: 'Special Edition Back Covers',
     price: '£19.99',
-    image: 'https://placehold.co/400x400/1a1a1a/white?text=Desk+Mat',
+    image: '/img/back-cover.png',
     category: 'Gear',
     rarity: 'Common',
   },
@@ -147,8 +317,34 @@ const SectionTitle = ({
 const Store: React.FC = () => {
   const [coinPackages, setCoinPackages] = useState<CoinPackage[]>(DEFAULT_COIN_PACKAGES);
   const [merchItems, setMerchItems] = useState<MerchItem[]>(DEFAULT_MERCH_ITEMS);
-  const { user } = useContext(AuthContext) || {};
+  const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+
+  // Refresh user data when component mounts or becomes visible
+  useEffect(() => {
+    refreshUser();
+  }, []);
+
+  // Refresh when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshUser();
+      }
+    };
+
+    const handleFocus = () => {
+      refreshUser();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [refreshUser]);
 
   useEffect(() => {
     const fetchStoreData = async () => {
@@ -157,13 +353,13 @@ const Store: React.FC = () => {
         // If backend endpoints are not ready, this will fail and we keep defaults
         const [coins, merch] = await Promise.all([
           storeService.getCoinPackages(),
-          storeService.getMerchItems()
+          storeService.getMerchItems(),
         ]);
-        
+
         if (coins && coins.length > 0) setCoinPackages(coins);
         if (merch && merch.length > 0) setMerchItems(merch);
       } catch (err) {
-        console.log("Using default store data (Backend might be offline or endpoints missing)");
+        console.log('Using default store data (Backend might be offline or endpoints missing)');
       }
     };
     fetchStoreData();
@@ -191,7 +387,7 @@ const Store: React.FC = () => {
                 className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-brand-gold font-medium"
               >
                 <Sparkles className="w-4 h-4" />
-                <span>Season 5 Store Update</span>
+                <span>Season 1 Store Update - Coming Soon Live</span>
               </motion.div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -226,7 +422,9 @@ const Store: React.FC = () => {
                       Current Balance
                     </p>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold text-white">{userCoins.toLocaleString()}</span>
+                      <span className="text-2xl font-bold text-white">
+                        {userCoins.toLocaleString()}
+                      </span>
                       <span className="text-brand-gold font-bold text-sm">TVK</span>
                     </div>
                   </div>
@@ -237,8 +435,6 @@ const Store: React.FC = () => {
               </div>
             </motion.div>
           </div>
-
-          {/* Trending / Featured Carousel (Simplified as grid for now) */}
         </section>
 
         {/* Coin Packages Section */}
@@ -344,63 +540,9 @@ const Store: React.FC = () => {
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {/* REPLACE THIS MAP FUNCTION */}
             {merchItems.map((item, idx) => (
-              <motion.div
-                key={item.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="group relative bg-[#0a0a0a] rounded-3xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-500"
-              >
-                {/* Image Container */}
-                <div className="aspect-[4/5] overflow-hidden relative">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:rotate-1"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
-
-                  {/* Rarity Badge */}
-                  <div className="absolute top-4 left-4">
-                    <span
-                      className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md
-                      ${
-                        item.rarity === 'Legendary'
-                          ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
-                          : item.rarity === 'Epic'
-                          ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
-                          : item.rarity === 'Rare'
-                          ? 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-                          : 'bg-gray-500/20 border-gray-500/50 text-gray-400'
-                      }`}
-                    >
-                      {item.rarity}
-                    </span>
-                  </div>
-
-                  {/* Quick Action */}
-                  <div className="absolute bottom-4 right-4 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                    <button className="w-10 h-10 rounded-full bg-white text-black flex items-center justify-center hover:bg-brand-gold transition-colors shadow-lg">
-                      <ShoppingBag className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6 relative">
-                  <div className="absolute -top-10 left-6">
-                    <div className="text-2xl font-bold text-white drop-shadow-lg">{item.price}</div>
-                  </div>
-                  <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
-                    {item.category}
-                  </p>
-                  <h3 className="text-lg font-bold text-white group-hover:text-brand-gold transition-colors">
-                    {item.name}
-                  </h3>
-                </div>
-              </motion.div>
+              <MerchCard key={item.id} item={item} index={idx} />
             ))}
           </div>
         </section>
