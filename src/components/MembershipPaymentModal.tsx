@@ -55,15 +55,37 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         return;
       }
 
-      // 2) Call your existing backend endpoint
       const res = await axiosClient.post("/payments/subscribe", {
         plan_id: plan.id,
-        payment_method_id: paymentMethod.id, // this fixes the 422
+        payment_method_id: paymentMethod.id,
       });
 
       console.log("payments/subscribe response:", res.data);
+      const data = res.data;
 
-      // Optional: handle success message/UI
+      if (data.requires_action && data.client_secret) {
+      
+        const { error: confirmationError } = await stripe.confirmCardPayment(
+          data.client_secret
+        );
+
+        if (confirmationError) {
+          setError(confirmationError.message || "Payment confirmation failed.");
+          setLoading(false);
+          return;
+        }
+        
+        console.log("Stripe confirmation successful. Webhook pending.");
+        
+      } else if (data.status === 'active' || data.status === 'trialing') {
+        console.log("Subscription activated immediately.");
+        
+      } else {
+        setError(`Subscription created with status: ${data.status}. No action taken.`);
+        setLoading(false);
+        return;
+      }
+
       if (onSuccess) {
         onSuccess();
       }
