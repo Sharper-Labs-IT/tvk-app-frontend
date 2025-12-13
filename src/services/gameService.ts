@@ -53,31 +53,33 @@ export const gameService = {
   },
 
   // POST /api/v1/games/{id}/join
-  // Join a game session. Returns a participant ID.
-  // TODO: Backend API not yet implemented - using mock response for now
+  // Join a game session. Returns a participant object with ID.
+  // Response: { participant: { id, game_id, user_id, status, data } }
   joinGame: async (gameId: number) => {
-    // Temporarily return a mock participant ID until backend endpoint is ready
-    console.log(`[gameService] Mock joinGame called for gameId: ${gameId}`);
-    return { participant_id: Date.now() }; // Use timestamp as unique mock ID
-    
-    // Original API call - uncomment when backend is ready:
-    // const response = await api.post<{ participant_id: number }>(`/v1/games/${gameId}/join`);
-    // return response.data;
+    const response = await api.post<{
+      participant: {
+        id: number;
+        game_id: number;
+        user_id: number;
+        status: string;
+        data: any;
+      };
+    }>(`/v1/games/${gameId}/join`);
+    return response.data;
   },
 
   // POST /api/v1/games/participant/{participantId}/score
   // Submit score and coins for a game session.
-  // TODO: Backend API not yet implemented - using mock response for now
+  // Response: { participant: { id, score, coins } }
   submitScore: async (participantId: number, payload: GameSessionResult) => {
-    // Temporarily return mock response until backend endpoint is ready
-    console.log(`[gameService] Mock submitScore called for participantId: ${participantId}`, payload);
-    
-    // Return the coins earned so the caller can update user state locally
-    return { success: true, message: 'Score submitted (mock)', coins_earned: payload.coins };
-    
-    // Original API call - uncomment when backend is ready:
-    // const response = await api.post(`/v1/games/participant/${participantId}/score`, payload);
-    // return response.data;
+    const response = await api.post<{
+      participant: {
+        id: number;
+        score: number;
+        coins: number;
+      };
+    }>(`/v1/games/participant/${participantId}/score`, payload);
+    return response.data;
   },
 
   // GET /api/v1/games/{id}/leaderboard
@@ -95,22 +97,16 @@ export const gameService = {
   },
 
   // GET /api/v1/games/my/trophies
-  // Get current user's trophies
+  // Get current user's trophies across all games
+  // Response: { user: number, trophies: [{ tier: string, score_at_time_of_earning: number }] }
   getMyTrophies: async () => {
-    const response = await api.get('/v1/games/my/trophies');
+    const response = await api.get<{
+      user: number;
+      trophies: Array<{
+        tier: 'BRONZE' | 'SILVER' | 'GOLD' | 'PLATINUM';
+        score_at_time_of_earning: number;
+      }>;
+    }>('/v1/games/my/trophies');
     return response.data;
   },
-
-  // GET /api/user/stats
-  // Get current user's total trophies and coins
-  getUserStats: async () => {
-    // This endpoint wasn't in the provided list, but keeping it as it might be used.
-    // If it needs to be updated to v1, it would likely be /v1/user/stats or similar.
-    // For now, I'll assume it's still valid or not part of the change request unless specified.
-    // However, looking at the "My Trophy List" endpoint, maybe that replaces part of this?
-    // I'll leave it for now to avoid breaking existing code that relies on it, 
-    // but I'll update the path to include /v1 just in case.
-    const response = await api.get<{ total_trophies: number; coins: number }>('/v1/user/stats');
-    return response.data;
-  }
 };

@@ -1,18 +1,81 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Play, Trophy, Users, ArrowLeft, Coins } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 const CityDefenderStart: React.FC = () => {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext) || {};
+  const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
   const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessCost, setAccessCost] = useState(0);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Fetch user stats on mount and when returning from game
+  const fetchUserStats = async () => {
+    if (!user) return;
+    setIsLoadingStats(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
+
+  // Refetch when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUserStats();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchUserStats();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user?.id]);
 
   const handlePlayClick = () => {
     const { allowed, reason, cost } = checkAccess();
@@ -88,13 +151,23 @@ const CityDefenderStart: React.FC = () => {
             <span className="text-white font-medium">{user?.nickname || 'usernull'}</span>
           </div>
           
+          {/* Trophies */}
+          <div className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-amber-500/30 rounded-full shadow-lg shadow-amber-500/10">
+            <div className="bg-amber-500/20 p-1.5 rounded-full">
+              <Trophy className="w-5 h-5 text-amber-400" />
+            </div>
+            <span className="font-bold text-xl text-amber-400 tracking-wide">
+              {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
+            </span>
+          </div>
+          
           {/* Coins */}
           <div className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-yellow-500/30 rounded-full shadow-lg shadow-yellow-500/10">
             <div className="bg-yellow-500/20 p-1.5 rounded-full">
               <Coins className="w-5 h-5 text-yellow-400" />
             </div>
             <span className="font-bold text-xl text-yellow-400 tracking-wide">
-              {userCoins.toLocaleString()}
+              {isLoadingStats ? '...' : userCoins.toLocaleString()}
             </span>
           </div>
         </motion.div>

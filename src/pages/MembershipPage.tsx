@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import {useAuth} from '../context/AuthContext';
+import {useNavigate} from 'react-router-dom';
 import Header from '../components/Header';
 import { Star, Users, Video, Bell } from "lucide-react";
 import Footer from '../components/Footer';
@@ -54,6 +56,9 @@ const MembershipPage: React.FC = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
+   const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
   // ---------- Fetch membership plans via Axios ----------
   useEffect(() => {
     const fetchPlans = async () => {
@@ -77,9 +82,30 @@ const MembershipPage: React.FC = () => {
   }, []);
 
    const handleSubscribeClick = (plan: Plan) => {
-    setSelectedPlan(plan);
-    setIsPaymentOpen(true);
-  };
+  const isFree = plan.price === "0.00";
+
+  if (isFree) {
+    // FREE PLAN
+    if (!isLoggedIn) {
+      navigate("/login");
+    } else {
+      navigate("/");
+    }
+    return;
+  }
+
+  // SUPER FAN (PAID)
+  if (!isLoggedIn) {
+    navigate("/login");
+    return;
+  }
+
+  // logged in + paid -> open payment modal
+  setSelectedPlan(plan);
+  setIsPaymentOpen(true);
+};
+
+
 
   const handlePaymentSuccess = () => {
     // Here you can re-fetch membership status or show a toast
