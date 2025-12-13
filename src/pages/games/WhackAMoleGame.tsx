@@ -3,8 +3,10 @@ import { motion, AnimatePresence, useAnimation, useMotionValue } from 'framer-mo
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Trophy, Home, Zap, Volume2, VolumeX, Bomb, Play, Coins, Clock, Shield, Snowflake, Skull, Star } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -127,6 +129,8 @@ const WhackAMoleGame: React.FC = () => {
   const [selectedHammer, setSelectedHammer] = useState(HAMMER_SKINS[0]);
   const [previewHammer, setPreviewHammer] = useState<typeof HAMMER_SKINS[0] | null>(null);
   const [participantId, setParticipantId] = useState<number | null>(null);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
   
   // --- New Visual Effects State ---
   const [isHitStop, setIsHitStop] = useState(false);
@@ -282,13 +286,14 @@ const WhackAMoleGame: React.FC = () => {
   // --- Game Logic ---
   const startGame = async () => {
     try {
-      const data = await gameService.joinGame(3);
-      setParticipantId(data.participant_id);
+      const response = await gameService.joinGame(GAME_IDS.WHACK_A_MOLE);
+      setParticipantId(response.participant.id);
     } catch (error) {
       console.error("Failed to join game:", error);
       return;
     }
 
+    setScoreSubmitted(false);
     cleanup();
     setScore(0);
     setLevel(1);
@@ -330,22 +335,51 @@ const WhackAMoleGame: React.FC = () => {
   };
 
   // --- Backend Integration ---
+  const { refreshUser, user } = useAuth();
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophy count when user changes
   useEffect(() => {
-    if (gameState === 'gameover' && participantId) {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+  
+  useEffect(() => {
+    if (gameState === 'gameover' && participantId && coins > 0 && !scoreSubmitted) {
       const submitGameScore = async () => {
         try {
+          setScoreSubmitted(true);
           await gameService.submitScore(participantId, {
             score: score,
             coins: coins,
             data: { level: level, highScore: highScore }
           });
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
         } catch (error) {
           console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
         }
       };
       submitGameScore();
     }
-  }, [gameState, score, coins, level, highScore, participantId]);
+  }, [gameState, score, coins, level, highScore, participantId, scoreSubmitted, refreshUser]);
 
   const scheduleNextMole = () => {
     if (gameState === 'gameover') return;
@@ -1128,7 +1162,7 @@ const WhackAMoleGame: React.FC = () => {
                     <div className="text-xs text-slate-500 uppercase font-bold">Total Trophies</div>
                     <div className="text-2xl font-black text-white flex items-center justify-center gap-2">
                         <Trophy className="w-6 h-6 text-yellow-500" /> 
-                        {getUserTotalTrophies() + (getTrophyFromScore('whack-a-mole', score) !== 'NONE' ? 1 : 0)}
+                        {totalTrophies}
                     </div>
                  </div>
               </div>

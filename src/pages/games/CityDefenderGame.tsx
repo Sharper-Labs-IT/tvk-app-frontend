@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Zap, RotateCcw, Home, Trophy, Shield, Clock, Bomb, Crosshair, Play, Skull, Timer } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -157,6 +159,8 @@ const CityDefenderGame: React.FC = () => {
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSide, setFeedbackSide] = useState<'left' | 'right'>('right'); 
   const [participantId, setParticipantId] = useState<number | null>(null);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
   // Refs
   const enemiesRef = useRef<Enemy[]>([]);
@@ -502,13 +506,14 @@ const CityDefenderGame: React.FC = () => {
 
   const startGame = async (mode: GameMode) => {
     try {
-      const data = await gameService.joinGame(2);
-      setParticipantId(data.participant_id);
+      const response = await gameService.joinGame(GAME_IDS.CITY_DEFENDER);
+      setParticipantId(response.participant.id);
     } catch (error) {
       console.error("Failed to join game:", error);
       return;
     }
 
+    setScoreSubmitted(false);
     setGameMode(mode);
     gameModeRef.current = mode;
     setGameState('playing');
@@ -558,22 +563,53 @@ const CityDefenderGame: React.FC = () => {
   };
 
   // --- Backend Integration ---
+  const { refreshUser, user } = useAuth();
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophy count when user changes
   useEffect(() => {
-    if (gameState === 'gameover' && participantId) {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+  
+  useEffect(() => {
+    if (gameState === 'gameover' && participantId && !scoreSubmitted) {
       const submitGameScore = async () => {
         try {
+          setScoreSubmitted(true);
+          // City Defender awards score as coins
+          const earnedCoins = Math.floor(score / 10); // Convert score to coins
           await gameService.submitScore(participantId, {
             score: score,
-            coins: 0, // City Defender doesn't seem to have coins in state
+            coins: earnedCoins,
             data: { rage: rage }
           });
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
         } catch (error) {
           console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
         }
       };
       submitGameScore();
     }
-  }, [gameState, score, rage]);
+  }, [gameState, score, rage, participantId, scoreSubmitted, refreshUser]);
 
   // --- Effects ---
   useEffect(() => {
@@ -1038,7 +1074,7 @@ const CityDefenderGame: React.FC = () => {
                   <p className="text-sm text-gray-400 uppercase tracking-wider mb-1">Total Trophies</p>
                   <p className="text-4xl font-bold text-white flex items-center gap-2">
                     <Trophy className="w-8 h-8 text-yellow-500" />
-                    {getUserTotalTrophies() + (getTrophyFromScore('city-defender', score) !== 'NONE' ? 1 : 0)}
+                    {totalTrophies}
                   </p>
                 </div>
               </div>
