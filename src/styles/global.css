@@ -163,7 +163,7 @@
   }
 
 /* Loading animation Not necessary just added*/
-.three-body {
+/* .three-body {
   display: inline-block;
   position: relative;
   width: 80px;
@@ -211,7 +211,7 @@
   100% {
     transform: translate(24px, 0);
   }
-}
+} */
 
 @keyframes scanline {
   0% { transform: translateY(-100%); }
