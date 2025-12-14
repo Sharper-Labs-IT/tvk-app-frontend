@@ -68,6 +68,30 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       });
 
       console.log("payments/subscribe response:", res.data);
+      const data = res.data;
+
+      if (data.requires_action && data.client_secret) {
+      
+        const { error: confirmationError } = await stripe.confirmCardPayment(
+          data.client_secret
+        );
+
+        if (confirmationError) {
+          setError(confirmationError.message || "Payment confirmation failed.");
+          setLoading(false);
+          return;
+        }
+        
+        console.log("Stripe confirmation successful. Webhook pending.");
+        
+      } else if (data.status === 'active' || data.status === 'trialing') {
+        console.log("Subscription activated immediately.");
+        
+      } else {
+        setError(`Subscription created with status: ${data.status}. No action taken.`);
+        setLoading(false);
+        return;
+      }
 
       const data = res.data;
       if(data.requires_action && data.client_secret){
