@@ -10,4 +10,29 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    watch: {
+      usePolling: true,
+    },
+    proxy: {
+      '/api': {
+        target: 'https://api.tvkmembers.com',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          animations: ['gsap', '@gsap/react', 'framer-motion'],
+          icons: ['lucide-react', 'react-icons'],
+        },
+      },
+    },
+  },
 })

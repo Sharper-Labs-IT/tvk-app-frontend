@@ -1,0 +1,122 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { Gamepad2, HandCoins, Trophy } from 'lucide-react';
+
+const GameSection: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => {
+      if (sectionRef.current) observer.unobserve(sectionRef.current);
+    };
+  }, []);
+
+  return (
+    <section
+      ref={sectionRef}
+      className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 px-4"
+    >
+      {/* 1. Background Image - z-0 */}
+      <div className="absolute inset-0 w-full h-full z-0">
+        <img
+          src="/images/GamebackImg.png"
+          alt="Background"
+          className="w-full h-full object-cover"
+        />
+      </div>
+
+      {/* 2. Actor Image - z-10 (Behind content, but above background) */}
+      <img
+        src="/images/VijayImg3.png"
+        alt="Thalapathi Vijay"
+        className={`absolute bottom-0 right-0 w-[250px] md:w-[350px] lg:w-[500px] object-contain z-10 opacity-90 transition-all duration-1000 ease-out ${
+          isVisible ? 'translate-x-0 opacity-90' : 'translate-x-20 opacity-0'
+        }`}
+      />
+
+      {/* 3. Main Content Container - z-20 (ABOVE Actor Image) */}
+      <div className="relative z-20 container mx-auto flex flex-col items-center w-full h-full">
+        {/* Top Area: Text and Phone Layout */}
+        <div className="flex flex-col lg:flex-row items-center justify-center w-full gap-12 lg:gap-20 mb-16">
+          {/* Left Side: Text Content */}
+          <div
+            className={`text-center lg:text-left flex flex-col gap-4 max-w-xl transition-all duration-1000 ease-out transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+          >
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight font-sans">
+              Play TVK Games <br />
+              <span className="text-gray-200">Earn Rewards</span>
+            </h2>
+            <p className="text-gray-300 text-lg md:text-xl font-medium tracking-wide">
+              Unlock Points, Badges and Exclusive Fan Benefits
+            </p>
+          </div>
+
+          {/* Center/Right: Phone Image */}
+          <div
+            className={`relative w-64 md:w-80 lg:w-[400px] flex-shrink-0 transition-all duration-1000 delay-200 ease-out transform ${
+              isVisible
+                ? 'opacity-100 translate-y-0 rotate-[-5deg]'
+                : 'opacity-0 translate-y-20 rotate-0'
+            }`}
+          >
+            <img
+              src="/images/phone.png"
+              alt="TVK Game Interface"
+              className="w-full h-auto object-contain drop-shadow-2xl hover:rotate-0 transition-transform duration-500 animate-float"
+            />
+          </div>
+        </div>
+
+        {/* Bottom Area: Feature Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl px-4">
+          {/* Card 1 */}
+          <div
+            className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-300 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
+          >
+            <Gamepad2 className="w-10 h-10 text-white group-hover:text-yellow-500 transition-colors" />
+            <span className="text-white font-bold text-lg">Play the Game</span>
+          </div>
+
+          {/* Card 2 */}
+          <div
+            className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-500 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
+          >
+            <HandCoins className="w-10 h-10 text-yellow-500" />
+            <span className="text-white font-bold text-lg">Earn Fan Points</span>
+          </div>
+
+          {/* Card 3 - Now clearly visible above the image */}
+          <div
+            className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-700 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
+          >
+            <Trophy className="w-10 h-10 text-yellow-500" />
+            <span className="text-white font-bold text-lg">Unlock Rewards</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default GameSection;
