@@ -42,7 +42,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     }
 
     setLoading(true);
-    try {
+     try {
       // 1) Create PaymentMethod on Stripe
       const { paymentMethod, error: pmError } = await stripe.createPaymentMethod(
         {
@@ -69,7 +69,30 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
       console.log("payments/subscribe response:", res.data);
 
-      onSuccess?.();
+      const data = res.data;
+      if(data.requires_action && data.client_secret){
+        const {error: confirmationError} = await stripe.confirmCardPayment(
+          data.client_secret
+        );
+        if(confirmationError){
+          setError(confirmationError.message || "Payment confirmation failed.");
+          setLoading(false);
+          return;
+        }
+        console.log("Stripe confirmation successful. Webhook Pending");
+      }else if(data.status === "active" || data.status === "trailing"){
+        console.log("Subscription activated immediately");
+      }else{
+        setError(`Subscription created with status: ${data.status}. No action taken.`);
+        setLoading(false);
+        return;
+      }
+
+      if(onSuccess){
+        onSuccess();
+      }
+
+     // onSuccess?.();
       onClose();
     } catch (err: any) {
       console.error("payments/subscribe error:", err?.response || err);
