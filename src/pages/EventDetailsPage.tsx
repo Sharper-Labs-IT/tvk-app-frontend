@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
+import {useAuth} from  "../context/AuthContext";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import type { EventCardData } from '../components/events/EventCard';
-import { fetchEventById, mapApiEventToCard } from '../types/events';
+import { fetchEventById, mapApiEventToCard, participateInEvent } from '../types/events';
 
 interface LocationState {
   event?: EventCardData;
@@ -14,13 +16,46 @@ const EventDetailsPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as LocationState | null;
   const initialEventFormState = state?.event ?? null;
-  //const event = state?.event;
+
+  const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
 
   const [event, setEvent] = useState<EventCardData | null>(initialEventFormState);
   const [loading, setLoading] = useState<boolean>(!initialEventFormState);
   const [error, setError] = useState<string | null>(null);
 
-  //parse Id safely
+  const [participating, setParticipating] = useState<boolean>(false);
+  const [participationSuccess, setParticipationSuccess] = useState<boolean>(false);
+  const [participationError, setParticipationError] = useState<string | null>(null);
+  
+
+  const handleParticipate = async () => {
+
+    if(!isLoggedIn){
+      navigate("/login");
+      return;
+    }
+
+    if (!event) return;
+    setParticipating(true);
+    setParticipationError(null);
+    try {
+      const submissionText = "My entry for event";
+      const data = await participateInEvent(event.id, submissionText);
+      console.log("Participation response:", data);
+      setParticipationSuccess(true);
+    } catch (err: any) {
+      console.error("Participation error:", err.response || err);
+      const message =
+        err.response?.data?.message ||
+        err.response?.statusText ||
+        "Failed to participate. Please try again.";
+      setParticipationError(message);
+    } finally {
+      setParticipating(false);
+    }
+  };
+
   const numericId = id ? Number(id) : NaN;
 
   useEffect(() => {
@@ -29,14 +64,12 @@ const EventDetailsPage: React.FC = () => {
       setLoading(false);
       return;
     }
-
     if (event) return;
 
     const load = async () => {
       try {
         setLoading(true);
         setError(null);
-
         const apiEvent = await fetchEventById(numericId);
         const mapped = mapApiEventToCard(apiEvent);
         setEvent(mapped);
@@ -50,7 +83,6 @@ const EventDetailsPage: React.FC = () => {
     load();
   }, [numericId, event]);
 
-  // For now we rely on router state. Later you will fetch from API using `id`.
   if (loading && !event) {
     return (
       <div className="min-h-screen bg-[#020617] text-white">
@@ -63,7 +95,7 @@ const EventDetailsPage: React.FC = () => {
             >
               ← Back to Events
             </Link>
-            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-6 py-10 text-center">
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-4 sm:px-6 py-6 sm:py-10 text-center">
               <p className="text-sm text-neutral-300 mb-2">Loading event...</p>
               <p className="text-xs text-neutral-500">Please wait loading event details.</p>
             </div>
@@ -86,7 +118,7 @@ const EventDetailsPage: React.FC = () => {
             >
               ← Back to Events
             </Link>
-            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-6 py-10 text-center">
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-4 sm:px-6 py-6 sm:py-10 text-center">
               <p className="text-sm text-neutral-300 mb-2">Event could not be loaded.</p>
               <p className="text-xs text-neutral-500 mb-2">{error}</p>
               <p className="text-xs text-neutral-500">
@@ -101,7 +133,6 @@ const EventDetailsPage: React.FC = () => {
   }
 
   if (!event) {
-    // Extremely unlikely, but just in case
     return (
       <div className="min-h-screen bg-[#020617] text-white">
         <Header />
@@ -113,7 +144,7 @@ const EventDetailsPage: React.FC = () => {
             >
               ← Back to Events
             </Link>
-            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-6 py-10 text-center">
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 px-4 sm:px-6 py-6 sm:py-10 text-center">
               <p className="text-sm text-neutral-300 mb-2">Event not found.</p>
             </div>
           </div>
@@ -126,18 +157,17 @@ const EventDetailsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#020617] text-white">
       <Header />
-
       <main className="bg-gradient-to-b from-[#1a1407] via-[#0d0b05] to-black">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-10 pt-8 md:pt-10 pb-14 md:pb-20 space-y-8">
           {/* Back link */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
             <Link
               to="/events"
               className="inline-flex items-center text-[11px] sm:text-xs font-semibold text-neutral-300 hover:text-white"
             >
               ← Back to Events
             </Link>
-            <span className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700/70 text-[10px] uppercase tracking-[0.2em] text-neutral-300">
+            <span className="inline-flex sm:inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700/70 text-[10px] uppercase tracking-[0.2em] text-neutral-300">
               Event Details
             </span>
           </div>
@@ -156,20 +186,16 @@ const EventDetailsPage: React.FC = () => {
             </div>
 
             {/* Right: main info */}
-            <div className="w-full lg:w-1/2 px-6 md:px-8 py-6 md:py-7 flex">
-              <div className="w-full flex flex-col gap-3 max-w-md">
-                {/* Title */}
+            <div className="w-full lg:w-1/2 px-4 sm:px-6 md:px-8 py-6 md:py-7 flex">
+              <div className="w-full flex flex-col gap-3 max-w-full md:max-w-md">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold leading-snug">
                   {event.title}
                 </h1>
-
-                {/* Highlight line */}
                 <p className="text-[11px] sm:text-xs text-yellow-400 font-semibold">
                   Limited seats available{' '}
                   <span className="text-yellow-300/90">— Registration required</span>
                 </p>
 
-                {/* Date */}
                 <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300 mt-1">
                   <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
                     Date &amp; Time
@@ -177,7 +203,6 @@ const EventDetailsPage: React.FC = () => {
                   <span>{event.dateTime}</span>
                 </div>
 
-                {/* Venue */}
                 <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
                   <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
                     Venue
@@ -185,18 +210,32 @@ const EventDetailsPage: React.FC = () => {
                   <span>{event.venue}</span>
                 </div>
 
-                {/* Primary CTA */}
-                <button className="mt-3 w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition">
-                  Participate
+                <button
+                  className={`mt-3 w-full sm:w-auto px-6 py-2.5 rounded-full ${
+                    participationSuccess
+                      ? 'bg-green-500 hover:bg-green-600'
+                      : 'bg-[#ffbf2b] hover:bg-[#ffd65b]'
+                  } text-black text-[11px] sm:text-xs font-semibold transition`}
+                  onClick={handleParticipate}
+                  disabled={participating || participationSuccess}
+                >
+                  {participating
+                    ? 'Submitting...'
+                    : participationSuccess
+                    ? 'Registered'
+                    : 'Participate'}
                 </button>
+                {participationError && (
+                  <p className="text-red-400 text-[11px] mt-1">{participationError}</p>
+                )}
               </div>
             </div>
           </section>
 
           {/* Main content sections */}
-          <section className="grid lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)] gap-6">
+          <section className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr),minmax(0,1fr)] gap-6">
             {/* Description */}
-            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 p-5 sm:p-6 space-y-3">
+            <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 p-4 sm:p-6 space-y-3">
               <h2 className="text-sm sm:text-base font-semibold">About this experience</h2>
               <p className="text-[11px] sm:text-xs text-neutral-300 leading-relaxed">
                 {event.description}
@@ -210,7 +249,7 @@ const EventDetailsPage: React.FC = () => {
 
             {/* Rules / info panel */}
             <div className="space-y-4">
-              <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 p-5 sm:p-6 space-y-3">
+              <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 p-4 sm:p-6 space-y-3">
                 <h3 className="text-sm font-semibold">Event Rules &amp; Info</h3>
                 <ul className="space-y-2 text-[11px] sm:text-xs text-neutral-300 list-disc list-inside">
                   <li>Admission is for active TVK Members only.</li>
@@ -222,7 +261,7 @@ const EventDetailsPage: React.FC = () => {
                 </ul>
               </div>
 
-              <div className="rounded-2xl bg-slate-900/60 border border-yellow-500/30 p-5 sm:p-6 space-y-2">
+              <div className="rounded-2xl bg-slate-900/60 border border-yellow-500/30 p-4 sm:p-6 space-y-2">
                 <h4 className="text-sm font-semibold text-yellow-300">Members-only benefit</h4>
                 <p className="text-[11px] sm:text-xs text-neutral-200">
                   Attending this event may reward you with TVK membership points and early access to
@@ -233,7 +272,6 @@ const EventDetailsPage: React.FC = () => {
           </section>
         </div>
       </main>
-
       <Footer />
     </div>
   );
