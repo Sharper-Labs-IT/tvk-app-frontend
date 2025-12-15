@@ -1,12 +1,108 @@
-import React, { useState } from 'react';
-import { Gamepad2, Triangle, X, Target, Shield, Coins, Hammer } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Gamepad2, Triangle, X, Target, Shield, Coins, Hammer, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TextType from '../../components/TextType';
 import TrueFocus from '../../components/TrueFocus';
+import { useGameAccess } from '../../hooks/useGameAccess';
+import GameAccessModal from '../../components/common/GameAccessModal';
+import { useAuth } from '../../context/AuthContext';
 
 const WhackAMoleStart: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCost, setAccessCost] = useState(0);
+  const { user, refreshUser } = useAuth();
+  const userCoins = user?.coins || 0;
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Fetch user stats on mount and when returning from game
+  const fetchUserStats = async () => {
+    if (!user) return;
+    setIsLoadingStats(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
+
+  // Refetch when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUserStats();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchUserStats();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user?.id]);
+
+  const handlePlayClick = () => {
+    const { allowed, reason, cost } = checkAccess();
+    if (allowed) {
+      consumePlay(false);
+      navigate('/game/villain-hunt/start');
+    } else {
+      if (reason === 'limit_reached' || reason === 'no_coins') {
+        setAccessCost(cost);
+        setShowAccessModal(true);
+      } else if (reason === 'not_logged_in') {
+          navigate('/login');
+      }
+    }
+  };
+
+  const handlePayToPlay = async () => {
+      const success = await consumePlay(true);
+      if (success) {
+          setShowAccessModal(false);
+          navigate('/game/villain-hunt/start');
+      } else {
+          alert("Not enough coins!");
+      }
+  }
 
   return (
     <div
@@ -15,6 +111,13 @@ const WhackAMoleStart: React.FC = () => {
         backgroundImage: "url('/img/bg-game3.webp')", // Reusing existing background
       }}
     >
+      <GameAccessModal 
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        onPay={handlePayToPlay}
+        cost={accessCost}
+        userCoins={userCoins}
+      />
       <div className="absolute inset-0 bg-slate-900/70 mix-blend-multiply" />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/30" />
 
@@ -32,10 +135,29 @@ const WhackAMoleStart: React.FC = () => {
           </div>
 
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            {/* Trophies Display */}
+            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
+              <Trophy className="w-5 h-5 text-amber-400" />
+              <span className="text-white font-semibold">
+                {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Coins Display */}
             <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
               <span className="text-yellow-400 font-bold text-lg">🪙</span>
-              <span className="text-white font-semibold">850</span>
+              <span className="text-white font-semibold">
+                {isLoadingStats ? '...' : userCoins.toLocaleString()}
+              </span>
             </div>
+            
+            {/* User Profile */}
+            <button className="flex items-center gap-2 hover:bg-white/10 transition-all px-4 py-2 rounded-full">
+              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
+              </div>
+              <span className="text-white">{user?.nickname || 'usernull'}</span>
+            </button>
           </nav>
         </header>
 
@@ -70,7 +192,7 @@ const WhackAMoleStart: React.FC = () => {
 
           <div className="flex flex-col sm:flex-row gap-4">
             <button
-              onClick={() => navigate('/game/villain-hunt/start')}
+              onClick={handlePlayClick}
               className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 shadow-[0_0_30px_rgba(220,38,38,0.5)] transform hover:scale-105 text-lg md:text-xl border-2 border-white/20 uppercase tracking-wider"
             >
               Start Hunt
@@ -83,6 +205,16 @@ const WhackAMoleStart: React.FC = () => {
               Briefing
             </button>
           </div>
+          {!isPremium && (
+            <p className="mt-4 text-gray-400 text-sm">
+              Free Plays Remaining: <span className="text-yellow-400 font-bold">{remainingFreePlays}</span>
+            </p>
+          )}
+          {isPremium && (
+            <p className="mt-4 text-green-400 text-sm flex items-center gap-2">
+              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+            </p>
+          )}
         </main>
 
         {/* Footer */}

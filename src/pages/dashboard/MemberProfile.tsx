@@ -80,7 +80,7 @@ const MemberProfile: React.FC = () => {
   };
 
   // Subscription Logic
-  const isPremium = user?.membership_tier && user.membership_tier !== 'Free';
+  const isPremium = user?.membership_tier && user.membership_tier !== 'free';
 
   const calculateDaysLeft = () => {
     if (!user?.membership?.end_date) return 0;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar, Trash2, Ban, Edit, Users } from 'lucide-react';
+import { Plus, Trash2, Ban, Edit, Users } from 'lucide-react';
 import { adminEventService } from '../../../services/adminEventService';
 import { type Event } from '../../../types/event';
 import Loader from '../../../components/Loader';

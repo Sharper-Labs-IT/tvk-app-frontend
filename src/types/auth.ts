@@ -83,8 +83,18 @@ export interface IRole {
 export interface IUser {
   id: number;
   name: string;
+  nickname?: string; // Display name (shown instead of username)
   email: string;
   mobile?: string;
+  is_verified: boolean;
+  status?: 'active' | 'inactive' | string;
+  coins?: number; // Added coins
+  membership_type?: 'free' | 'premium' | 'vip'; // Frontend field
+  membership_tier?: 'free' | 'super_fan' | string; // Backend field
+
+  // ⚠️ CRITICAL UPDATE: Roles can now be objects (Old) OR strings (New Backend)
+  // We allow both types here so your app doesn't crash if data format changes.
+  roles?: (IRole | string)[];
 
   // Images
   avatar_url?: string | null;
@@ -93,11 +103,6 @@ export interface IUser {
   created_at?: string;
   last_login_at?: string;
   email_verified_at?: string | null;
-  status?: string;
-
-  // ⚠️ CRITICAL UPDATE: Roles can now be objects (Old) OR strings (New Backend)
-  // We allow both types here so your app doesn't crash if data format changes.
-  roles: (IRole | string)[];
 
   // --- OPTIONAL FIELDS (Old Dashboard Logic) ---
   subscription?: ISubscriptionDetails;
@@ -105,7 +110,6 @@ export interface IUser {
 
   // --- NEW FIELDS (New Backend Logic) ---
   // These match the new 'me()' response from your Controller
-  membership_tier?: string;
   membership?: IMembership | null;
   points?: number;
   badges?: IBadge[];

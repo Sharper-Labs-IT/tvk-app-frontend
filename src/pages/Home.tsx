@@ -11,7 +11,6 @@ import CommunityHighlights from '../components/CommunityHighlights';
 
 const Home: React.FC = () => {
   return (
-    // Updated line below: Added background color, text color, and height
     <main className="min-h-screen bg-brand-dark text-white">
       <Header />
       <HomeHero />

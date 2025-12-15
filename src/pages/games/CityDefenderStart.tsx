@@ -2,19 +2,116 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Play, Trophy, Users, ArrowLeft, Coins } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useGameAccess } from '../../hooks/useGameAccess';
+import GameAccessModal from '../../components/common/GameAccessModal';
+import { useAuth } from '../../context/AuthContext';
 
 const CityDefenderStart: React.FC = () => {
   const navigate = useNavigate();
-  const [userCoins, setUserCoins] = useState(0);
+  const { user, refreshUser } = useAuth();
+  const userCoins = user?.coins || 0;
+  const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCost, setAccessCost] = useState(0);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
 
-  // Simulate fetching coins (Replace this with your actual context/store/localStorage logic)
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Fetch user stats on mount and when returning from game
+  const fetchUserStats = async () => {
+    if (!user) return;
+    setIsLoadingStats(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Update trophy count when user changes
   useEffect(() => {
-    const savedCoins = localStorage.getItem('tvk_coins'); // Example key
-    setUserCoins(savedCoins ? parseInt(savedCoins) : 1250); // Default to 1250 for display if empty
-  }, []);
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
+
+  // Refetch when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUserStats();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchUserStats();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user?.id]);
+
+  const handlePlayClick = () => {
+    const { allowed, reason, cost } = checkAccess();
+    if (allowed) {
+      consumePlay(false);
+      navigate('/game/city-defender/start');
+    } else {
+      if (reason === 'limit_reached' || reason === 'no_coins') {
+        setAccessCost(cost);
+        setShowAccessModal(true);
+      } else if (reason === 'not_logged_in') {
+          navigate('/login');
+      }
+    }
+  };
+
+  const handlePayToPlay = async () => {
+      const success = await consumePlay(true);
+      if (success) {
+          setShowAccessModal(false);
+          navigate('/game/city-defender/start');
+      } else {
+          // Ideally show a toast or error in modal
+          alert("Not enough coins!");
+      }
+  }
 
   return (
     <div className="min-h-screen bg-black text-white relative overflow-hidden font-sans">
+      <GameAccessModal 
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        onPay={handlePayToPlay}
+        cost={accessCost}
+        userCoins={userCoins}
+      />
       {/* Background with Overlay */}
       <div 
         className="absolute inset-0 z-0 opacity-40"
@@ -44,14 +141,35 @@ const CityDefenderStart: React.FC = () => {
         <motion.div
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
-          className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-yellow-500/30 rounded-full shadow-lg shadow-yellow-500/10"
+          className="flex items-center gap-4"
         >
-          <div className="bg-yellow-500/20 p-1.5 rounded-full">
-            <Coins className="w-5 h-5 text-yellow-400" />
+          {/* User Profile */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur-md border border-white/20 rounded-full">
+            <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-red-500 rounded-full flex items-center justify-center text-white font-bold">
+              {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
+            </div>
+            <span className="text-white font-medium">{user?.nickname || 'usernull'}</span>
           </div>
-          <span className="font-bold text-xl text-yellow-400 tracking-wide">
-            {userCoins.toLocaleString()}
-          </span>
+          
+          {/* Trophies */}
+          <div className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-amber-500/30 rounded-full shadow-lg shadow-amber-500/10">
+            <div className="bg-amber-500/20 p-1.5 rounded-full">
+              <Trophy className="w-5 h-5 text-amber-400" />
+            </div>
+            <span className="font-bold text-xl text-amber-400 tracking-wide">
+              {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
+            </span>
+          </div>
+          
+          {/* Coins */}
+          <div className="flex items-center gap-3 px-5 py-2 bg-black/40 backdrop-blur-md border border-yellow-500/30 rounded-full shadow-lg shadow-yellow-500/10">
+            <div className="bg-yellow-500/20 p-1.5 rounded-full">
+              <Coins className="w-5 h-5 text-yellow-400" />
+            </div>
+            <span className="font-bold text-xl text-yellow-400 tracking-wide">
+              {isLoadingStats ? '...' : userCoins.toLocaleString()}
+            </span>
+          </div>
         </motion.div>
       </div>
 
@@ -118,7 +236,7 @@ const CityDefenderStart: React.FC = () => {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate('/game/city-defender/start')}
+          onClick={handlePlayClick}
           className="group relative px-12 py-6 bg-gradient-to-r from-yellow-500 to-red-600 rounded-full font-black text-2xl shadow-2xl shadow-red-900/50 overflow-hidden"
         >
           <span className="relative z-10 flex items-center gap-3">
@@ -126,6 +244,25 @@ const CityDefenderStart: React.FC = () => {
           </span>
           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
         </motion.button>
+
+        {!isPremium && (
+           <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 text-gray-400 text-sm"
+           >
+             Free Plays Remaining: <span className="text-yellow-400 font-bold">{remainingFreePlays}</span>
+           </motion.p>
+        )}
+        {isPremium && (
+           <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-4 text-green-400 text-sm flex items-center gap-2"
+           >
+             <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+           </motion.p>
+        )}
 
       </div>
     </div>

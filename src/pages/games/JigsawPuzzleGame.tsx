@@ -8,7 +8,68 @@ import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
+
+// --- Gaming Loader Component ---
+const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-90" />
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+      
+      <div className="relative z-10 flex flex-col items-center w-full max-w-md px-6">
+        {/* Logo / Title */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12 text-center"
+        >
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+            TVK JIGSAW PUZZLE
+          </h1>
+          <p className="text-slate-400 text-sm tracking-[0.3em] uppercase mt-2 font-bold">
+            System Initialization
+          </p>
+        </motion.div>
+
+        {/* Progress Bar Container */}
+        <div className="w-full h-4 bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          {/* Animated Progress Fill */}
+          <motion.div 
+            className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-300 relative"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+          >
+            {/* Glare effect on bar */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-white/50" />
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-black/20" />
+            
+            {/* Moving shine effect */}
+            <motion.div 
+              className="absolute top-0 bottom-0 w-10 bg-white/30 skew-x-[-20deg] blur-sm"
+              animate={{ x: ["-100%", "500%"] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+            />
+          </motion.div>
+        </div>
+
+        {/* Percentage & Status Text */}
+        <div className="w-full flex justify-between items-center mt-3 font-mono text-xs md:text-sm text-yellow-500/80">
+          <span className="animate-pulse">LOADING ASSETS...</span>
+          <span className="font-bold">{Math.round(progress)}%</span>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute -z-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-[80px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      </div>
+    </div>
+  );
+};
 
 // --- Utility for cleaner tailwind classes ---
 function cn(...inputs: ClassValue[]) {
@@ -55,11 +116,17 @@ const playSound = (_: 'tap' | 'success' | 'win' | 'lose') => {
 const JigsawPuzzleGame: React.FC = () => {
   const navigate = useNavigate();
   
+  // --- Loading State ---
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   // --- Game State ---
   const [difficulty, setDifficulty] = useState<Difficulty>(DIFFICULTIES.EASY);
   const [pieces, setPieces] = useState<Piece[]>([]);
   const [selectedPiece, setSelectedPiece] = useState<number | null>(null);
   const [currentImage, setCurrentImage] = useState<string>(PUZZLE_IMAGES[0]);
+  
+  const { user } = useAuth();
   
   // --- Stats & Progress ---
   const [timeLeft, setTimeLeft] = useState(0);
@@ -78,6 +145,9 @@ const JigsawPuzzleGame: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [lockMode, setLockMode] = useState(false); // If true, correct pieces lock in place
+  const [participantId, setParticipantId] = useState<number | null>(null);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
   // --- Combo System ---
   const [combo, setCombo] = useState(0);
@@ -87,14 +157,102 @@ const JigsawPuzzleGame: React.FC = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastTickRef = useRef<number>(0);
 
+  // --- Preload Images ---
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imageUrls = [
+        ...PUZZLE_IMAGES,
+        '/img/happy.webp',
+        '/img/sad.png'
+      ];
+
+      let loadedCount = 0;
+      const total = imageUrls.length;
+
+      const updateProgress = () => {
+        loadedCount++;
+        const progress = (loadedCount / total) * 100;
+        setLoadingProgress(progress);
+        if (loadedCount === total) {
+          setTimeout(() => {
+            setAssetsLoaded(true);
+          }, 500);
+        }
+      };
+
+      imageUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+        img.onload = updateProgress;
+        img.onerror = updateProgress;
+      });
+    };
+
+    preloadImages();
+  }, []);
+
   // --- Load High Score on Mount ---
   useEffect(() => {
+    if (!assetsLoaded) return;
     const saved = localStorage.getItem('puzzle_highscore');
     if (saved) setHighScore(parseInt(saved));
+  }, [assetsLoaded]);
 
-    const savedCoins = localStorage.getItem('tvk_coins');
-    if (savedCoins) setTotalCoins(parseInt(savedCoins));
-  }, []);
+  useEffect(() => {
+    if (user?.coins !== undefined) {
+      setTotalCoins(user.coins);
+    }
+  }, [user]);
+
+  // --- Backend Integration ---
+  const { refreshUser } = useAuth();
+
+  // Helper function to calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    // Handle object with tier arrays: {BRONZE: [], SILVER: [], GOLD: [], PLATINUM: []}
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    // Handle flat array of trophies
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophies when user data changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+  
+  useEffect(() => {
+    if (isGameOver && participantId && earnedCoins > 0 && !scoreSubmitted) {
+      const submitGameScore = async () => {
+        try {
+          setScoreSubmitted(true);
+          await gameService.submitScore(participantId, {
+            score: score,
+            coins: earnedCoins,
+            data: { moves: moves, timeLeft: timeLeft, difficulty: difficulty.label }
+          });
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
+          // Trophies will be updated automatically via useEffect when user data changes
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
+        }
+      };
+      submitGameScore();
+    }
+  }, [isGameOver, score, earnedCoins, moves, timeLeft, difficulty, participantId, scoreSubmitted, refreshUser]);
 
   // --- Initialize game ---
   useEffect(() => {
@@ -140,7 +298,16 @@ const JigsawPuzzleGame: React.FC = () => {
     };
   }, [gameStarted, isGameOver, isWon, isPaused]);
 
-  const startNewGame = () => {
+  const startNewGame = async () => {
+    try {
+      const response = await gameService.joinGame(GAME_IDS.JIGSAW_PUZZLE);
+      setParticipantId(response.participant.id);
+      setScoreSubmitted(false);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     playSound('tap');
     const randomImage = PUZZLE_IMAGES[Math.floor(Math.random() * PUZZLE_IMAGES.length)];
     setCurrentImage(randomImage);
@@ -291,6 +458,11 @@ const JigsawPuzzleGame: React.FC = () => {
       backgroundPosition: `${percentageX}% ${percentageY}%`
     };
   };
+
+  // --- Loading Screen ---
+  if (!assetsLoaded) {
+    return <GamingLoader progress={loadingProgress} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white flex flex-col items-center p-4 relative overflow-hidden font-sans selection:bg-blue-500/30">
@@ -620,7 +792,7 @@ const JigsawPuzzleGame: React.FC = () => {
                       <div className="text-xs text-slate-400 uppercase font-bold">Total Trophies</div>
                       <div className="text-xl font-mono text-white flex items-center justify-center gap-2">
                         <Trophy className="w-5 h-5 text-yellow-500" />
-                        {getUserTotalTrophies() + (getTrophyFromScore('jigsaw', score) !== 'NONE' ? 1 : 0)}
+                        {totalTrophies}
                       </div>
                     </div>
                   </div>

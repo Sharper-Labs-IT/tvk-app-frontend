@@ -6,7 +6,10 @@ import Card from '../../components/gameone/Card';
 import { getMovies, TVK_MOVIES } from '../../utils/movies';
 import type { CardData, CardStatus } from '../../utils/types';
 import { useNavigate } from 'react-router-dom';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
+import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -97,6 +100,7 @@ const MemoryGame: React.FC = () => {
   const [flippedCard, setFlippedCard] = useState<number>(-1);
   const [coins, setCoins] = useState<number>(0);
   const [moves, setMoves] = useState<number>(0);
+  const [participantId, setParticipantId] = useState<number | null>(null);
   const [matches, setMatches] = useState<number>(0);
   const [gameCompleted, setGameCompleted] = useState<boolean>(false);
   const [timeLeft, setTimeLeft] = useState<number>(INITIAL_TIME);
@@ -202,7 +206,67 @@ const MemoryGame: React.FC = () => {
     }
   }, [chances, gameCompleted]);
 
-  const startNewGame = () => {
+  // --- Backend Integration ---
+  const { refreshUser, user } = useAuth();
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+  
+  useEffect(() => {
+    // Only submit score once when game ends with coins > 0
+    if ((gameCompleted || gameOver) && participantId && coins > 0 && !scoreSubmitted) {
+      const submitGameScore = async () => {
+        try {
+          setScoreSubmitted(true); // Prevent duplicate submissions
+          const response = await gameService.submitScore(participantId, {
+            score: coins, // Using coins as score
+            coins: coins,
+            data: { moves: moves, timeLeft: timeLeft, matches: matches }
+          });
+          
+          console.log('[MemoryGame] Score submitted successfully:', response);
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
+        } catch (error) {
+          console.error("Failed to submit score:", error);
+          setScoreSubmitted(false); // Allow retry on error
+        }
+      };
+      submitGameScore();
+    }
+  }, [gameCompleted, gameOver, coins, moves, timeLeft, matches, participantId, scoreSubmitted, refreshUser]);
+
+  const startNewGame = async () => {
+    try {
+      const response = await gameService.joinGame(GAME_IDS.MEMORY);
+      setParticipantId(response.participant.id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
     if (timerRef.current) clearInterval(timerRef.current);
     if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
     if (feedbackTimeoutRef.current) clearTimeout(feedbackTimeoutRef.current);
@@ -221,6 +285,7 @@ const MemoryGame: React.FC = () => {
     setGameStarted(false);
     setIsRevealing(true);
     setShowFeedback(false);
+    setScoreSubmitted(false); // Reset score submission flag for new game
 
     revealTimeoutRef.current = setTimeout(() => {
       setCardsData(current => current.map(c => ({ ...c, status: '' as CardStatus })));
@@ -495,7 +560,7 @@ const MemoryGame: React.FC = () => {
           className="text-center mb-4" 
         >
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-md tracking-tight">
-            THALAPATHY VIJAY
+            THALAPATHY VJ
           </h1>
           <p className="text-slate-300 text-xs sm:text-sm md:text-lg font-medium tracking-widest uppercase">
             Memory Challenge <span className="text-yellow-500">Edition</span>
@@ -658,7 +723,7 @@ const MemoryGame: React.FC = () => {
                     <div className="text-xs text-slate-500 uppercase font-bold">Total Trophies</div>
                     <div className="text-xl font-bold text-white flex items-center justify-center gap-2">
                         <Trophy className="w-5 h-5 text-yellow-500" />
-                        {getUserTotalTrophies() + (getTrophyFromScore('memory', coins) !== 'NONE' ? 1 : 0)}
+                        {totalTrophies}
                     </div>
                  </div>
               </div>

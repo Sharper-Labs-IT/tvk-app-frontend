@@ -4,17 +4,7 @@ import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
 
-import ConfirmationModal from '../components/common/ConfirmationModal'; // 👈 NEW IMPORT
-
-const navItems = [
-  { name: 'HOME', path: '/' },
-  { name: 'MEMBERSHIP', path: '/membership' },
-  { name: 'GAME', path: '/game' },
-  { name: 'EVENTS', path: '/events' },
-  { name: 'LEADERBOARD', path: '/leaderboard' },
-  { name: 'STORE', path: '/store' },
-];
-
+import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const headerContainerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -52,15 +42,11 @@ const Header: React.FC = () => {
   const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
 
-  // --- 1. DYNAMIC NAVIGATION LOGIC ---
-  const navItems = useMemo(() => {
-    // Determine where the "DASHBOARD" button should point
-    let dashboardPath = '/login'; // Default for guests
+  // --- DYNAMIC NAVIGATION LOGIC ---
+  const dynamicNavItems = useMemo(() => {
+    let dashboardPath = '/login'; 
 
     if (isLoggedIn && user?.roles) {
-      // 🛑 FIX: Handle roles as strings (New Backend) instead of objects (Old Backend)
-      // We map directly to lowercase strings.
-      // We use 'any' cast on 'r' just to be safe if types aren't fully synced yet.
       const roleNames = user.roles.map((r: any) => {
         if (typeof r === 'string') return r.toLowerCase();
         if (typeof r === 'object' && r.name) return r.name.toLowerCase();
@@ -75,12 +61,12 @@ const Header: React.FC = () => {
     }
 
     return [
-      { name: 'HOME', path: '/' },
       { name: 'MEMBERSHIP', path: '/membership' },
-      { name: 'SHOP', path: '/shop' },
+      { name: 'STORE', path: '/store' }, 
       { name: 'GAME', path: '/game' },
+      { name: 'LEADERBOARD', path: '/leaderboard' },
       { name: 'EVENTS', path: '/events' },
-      { name: 'DASHBOARD', path: dashboardPath }, // 👈 Dynamic Path
+      { name: 'DASHBOARD', path: dashboardPath },
     ];
   }, [isLoggedIn, user]);
 
@@ -95,20 +81,22 @@ const Header: React.FC = () => {
   };
 
   const AuthButton = () => {
+    const userName = user?.name?.split(' ')[0] || '';
+    
     if (isLoggedIn) {
       return (
         <button
           onClick={() => setShowLogoutModal(true)}
-          className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+          className="bg-brand-goldDark text-white font-bold px-4 py-2 rounded-lg text-sm md:text-base transition-opacity hover:opacity-90 whitespace-nowrap"
         >
-          Logout ({user?.name?.split(' ')[0]})
+          Logout ({userName})
         </button>
       );
     }
     return (
       <Link
         to="/login"
-        className="hidden md:block bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+        className="bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
       >
         Login / Join
       </Link>
@@ -118,12 +106,12 @@ const Header: React.FC = () => {
   return (
     <>
       <motion.header
-        className="w-full bg-brand-dark text-white h-24 px-8 md:px-12 flex items-center z-50 relative"
+        className="w-full bg-brand-dark text-white h-24 px-4 md:px-12 flex items-center z-50 relative"
         initial="hidden"
         animate="visible"
         variants={headerContainerVariants}
       >
-        {/* Logo Section */}
+ 
         <motion.div className="flex-shrink-0 relative mr-4" variants={majorItemVariants}>
           <Link to="/" className="block relative">
             <img
@@ -139,6 +127,7 @@ const Header: React.FC = () => {
                 }
               `}
             />
+            {/* Invisible spacer to hold width when logo is absolute */}
             {isHome && (
               <img
                 src="/images/tvk-logo.png"
@@ -149,11 +138,30 @@ const Header: React.FC = () => {
             )}
           </Link>
         </motion.div>
-
-        {/* Navigation Links */}
-        <motion.nav className="hidden md:block ml-auto mr-1" variants={navStaggerVariants}>
+        
+        {/* Navigation Links (Desktop Only) */}
+        <motion.nav className="hidden md:block ml-auto mr-4" variants={navStaggerVariants}>
           <motion.ul className="flex space-x-6" variants={navStaggerVariants}>
-            {navItems.map((item) => (
+            {/* Added HOME link explicitly for desktop menu */}
+            <motion.li key="HOME" variants={majorItemVariants}>
+                <Link
+                  to="/"
+                  className={`
+                    text-base font-bold transition-colors relative group uppercase tracking-wider
+                    ${isActive('/') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                  `}
+                >
+                  HOME
+                  <span
+                    className={`
+                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                      ${isActive('/') ? 'w-full' : 'w-0 group-hover:w-full'}
+                    `}
+                  ></span>
+                </Link>
+              </motion.li>
+
+            {dynamicNavItems.map((item) => (
               <motion.li key={item.name} variants={majorItemVariants}>
                 <Link
                   to={item.path}
@@ -175,11 +183,14 @@ const Header: React.FC = () => {
           </motion.ul>
         </motion.nav>
 
-        {/* Login/Logout Button */}
-        <motion.div variants={majorItemVariants} className="flex-shrink-0 ml-auto">
-          <AuthButton />
+        {/* Login/Logout Button & Mobile Menu Toggle */}
+        <motion.div variants={majorItemVariants} className="flex-shrink-0 flex items-center space-x-4">
+          <div className="hidden md:block">
+            <AuthButton />
+          </div>
+          
           <button
-            className="md:hidden p-2 transition-colors hover:text-brand-gold"
+            className="md:hidden p-2 transition-colors hover:text-brand-gold ml-auto"
             onClick={toggleMenu}
             aria-label="Open menu"
           >
@@ -211,8 +222,11 @@ const Header: React.FC = () => {
         cancelText="Stay Logged In"
       />
 
-      {/* Mobile Menu Component - Passing the dynamic items */}
-      <MobileMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} navItems={navItems} />
+      <MobileMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)} 
+        navItems={[{ name: 'HOME', path: '/' }, ...dynamicNavItems]} 
+      />
     </>
   );
 };
