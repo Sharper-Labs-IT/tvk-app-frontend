@@ -60,24 +60,21 @@ const MembershipPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+
+
 
    const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
-=======
+
   // which plan is currently being processed (for button loading state)
   const [subscribingPlanId, setSubscribingPlanId] = useState<number | null>(null);
 
   // which plan the user currently has (if you know it)
   const [currentPlanId, setCurrentPlanId] = useState<number | null>(null);
->>>>>>> 04727a6 (feat: connect subscribe API)
-=======
+
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
->>>>>>> 5ef12f1 (feat: connect strip and subscribe API)
+
 
   // ---------- Fetch membership plans via Axios ----------
   useEffect(() => {
@@ -100,9 +97,7 @@ const MembershipPage: React.FC = () => {
     fetchPlans();
   }, []);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+
    const handleSubscribeClick = (plan: Plan) => {
   const isFree = plan.price === "0.00";
 
@@ -273,8 +268,7 @@ const MembershipPage: React.FC = () => {
                         />
 
                     </div>
-=======
-=======
+
   // ---------- Single endpoint: /payments/subscribe ----------
   const handleSubscribeClick = async (plan: Plan) => {
     
@@ -284,12 +278,12 @@ const MembershipPage: React.FC = () => {
       navigate("/login");   // redirect to login page
       return;               // stop here, don't call API
     }
-=======
+
    const handleSubscribeClick = (plan: Plan) => {
     setSelectedPlan(plan);
     setIsPaymentOpen(true);
   };
->>>>>>> 5ef12f1 (feat: connect strip and subscribe API)
+
 
   const handlePaymentSuccess = () => {
     // Here you can re-fetch membership status or show a toast
@@ -300,11 +294,9 @@ const MembershipPage: React.FC = () => {
     setBilling(period);
   };
 
-<<<<<<< HEAD
->>>>>>> 04727a6 (feat: connect subscribe API)
-=======
 
->>>>>>> 5ef12f1 (feat: connect strip and subscribe API)
+
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#050716] to-[#02030b] text-slate-100">
       <Header />
@@ -371,7 +363,7 @@ const MembershipPage: React.FC = () => {
           {!loading && !error && plans.map((plan) => {
             const isFree = plan.price === "0.00";
 
-            const priceLabel = isFree ? "Free" : `$${plan.price}`;
+            const priceLabel = isFree ? "Free" : `${plan.price}`;
 
             // Price suffix logic:
             // - Free Tier: based on duration_days ("Lifetime" for 36500)
@@ -421,7 +413,7 @@ const MembershipPage: React.FC = () => {
             Explore the exclusive benefits that come with every membership tier.
           </p>
         </div>
->>>>>>> 4f2717d (feat: API connected for membership details page)
+
 
         {/* Benefits grid with Framer Motion */}
         <motion.div
@@ -440,12 +432,7 @@ const MembershipPage: React.FC = () => {
             />
           </motion.div>
 
-<<<<<<< HEAD
 
-            </div>
-        )
-}
-=======
           <motion.div variants={benefitItemVariants}>
             <BenefitCard
               icon={<Users />}
@@ -487,6 +474,5 @@ const MembershipPage: React.FC = () => {
     </div>
   );
 };
->>>>>>> 4f2717d (feat: API connected for membership details page)
 
 export default MembershipPage;
