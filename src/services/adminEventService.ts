@@ -1,5 +1,5 @@
 import api from '../utils/api';
-import { type Event, type EventFormData } from '../types/event';
+import { type EventFormData } from '../types/event';
 
 const ADMIN_URL = '/v1/admin/events';
 const PUBLIC_URL = '/v1/events'; // We use this for listing since Admin doesn't have an index route

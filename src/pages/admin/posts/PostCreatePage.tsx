@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { contentService } from '../../../services/contentService';
 import { CONTENT_CATEGORIES } from '../../../constants/categories';
-import { Upload, X, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Upload, ArrowLeft, CheckCircle } from 'lucide-react';
 
 const PostCreatePage: React.FC = () => {
   const navigate = useNavigate();

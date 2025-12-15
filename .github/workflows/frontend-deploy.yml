@@ -1,0 +1,36 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        # Crucial step: The code is checked out on the GitHub Actions runner.
+        # This code needs to be transferred to the VPS before the build happens.
+
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.1
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }} 
+
+      - name: Deploy and Build on VPS
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          ssh -o StrictHostKeyChecking=no $USER@$HOST "
+            cd /srv/tvk-app/tvk-app-frontend || exit 1
+            
+            git fetch --all 
+            git reset --hard origin/main
+            
+            docker compose up -d --build 
+            
+            docker image prune -f
+          "
