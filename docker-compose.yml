@@ -37,3 +37,7 @@ services:
     restart: unless-stopped
     networks:
       - laravel
+
+networks:
+  laravel:
+    external: true
