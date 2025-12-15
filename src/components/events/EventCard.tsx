@@ -10,6 +10,9 @@ export interface EventCardData {
   dateTime: string;
   venue: string;
   tag: "Online" | "Live" | "Fan Meetup" | "Meetup" | "Other";
+  rules?: string;
+  rewardPoints?: number;
+  isCancelled?: boolean;
 }
 
 interface EventCardProps {

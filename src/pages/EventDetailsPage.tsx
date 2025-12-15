@@ -249,26 +249,51 @@ const EventDetailsPage: React.FC = () => {
 
             {/* Rules / info panel */}
             <div className="space-y-4">
-              <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 p-4 sm:p-6 space-y-3">
-                <h3 className="text-sm font-semibold">Event Rules &amp; Info</h3>
-                <ul className="space-y-2 text-[11px] sm:text-xs text-neutral-300 list-disc list-inside">
-                  <li>Admission is for active TVK Members only.</li>
-                  <li>Please arrive at least 20 minutes before start time.</li>
-                  <li>Photography and recording may be restricted during certain segments.</li>
-                  <li>
-                    Further details (tickets, QR codes, etc.) will be emailed after registration.
-                  </li>
-                </ul>
-              </div>
-
-              <div className="rounded-2xl bg-slate-900/60 border border-yellow-500/30 p-4 sm:p-6 space-y-2">
-                <h4 className="text-sm font-semibold text-yellow-300">Members-only benefit</h4>
-                <p className="text-[11px] sm:text-xs text-neutral-200">
-                  Attending this event may reward you with TVK membership points and early access to
-                  future experiences. Exact points and perks can be wired from the backend later.
-                </p>
-              </div>
+  <div className="rounded-2xl bg-slate-900/80 border border-slate-700/70 p-4 sm:p-6 space-y-3">
+    <h3 className="text-sm font-semibold">Event Rules &amp; Info</h3>
+    
+    {/* REPLACE THIS ENTIRE <ul> SECTION */}
+    {event.rules ? (
+      <div className="text-[11px] sm:text-xs text-neutral-300 space-y-2">
+        {/* Check if rules are HTML or plain text */}
+        {event.rules.includes('<') ? (
+          <div 
+            dangerouslySetInnerHTML={{ __html: event.rules }}
+            className="prose prose-invert prose-sm max-w-none"
+          />
+        ) : (
+          // Split by newlines for plain text
+          event.rules.split('\n').filter(line => line.trim()).map((rule: string, index: number) => (
+            <div key={index} className="flex items-start gap-2">
+              <span className="mt-0.5">•</span>
+              <span>{rule.trim()}</span>
             </div>
+          ))
+        )}
+      </div>
+    ) : (
+      // Fallback if no rules in API
+      <ul className="space-y-2 text-[11px] sm:text-xs text-neutral-300 list-disc list-inside">
+        <li>Admission is for active TVK Members only.</li>
+        <li>Please arrive at least 20 minutes before start time.</li>
+        <li>Photography and recording may be restricted during certain segments.</li>
+        <li>Further details (tickets, QR codes, etc.) will be emailed after registration.</li>
+      </ul>
+    )}
+  </div>
+
+  {/* Update the benefits section to use rewardPoints */}
+  <div className="rounded-2xl bg-slate-900/60 border border-yellow-500/30 p-4 sm:p-6 space-y-2">
+    <h4 className="text-sm font-semibold text-yellow-300">Members-only benefit</h4>
+    <p className="text-[11px] sm:text-xs text-neutral-200">
+      {event.rewardPoints ? (
+        `Attending this event will reward you with ${event.rewardPoints} TVK membership points.`
+      ) : (
+        'Attending this event may reward you with TVK membership points and early access to future experiences.'
+      )}
+    </p>
+  </div>
+</div>
           </section>
         </div>
       </main>
