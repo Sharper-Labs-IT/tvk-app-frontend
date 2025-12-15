@@ -10,6 +10,7 @@ import { gameService, type LeaderboardEntry } from '../services/gameService'; //
 interface UserTrophyData {
   userId: string;
   username: string;
+  nickname?: string; // Display name
   avatar: string;
   totalTrophies: number;
   trophyBreakdown: {
@@ -87,23 +88,44 @@ const Leaderboard: React.FC = () => {
 
   useEffect(() => {
     // --- Backend API Integration ---
-    // TODO: Uncomment this block when backend is ready
-    /*
     const fetchLeaderboard = async () => {
       try {
-        const data = await gameService.getLeaderboard();
-        // Map backend data to frontend format if necessary
-        const formattedData: UserTrophyData[] = data.map(entry => ({
-          userId: entry.user_id.toString(),
-          username: entry.username,
-          avatar: entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.username}`,
-          totalTrophies: entry.total_trophies,
-          trophyBreakdown: entry.trophy_breakdown,
-          rank: entry.rank
+        const response = await gameService.getLeaderboard();
+        console.log('[Leaderboard] API Response:', response);
+        
+        // Handle potential response wrapping (e.g. { leaderboard: [...] } or { data: [...] })
+        const data = Array.isArray(response) 
+          ? response 
+          : (response as any).leaderboard || (response as any).data || [];
+        console.log('[Leaderboard] Parsed data:', data);
+        
+        // If no data from API, use dummy data
+        if (!data || data.length === 0) {
+          console.log('[Leaderboard] No data from API, using dummy data');
+          setLeaderboardData(DUMMY_LEADERBOARD_DATA);
+          return;
+        }
+        
+        // Map backend data to frontend format
+        // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, nickname } }
+        const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => ({
+          userId: entry.user_id?.toString() || entry.user?.id?.toString() || '0',
+          username: entry.user?.name || entry.username || 'Unknown',
+          nickname: entry.user?.nickname || entry.nickname || null,
+          avatar: entry.user?.avatar || entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.user?.nickname || entry.user?.name || entry.username}`,
+          totalTrophies: entry.total_trophies || 0,
+          trophyBreakdown: entry.trophy_breakdown || {
+            PLATINUM: entry.platinum_count || 0,
+            GOLD: entry.gold_count || 0,
+            SILVER: entry.silver_count || 0,
+            BRONZE: entry.bronze_count || 0
+          },
+          rank: entry.rank || index + 1
         }));
+        console.log('[Leaderboard] Formatted data:', formattedData);
         setLeaderboardData(formattedData);
       } catch (error) {
-        console.error("Failed to fetch leaderboard:", error);
+        console.error("[Leaderboard] Failed to fetch leaderboard:", error);
         // Fallback to dummy data
         setLeaderboardData(DUMMY_LEADERBOARD_DATA);
       } finally {
@@ -111,13 +133,6 @@ const Leaderboard: React.FC = () => {
       }
     };
     fetchLeaderboard();
-    */
-
-    // Simulating API call (Remove this when backend is connected)
-    setTimeout(() => {
-      setLeaderboardData(DUMMY_LEADERBOARD_DATA);
-      setLoading(false);
-    }, 1000);
   }, []);
 
   const topThree = leaderboardData.slice(0, 3);
@@ -319,7 +334,7 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                 {/* Info */}
                 <div className="text-center mt-2">
                     <h3 className={`font-black tracking-tight ${isFirst ? 'text-2xl text-white' : 'text-xl text-zinc-200'}`}>
-                        {user.username}
+                        {user.nickname || user.username}
                     </h3>
                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1">Level {Math.floor(user.totalTrophies / 5) + 1}</p>
                 </div>
@@ -352,9 +367,9 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
 
             {/* User Info */}
             <div className="flex-1 flex items-center gap-4">
-                <img src={user.avatar} alt={user.username} className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors" />
+                <img src={user.avatar} alt={user.nickname || user.username} className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors" />
                 <div>
-                    <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.username}</h4>
+                    <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.nickname || user.username}</h4>
                     <div className="flex gap-3 text-xs text-zinc-500">
                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />{user.trophyBreakdown.PLATINUM} Plat</span>
                        <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />{user.trophyBreakdown.GOLD} Gold</span>

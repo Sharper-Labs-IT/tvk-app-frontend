@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -10,6 +10,9 @@ import {
   ChevronRight,
   List,
   PlusCircle,
+  CreditCard,
+  Gamepad2, // Icon for Games
+  Calendar, // Icon for Events
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -20,7 +23,7 @@ interface SubNavItem {
 
 interface NavItem {
   name: string;
-  path?: string; // Optional because parent items might not be links themselves
+  path?: string;
   icon: React.ElementType;
   subItems?: SubNavItem[];
 }
@@ -35,14 +38,50 @@ const navItems: NavItem[] = [
       { name: 'Add New Post', path: '/admin/posts/create', icon: PlusCircle },
     ],
   },
+  // --- NEW SECTION: Game Management ---
+  {
+    name: 'Game Management',
+    icon: Gamepad2,
+    subItems: [
+      { name: 'All Games', path: '/admin/games', icon: List },
+      { name: 'Add New Game', path: '/admin/games/create', icon: PlusCircle },
+    ],
+  },
+  // --- NEW SECTION: Event Management ---
+  {
+    name: 'Event Management',
+    icon: Calendar,
+    subItems: [
+      { name: 'All Events', path: '/admin/events', icon: List },
+      { name: 'Create Event', path: '/admin/events/create', icon: PlusCircle },
+    ],
+  },
+  // ------------------------------------
+  {
+    name: 'Membership Plans',
+    icon: CreditCard,
+    subItems: [
+      { name: 'View All Plans', path: '/admin/membership', icon: List },
+      { name: 'Add New Plan', path: '/admin/membership/create', icon: PlusCircle },
+    ],
+  },
   { name: 'Member Management', path: '/admin/members', icon: Users },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  // State to track which menu is open (e.g. 'Post Management')
-  const [openMenu, setOpenMenu] = useState<string | null>('Post Management');
+  const [openMenu, setOpenMenu] = useState<string | null>(null);
+
+  // Automatically open the menu if the current path matches a sub-item
+  useEffect(() => {
+    const activeItem = navItems.find((item) =>
+      item.subItems?.some((sub) => location.pathname.startsWith(sub.path))
+    );
+    if (activeItem) {
+      setOpenMenu(activeItem.name);
+    }
+  }, [location.pathname]);
 
   const toggleMenu = (name: string) => {
     setOpenMenu(openMenu === name ? null : name);
@@ -58,9 +97,8 @@ const AdminSidebar: React.FC = () => {
       </div>
 
       {/* Navigation Links */}
-      <nav className="flex-1 py-6 px-3 space-y-1">
+      <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto custom-scrollbar">
         {navItems.map((item) => {
-          // Check if parent or any child is active
           const isParentActive = item.subItems
             ? item.subItems.some((sub) => location.pathname === sub.path)
             : location.pathname === item.path;

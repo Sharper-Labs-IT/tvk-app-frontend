@@ -3,8 +3,68 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, RotateCcw, Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { useAuth } from '../../context/AuthContext';
+import { GAME_IDS } from '../../constants/games';
+
+// --- Gaming Loader Component ---
+const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
+  return (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-950 text-white overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-900 via-black to-black opacity-90" />
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20" />
+      
+      <div className="relative z-10 flex flex-col items-center w-full max-w-md px-6">
+        {/* Logo / Title */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-12 text-center"
+        >
+          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+            TVK SPACE INVADERS
+          </h1>
+          <p className="text-slate-400 text-sm tracking-[0.3em] uppercase mt-2 font-bold">
+            System Initialization
+          </p>
+        </motion.div>
+
+        {/* Progress Bar Container */}
+        <div className="w-full h-4 bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+          {/* Animated Progress Fill */}
+          <motion.div 
+            className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-300 relative"
+            initial={{ width: "0%" }}
+            animate={{ width: `${progress}%` }}
+            transition={{ type: "spring", stiffness: 50, damping: 15 }}
+          >
+            {/* Glare effect on bar */}
+            <div className="absolute top-0 left-0 w-full h-[1px] bg-white/50" />
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-black/20" />
+            
+            {/* Moving shine effect */}
+            <motion.div 
+              className="absolute top-0 bottom-0 w-10 bg-white/30 skew-x-[-20deg] blur-sm"
+              animate={{ x: ["-100%", "500%"] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+            />
+          </motion.div>
+        </div>
+
+        {/* Percentage & Status Text */}
+        <div className="w-full flex justify-between items-center mt-3 font-mono text-xs md:text-sm text-yellow-500/80">
+          <span className="animate-pulse">LOADING ASSETS...</span>
+          <span className="font-bold">{Math.round(progress)}%</span>
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute -z-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-[80px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+      </div>
+    </div>
+  );
+};
 
 // --- STORY CONTENT ---
 const STORY_LINES = [
@@ -120,6 +180,11 @@ interface Star {
 const SpaceInvadersGame: React.FC = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // --- Loading State ---
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [collectedCoins, setCollectedCoins] = useState(0);
@@ -129,29 +194,57 @@ const SpaceInvadersGame: React.FC = () => {
   >('intro');
   const [isMuted, setIsMuted] = useState(false);
   const [isShaking, setIsShaking] = useState(false);
+  const [participantId, setParticipantId] = useState<number | null>(null);
 
   // --- Backend Integration ---
+  const { refreshUser, user } = useAuth();
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Update trophy count when user changes
   useEffect(() => {
-    if (gameState === 'gameover' || gameState === 'victory') {
-      // TODO: Uncomment when backend is ready
-      /*
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+  
+  useEffect(() => {
+    if ((gameState === 'gameover' || gameState === 'victory') && participantId && collectedCoins > 0 && !scoreSubmitted) {
       const submitGameScore = async () => {
         try {
-          // Assuming gameId for Space Invaders is 1 (Replace with actual ID)
-          await gameService.submitScore(1, {
+          setScoreSubmitted(true);
+          await gameService.submitScore(participantId, {
             score: score,
             coins: collectedCoins,
             data: { lives: lives }
           });
           console.log("Score submitted successfully");
+          
+          // Refresh user data from backend to get updated coins and trophies
+          await refreshUser();
         } catch (error) {
           console.error("Failed to submit score:", error);
+          setScoreSubmitted(false);
         }
       };
       submitGameScore();
-      */
     }
-  }, [gameState, score, collectedCoins, lives]);
+  }, [gameState, score, collectedCoins, lives, participantId, scoreSubmitted, refreshUser]);
 
   // --- Story State ---
   const [storyIndex, setStoryIndex] = useState(0);
@@ -192,8 +285,49 @@ const SpaceInvadersGame: React.FC = () => {
   const enemyMoveIntervalRef = useRef(1000);
   const animationFrameRef = useRef<number>(0);
 
+  // --- Preload Images ---
+  useEffect(() => {
+    const preloadImages = async () => {
+      const imageUrls = [
+        '/img/r.webp',
+        '/img/angry-alien.webp',
+        '/img/space.webp',
+        '/img/angry-vijay.png',
+        '/img/game-over.webp',
+        '/img/game-won.webp',
+        '/img/sad.png',
+        '/img/happy.webp'
+      ];
+
+      let loadedCount = 0;
+      const total = imageUrls.length;
+
+      const updateProgress = () => {
+        loadedCount++;
+        const progress = (loadedCount / total) * 100;
+        setLoadingProgress(progress);
+        if (loadedCount === total) {
+          setTimeout(() => {
+            setAssetsLoaded(true);
+          }, 500);
+        }
+      };
+
+      imageUrls.forEach(url => {
+        const img = new Image();
+        img.src = url;
+        img.onload = updateProgress;
+        img.onerror = updateProgress;
+      });
+    };
+
+    preloadImages();
+  }, []);
+
   // Initialize Assets
   useEffect(() => {
+    if (!assetsLoaded) return;
+
     playerImageRef.current.src = '/img/r.webp';
     enemyImageRef.current.src = '/img/angry-alien.webp';
     backgroundImageRef.current.src = '/img/space.webp';
@@ -210,7 +344,7 @@ const SpaceInvadersGame: React.FC = () => {
       });
     }
     starsRef.current = stars;
-  }, []);
+  }, [assetsLoaded]);
 
   // --- Story Logic ---
   const advanceStory = () => {
@@ -285,7 +419,16 @@ const SpaceInvadersGame: React.FC = () => {
     enemyMoveIntervalRef.current = 800;
   };
 
-  const initGame = () => {
+  const initGame = async () => {
+    try {
+      const response = await gameService.joinGame(GAME_IDS.SPACE_INVADERS);
+      setParticipantId(response.participant.id);
+    } catch (error) {
+      console.error("Failed to join game:", error);
+      return;
+    }
+
+    setScoreSubmitted(false);
     setScore(0);
     setLives(3);
     setCollectedCoins(0);
@@ -660,6 +803,11 @@ const SpaceInvadersGame: React.FC = () => {
     }
   };
 
+  // --- Loading Screen ---
+  if (!assetsLoaded) {
+    return <GamingLoader progress={loadingProgress} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden font-sans select-none">
       {/* Background Image */}
@@ -937,7 +1085,7 @@ const SpaceInvadersGame: React.FC = () => {
                 </div>
                 <div className="flex justify-center">
                   <p className="text-2xl font-mono flex items-center gap-2">
-                    Total Trophies: <span className="text-yellow-400">{getUserTotalTrophies() + (getTrophyFromScore('space-invaders', score) !== 'NONE' ? 1 : 0)}</span>
+                    Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
                   </p>
                 </div>
               </div>
@@ -1015,7 +1163,7 @@ const SpaceInvadersGame: React.FC = () => {
                 </div>
                 <div className="flex justify-center">
                   <p className="text-2xl font-mono flex items-center gap-2">
-                    Total Trophies: <span className="text-yellow-400">{getUserTotalTrophies() + (getTrophyFromScore('space-invaders', score) !== 'NONE' ? 1 : 0)}</span>
+                    Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
                   </p>
                 </div>
               </div>

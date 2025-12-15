@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Gamepad2,
   Youtube,
@@ -17,13 +17,116 @@ import {
 import { useNavigate } from "react-router-dom";
 import BlurText from "../../components/BlurText"; // Assuming this exists
 import TextType from "../../components/TextType"; // Assuming this exists
+import { useGameAccess } from '../../hooks/useGameAccess';
+import GameAccessModal from '../../components/common/GameAccessModal';
+import { useAuth } from '../../context/AuthContext';
 
 const TriviaGameStart: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
+  const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
+  const [showAccessModal, setShowAccessModal] = useState(false);
+  const [accessCost, setAccessCost] = useState(0);
+  const { user, refreshUser } = useAuth();
+  const userCoins = user?.coins || 0;
+  const [totalTrophies, setTotalTrophies] = useState<number>(0);
+  const [isLoadingStats, setIsLoadingStats] = useState(false);
+
+  // Calculate total trophies from user object
+  const calculateTotalTrophies = (userTrophies: any): number => {
+    if (!userTrophies) return 0;
+    if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
+      let total = 0;
+      if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
+      if (userTrophies.SILVER) total += userTrophies.SILVER.length;
+      if (userTrophies.GOLD) total += userTrophies.GOLD.length;
+      if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
+      return total;
+    }
+    if (Array.isArray(userTrophies)) return userTrophies.length;
+    return 0;
+  };
+
+  // Fetch user stats on mount and when returning from game
+  const fetchUserStats = async () => {
+    if (!user) return;
+    setIsLoadingStats(true);
+    try {
+      await refreshUser();
+    } catch (error) {
+      console.error('Failed to fetch user stats:', error);
+    } finally {
+      setIsLoadingStats(false);
+    }
+  };
+
+  // Update trophy count when user changes
+  useEffect(() => {
+    if (user?.trophies) {
+      setTotalTrophies(calculateTotalTrophies(user.trophies));
+    }
+  }, [user?.trophies]);
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchUserStats();
+  }, [user?.id]);
+
+  // Refetch when page becomes visible (user returns from game)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        fetchUserStats();
+      }
+    };
+
+    const handleFocus = () => {
+      fetchUserStats();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [user?.id]);
+
+  const handlePlayClick = () => {
+    const { allowed, reason, cost } = checkAccess();
+    if (allowed) {
+      consumePlay(false);
+      navigate('/game/trivia/start');
+    } else {
+      if (reason === 'limit_reached' || reason === 'no_coins') {
+        setAccessCost(cost);
+        setShowAccessModal(true);
+      } else if (reason === 'not_logged_in') {
+          navigate('/login');
+      }
+    }
+  };
+
+  const handlePayToPlay = async () => {
+      const success = await consumePlay(true);
+      if (success) {
+          setShowAccessModal(false);
+          navigate('/game/trivia/start');
+      } else {
+          alert("Not enough coins!");
+      }
+  }
 
   return (
     <div className="relative min-h-screen w-full bg-slate-900 text-white font-sans overflow-hidden selection:bg-yellow-500/30">
+      <GameAccessModal 
+        isOpen={showAccessModal}
+        onClose={() => setShowAccessModal(false)}
+        onPay={handlePayToPlay}
+        cost={accessCost}
+        userCoins={userCoins}
+      />
       {/* --- BACKGROUND LAYERS --- */}
       
       {/* 1. Main Hero Image */}
@@ -67,16 +170,27 @@ const TriviaGameStart: React.FC = () => {
 
           {/* Desktop Nav Stats */}
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            {/* Trophies Display */}
+            <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-amber-500/20 px-5 py-2 rounded-full shadow-lg shadow-black/20">
+              <Trophy className="w-5 h-5 text-amber-400" />
+              <span className="text-amber-400 font-bold tracking-wide">
+                {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
+              </span>
+            </div>
+
+            {/* Coins Display */}
             <div className="flex items-center gap-3 bg-black/40 backdrop-blur-md border border-white/10 px-5 py-2 rounded-full shadow-lg shadow-black/20">
               <span className="text-yellow-400 drop-shadow-glow">🪙</span>
-              <span className="text-white font-bold tracking-wide">1,250</span>
+              <span className="text-white font-bold tracking-wide">
+                {isLoadingStats ? '...' : userCoins.toLocaleString()}
+              </span>
             </div>
             
             <button className="flex items-center gap-3 hover:bg-white/5 transition-all px-4 py-2 rounded-full border border-transparent hover:border-white/10">
               <div className="w-8 h-8 bg-gradient-to-tr from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold ring-2 ring-white/20">
-                U
+                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
               </div>
-              <span className="text-gray-200">Profile</span>
+              <span className="text-gray-200">{user?.nickname || 'usernull'}</span>
             </button>
           </nav>
         </header>
@@ -125,7 +239,7 @@ const TriviaGameStart: React.FC = () => {
             
             {/* Primary Button */}
             <button 
-                onClick={() => navigate("/game/trivia/start")} 
+                onClick={handlePlayClick} 
                 className="cursor-target group relative w-full md:w-auto px-10 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-black text-lg uppercase tracking-widest clip-path-slant transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_30px_rgba(234,179,8,0.6)]"
                 style={{ clipPath: 'polygon(10% 0, 100% 0, 100% 80%, 90% 100%, 0 100%, 0 20%)' }}
             >
@@ -145,6 +259,16 @@ const TriviaGameStart: React.FC = () => {
               </span>
             </button>
           </div>
+          {!isPremium && (
+            <p className="mt-4 text-gray-400 text-sm">
+              Free Plays Remaining: <span className="text-yellow-400 font-bold">{remainingFreePlays}</span>
+            </p>
+          )}
+          {isPremium && (
+            <p className="mt-4 text-green-400 text-sm flex items-center gap-2">
+              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+            </p>
+          )}
 
           {/* Daily Challenge Card - Floating Effect */}
           {/* <div className="mt-16 md:mt-24 w-full max-w-2xl animate-bounce-slow">
