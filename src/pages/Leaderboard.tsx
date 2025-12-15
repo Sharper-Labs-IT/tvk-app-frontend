@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Medal, Crown, Star, Gamepad2, Target, Search, Users, Zap, Flame } from 'lucide-react';
+import { Trophy, Crown, Target, Search, Users } from 'lucide-react';
 import LogoHeader from '../components/common/LogoHeader';
 import Footer from '../components/Footer';
-import { getTrophyColor, type TrophyTier } from '../utils/trophySystem';
-import { gameService, type LeaderboardEntry } from '../services/gameService'; // Import gameService
+import { type TrophyTier } from '../utils/trophySystem';
+import { gameService } from '../services/gameService'; // Import gameService
 
 // --- Types ---
 interface UserTrophyData {
