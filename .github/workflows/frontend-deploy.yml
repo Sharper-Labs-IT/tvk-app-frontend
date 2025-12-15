@@ -11,27 +11,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        # Crucial step: The code is checked out on the GitHub Actions runner.
+        # This code needs to be transferred to the VPS before the build happens.
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.1
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          ssh-private-key: ${{ secrets.DEPLOY_KEY }} 
 
-      - name: Build & Push Docker Image
+      - name: Deploy and Build on VPS
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+          USER: ${{ secrets.DEPLOY_USER }}
         run: |
-          docker build -t ghcr.io/${{ github.repository_owner }}/tvk-app-frontend:latest .
-          docker push ghcr.io/${{ github.repository_owner }}/tvk-app-frontend:latest
-
-      - name: Deploy to VPS
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 72.61.147.45
-          username: deploy
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /srv/tvk-app/tvk-app-backend
-            docker compose pull
-            docker compose up -d
+          ssh -o StrictHostKeyChecking=no $USER@$HOST "
+            cd /srv/tvk-app/tvk-app-frontend || exit 1
+            
+            git fetch --all 
+            git reset --hard origin/main
+            
+            docker compose up -d --build 
+            
             docker image prune -f
+          "
