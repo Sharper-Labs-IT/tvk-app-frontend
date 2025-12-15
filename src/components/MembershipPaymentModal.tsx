@@ -93,7 +93,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         onSuccess();
       }
 
-     // onSuccess?.();
+    
       onClose();
     } catch (err: any) {
       console.error("payments/subscribe error:", err?.response || err);

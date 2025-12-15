@@ -182,7 +182,7 @@ const MembershipPage: React.FC = () => {
           {!loading && !error && plans.map((plan) => {
             const isFree = plan.price === "0.00";
 
-            const priceLabel = isFree ? "Free" : `$${plan.price}`;
+            const priceLabel = isFree ? "Free" : `${plan.price}`;
 
             // Price suffix logic:
             // - Free Tier: based on duration_days ("Lifetime" for 36500)
