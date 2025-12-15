@@ -1,14 +1,14 @@
-# FROM node:20-alpine AS build
+FROM node:20-alpine AS build
 
-# WORKDIR /app
+WORKDIR /app
     
-# COPY package*.json ./
+COPY package*.json ./
     
-# RUN npm install
+RUN npm install
     
-# COPY . .
+COPY . .
     
-# RUN npm run build
+RUN npm run build
 
 # FROM nginx:stable-alpine
     
@@ -22,15 +22,15 @@
 ## production ##
 
 # ---------- BUILD STAGE ----------
-FROM node:20-alpine AS build
+# FROM node:20-alpine AS build
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci
+# COPY package.json package-lock.json ./
+# RUN npm ci
 
-COPY . .
-RUN npm run build
+# COPY . .
+# RUN npm run build
 
 
 # ---------- RUNTIME STAGE ----------
