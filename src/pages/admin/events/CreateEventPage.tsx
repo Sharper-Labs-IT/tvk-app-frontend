@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Upload, Calendar } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { adminEventService } from '../../../services/adminEventService';
 
 const CreateEventPage: React.FC = () => {

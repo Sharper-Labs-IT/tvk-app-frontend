@@ -8,7 +8,8 @@ const AdminHeader: React.FC = () => {
 
   // 1. Safely derive display name and role
   const displayName = user?.name || 'Admin User';
-  const displayRole = user?.roles?.[0]?.name || 'Admin'; // Assuming roles is an array like [{name: 'admin'}]
+  const firstRole = user?.roles?.[0];
+  const displayRole = (typeof firstRole === 'string' ? firstRole : firstRole?.name) || 'Admin';
 
   // 2. Generate dynamic avatar based on real name
   const imageUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(
