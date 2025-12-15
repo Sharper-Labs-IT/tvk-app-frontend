@@ -18,6 +18,21 @@ import { userService } from '../../services/userService';
 import EditProfileModal from '../../components/dashboard/EditProfileModal';
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
 
+// --- 1. DYNAMIC URL CONFIGURATION ---
+// Get base URL from .env (e.g., "http://localhost:8000")
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+
+// Clean the URL (remove trailing slash if it exists)
+const CLEAN_BASE_URL = API_BASE_URL.replace(/\/$/, '');
+
+// ⚠️ CHOOSE ONE OF THESE TWO LINES:
+
+// OPTION A: If you pasted images into "public/icons/..." (Direct Public Folder)
+const STORAGE_BASE_URL = CLEAN_BASE_URL;
+
+// OPTION B: If you pasted images into "storage/app/public/..." (Storage Folder)
+// const STORAGE_BASE_URL = `${CLEAN_BASE_URL}/storage`;
+
 const MemberProfile: React.FC = () => {
   const { user, login, token } = useAuth();
 
@@ -29,24 +44,19 @@ const MemberProfile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // --- 1. CALCULATE REAL STATS FROM CONTEXT ---
-  // We no longer need to fetch this separately because 'me()' returns it all.
-
+  // Stats
   const totalPoints = user?.points || 0;
   const gamesPlayed = user?.game_participation?.length || 0;
   const badgeCount = user?.badges?.length || 0;
 
-  // Calculate Trophies (Handle if it comes as Array or Object)
+  // Calculate Trophies
   const trophyCount = useMemo(() => {
     if (!user?.trophies) return 0;
     if (Array.isArray(user.trophies)) return user.trophies.length;
-    // If grouped by tier (object), sum all arrays
     return Object.values(user.trophies).reduce((acc: number, group: any) => acc + group.length, 0);
   }, [user?.trophies]);
 
-  // --- 2. HELPER FUNCTIONS ---
-
-  // Format Date
+  // Helper: Format Date
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -56,7 +66,7 @@ const MemberProfile: React.FC = () => {
     });
   };
 
-  // Avatar Upload
+  // Helper: Avatar Upload
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
@@ -79,8 +89,8 @@ const MemberProfile: React.FC = () => {
     }
   };
 
-  // Subscription Logic
-  const isPremium = user?.membership_tier && user.membership_tier !== 'free';
+  // Helper: Subscription Logic
+  const isPremium = user?.membership_tier && user.membership_tier !== 'Free';
 
   const calculateDaysLeft = () => {
     if (!user?.membership?.end_date) return 0;
@@ -88,6 +98,15 @@ const MemberProfile: React.FC = () => {
     const now = new Date().getTime();
     const diff = Math.ceil((end - now) / (1000 * 3600 * 24));
     return diff > 0 ? diff : 0;
+  };
+
+  // Helper: Construct Badge Image URL
+  const getBadgeImageUrl = (iconPath?: string) => {
+    if (!iconPath) return null;
+    // If the backend accidentally sends a full URL, use it
+    if (iconPath.startsWith('http')) return iconPath;
+    // Otherwise append local storage path
+    return `${STORAGE_BASE_URL}/${iconPath}`;
   };
 
   return (
@@ -284,7 +303,7 @@ const MemberProfile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Achievements Section */}
+              {/* Achievements Section - UPDATED TO SHOW IMAGES */}
               <div className="bg-black/40 rounded-xl border border-white/5 p-6">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Trophy className="text-gold" size={20} /> Achievements
@@ -297,17 +316,45 @@ const MemberProfile: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {/* Render Badges */}
-                    {user?.badges?.map((badge) => (
-                      <div
-                        key={badge.id}
-                        className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center"
-                      >
-                        <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center text-gold mb-2">
-                          <Star size={16} />
+                    {user?.badges?.map((badge) => {
+                      const imageUrl = getBadgeImageUrl(badge.icon);
+
+                      return (
+                        <div
+                          key={badge.id}
+                          className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center group hover:bg-white/10 transition"
+                        >
+                          <div className="w-16 h-16 mb-2 flex items-center justify-center">
+                            {imageUrl ? (
+                              <img
+                                src={imageUrl}
+                                alt={badge.name}
+                                className="w-full h-full object-contain drop-shadow-lg"
+                                onError={(e) => {
+                                  // Fallback to Icon if image fails to load
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.parentElement?.classList.add('fallback-icon');
+                                }}
+                              />
+                            ) : null}
+
+                            {/* Fallback Icon (Hidden by default, shown if image missing or error) */}
+                            <div
+                              className={`hidden w-12 h-12 bg-gold/20 rounded-full items-center justify-center text-gold ${
+                                !imageUrl ? 'flex' : 'fallback-flex'
+                              }`}
+                            >
+                              <Star size={20} />
+                            </div>
+                          </div>
+
+                          <span className="text-white text-sm font-bold">{badge.name}</span>
+                          <span className="text-gray-500 text-xs mt-1">
+                            {badge.points_required} PTS
+                          </span>
                         </div>
-                        <span className="text-white text-sm font-bold">{badge.name}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -366,6 +413,13 @@ const MemberProfile: React.FC = () => {
       />
 
       <ResetPasswordModal isOpen={isResetPassOpen} onClose={() => setIsResetPassOpen(false)} />
+
+      {/* CSS for Fallback (Can be moved to global css) */}
+      <style>{`
+        .fallback-icon .fallback-flex {
+            display: flex;
+        }
+      `}</style>
     </div>
   );
 };
