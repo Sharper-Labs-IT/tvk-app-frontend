@@ -40,4 +40,5 @@ services:
 
 networks:
   laravel:
-    external: true
+    external:
+      name: tvk-app-backend_laravel
