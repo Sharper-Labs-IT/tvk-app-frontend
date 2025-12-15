@@ -34,6 +34,6 @@ services:
       dockerfile: Dockerfile
     image: tvk-frontend:latest
     container_name: tvk-frontend-prod
-    ports:
-      - "8080:80"
     restart: unless-stopped
+    networks:
+      - laravel
