@@ -111,7 +111,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   };
 
   const formattedPrice =
-    plan.price && plan.price !== "0.00" ? `$${plan.price}` : "Free";
+    plan.price && plan.price !== "0.00" ? `${plan.price}` : "Free";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
