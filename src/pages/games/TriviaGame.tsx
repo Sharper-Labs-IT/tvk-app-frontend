@@ -6,8 +6,9 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor, getUserTotalTrophies } from '../../utils/trophySystem';
+import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
 import { gameService } from '../../services/gameService';
+import { GAME_IDS } from '../../constants/games';
 import { useAuth } from '../../context/AuthContext';
 
 // --- Gaming Loader Component ---

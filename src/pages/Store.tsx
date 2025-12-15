@@ -6,11 +6,9 @@ import {
   Zap,
   Star,
   Shield,
-  CreditCard,
   TrendingUp,
   Wallet,
   Sparkles,
-  ArrowRight,
   Bomb,
   Snowflake,
 } from 'lucide-react';
@@ -200,12 +198,6 @@ const DEFAULT_COIN_PACKAGES = [
   },
 ];
 
-interface MerchVariant {
-  colorName: string;
-  colorHex: string;
-  images: string[]; // [Front View, Back/Side View]
-}
-
 const DEFAULT_MERCH_ITEMS = [
   {
     id: 1,
@@ -263,30 +255,6 @@ const DEFAULT_MERCH_ITEMS = [
     image: '/img/back-cover.png',
     category: 'Gear',
     rarity: 'Common',
-  },
-];
-
-const trendingItems = [
-  {
-    id: 1,
-    name: 'Void Walker Skin',
-    price: '1200 Coins',
-    image: 'https://placehold.co/300x200/2a0a3a/white?text=Void+Walker',
-    discount: '-20%',
-  },
-  {
-    id: 2,
-    name: 'Plasma Rifle',
-    price: '800 Coins',
-    image: 'https://placehold.co/300x200/0a2a3a/white?text=Plasma+Rifle',
-    discount: '-15%',
-  },
-  {
-    id: 3,
-    name: 'Neon Bike',
-    price: '2500 Coins',
-    image: 'https://placehold.co/300x200/3a2a0a/white?text=Neon+Bike',
-    discount: 'HOT',
   },
 ];
 
