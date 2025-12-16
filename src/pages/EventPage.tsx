@@ -1,17 +1,13 @@
-import React, { useMemo, useState, useEffect } from "react";
-import EventCard from "../components/events/EventCard";
-import type { EventCardData } from "../components/events/EventCard";
-import Header from "../components/Header";
-import Footer from "../components/Footer";
-import { Link } from "react-router-dom";
+import React, { useMemo, useState, useEffect } from 'react';
+import EventCard from '../components/events/EventCard';
+import type { EventCardData } from '../components/events/EventCard';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { Link } from 'react-router-dom';
 
-import {
-  fetchEvents,
-  fetchFeaturedEvents,
-  mapApiEventToCard,
-} from "../types/events";
+import { fetchEvents, fetchFeaturedEvents, mapApiEventToCard } from '../types/events';
 
-const FILTERS = ["All", "Upcoming", "Live", "Fan Meetup", "Online"] as const;
+const FILTERS = ['All', 'Upcoming', 'Live', 'Fan Meetup', 'Online'] as const;
 type FilterValue = (typeof FILTERS)[number];
 
 // ---------- MOCK DATA ONLY (UI DEMO) ----------
@@ -78,23 +74,23 @@ const MOCK_EVENTS: EventCardData[] = [
 // ---------- Dynamic Section Title ----------
 const getSectionTitle = (filter: FilterValue) => {
   switch (filter) {
-    case "All":
-      return "All Events";
-    case "Upcoming":
-      return "Upcoming Events";
-    case "Live":
-      return "Live Events";
-    case "Fan Meetup":
-      return "Fan Meetups";
-    case "Online":
-      return "Online Events";
+    case 'All':
+      return 'All Events';
+    case 'Upcoming':
+      return 'Upcoming Events';
+    case 'Live':
+      return 'Live Events';
+    case 'Fan Meetup':
+      return 'Fan Meetups';
+    case 'Online':
+      return 'Online Events';
     default:
-      return "Events";
+      return 'Events';
   }
 };
 
 const EventPage: React.FC = () => {
-  const [activeFilter, setActiveFilter] = useState<FilterValue>("All");
+  const [activeFilter, setActiveFilter] = useState<FilterValue>('All');
 
   const [events, setEvents] = useState<EventCardData[]>([]);
   const [featuredEvent, setFeaturedEvent] = useState<EventCardData | null>(null);
@@ -129,8 +125,8 @@ const EventPage: React.FC = () => {
           }
         }
       } catch (err) {
-        console.error("Failed to load events", err);
-        setError("Unable to load events. Please try again later.");
+        console.error('Failed to load events', err);
+        setError('Unable to load events. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -140,20 +136,18 @@ const EventPage: React.FC = () => {
   }, []);
 
   const filteredEvents = useMemo(() => {
-    if (activeFilter === "All") return events;
+    if (activeFilter === 'All') return events;
 
-    if (activeFilter === "Fan Meetup") {
-      return events.filter(
-        (e) => e.tag === "Fan Meetup" || e.tag === "Meetup"
-      );
+    if (activeFilter === 'Fan Meetup') {
+      return events.filter((e) => e.tag === 'Fan Meetup' || e.tag === 'Meetup');
     }
-    if (activeFilter === "Online") {
-      return events.filter((e) => e.tag === "Online");
+    if (activeFilter === 'Online') {
+      return events.filter((e) => e.tag === 'Online');
     }
-    if (activeFilter === "Live") {
-      return events.filter((e) => e.tag === "Live");
+    if (activeFilter === 'Live') {
+      return events.filter((e) => e.tag === 'Live');
     }
-    if (activeFilter === "Upcoming") {
+    if (activeFilter === 'Upcoming') {
       return events; // later: filter by date
     }
 
@@ -177,8 +171,8 @@ const EventPage: React.FC = () => {
                 <span className="sm:ml-1">Experiences</span>
               </h1>
               <p className="text-neutral-300 max-w-lg text-sm md:text-[15px]">
-                Join exclusive fan events, live experiences, and community
-                meetups reserved only for TVK Members.
+                Join exclusive fan events, live experiences, and community meetups reserved only for
+                TVK Members.
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -218,79 +212,77 @@ const EventPage: React.FC = () => {
               </div>
             </div>
 
-      {featuredEvent ? (
-          <div className="rounded-3xl bg-slate-950/90 border border-slate-800/80 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)] flex flex-col lg:flex-row">
-  {/* Left: image */}
-  <div className="relative w-full lg:w-3/5 min-h-[220px]">
-      {featuredEvent.imageUrl ? (
-    <img
-      src={featuredEvent.imageUrl}
-      alt={featuredEvent.title}
-      className="w-full h-full object-cover"
-    />
-      ) : (
-    <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
-      )}
-    <div className="absolute top-4 left-4">
-      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
-        <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-        Featured
-      </span>
-    </div>
-  </div>
+            {featuredEvent ? (
+              <div className="rounded-3xl bg-slate-950/90 border border-slate-800/80 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)] flex flex-col lg:flex-row lg:h-[360px]">
+                {/* Left: image */}
+                <div className="relative w-full lg:w-3/5 h-[220px] sm:h-[260px] lg:h-full overflow-hidden">
+                  {featuredEvent.imageUrl ? (
+                    <img
+                      src={featuredEvent.imageUrl}
+                      alt={featuredEvent.title}
+                      className="w-full h-full object-fill"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
+                  )}
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+                      Featured
+                    </span>
+                  </div>
+                </div>
 
-  {/* Right: details */}
-  <div className="w-full lg:w-2/5 px-6 md:px-7 py-4 md:py-5 flex">
-    <div className="w-full flex flex-col gap-3 max-w-md">
-      
-      {/* TITLE — always at the very top */}
-      <h2 className="text-lg sm:text-xl md:text-2xl font-semibold leading-snug">
-        {featuredEvent.title}
-      </h2>
+                {/* Right: details */}
+                <div className="w-full lg:w-2/5 px-6 md:px-7 py-4 md:py-5 flex overflow-y-auto ">
+                  <div className="w-full flex flex-col gap-3 max-w-md">
+                    {/* TITLE — always at the very top */}
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold leading-snug">
+                      {featuredEvent.title}
+                    </h2>
 
-      {/* Highlight */}
-      <p className="text-[11px] sm:text-xs text-yellow-400 font-semibold">
-        Limited seats available{" "}
-        <span className="text-yellow-300/90">— Registration required</span>
-      </p>
+                    {/* Highlight */}
+                    <p className="text-[11px] sm:text-xs text-yellow-400 font-semibold">
+                      Limited seats available{' '}
+                      <span className="text-yellow-300/90">— Registration required</span>
+                    </p>
 
-      {/* Date */}
-      <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
-        <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
-          Date &amp; Time
-        </span>
-        <span>{featuredEvent.dateTime}</span>
-      </div>
+                    {/* Date */}
+                    <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
+                        Date &amp; Time
+                      </span>
+                      <span>{featuredEvent.dateTime}</span>
+                    </div>
 
-      {/* Venue */}
-      <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
-        <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
-          Venue
-        </span>
-        <span>{featuredEvent.venue}</span>
-      </div>
+                    {/* Venue */}
+                    <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
+                      <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
+                        Venue
+                      </span>
+                      <span>{featuredEvent.venue}</span>
+                    </div>
 
-      {/* Description */}
-      <p className="text-[11px] sm:text-xs text-neutral-400 leading-relaxed mt-1">
-        {featuredEvent.description}
-      </p>
+                    {/* Description */}
+                    <p className="text-[11px] sm:text-xs text-neutral-400 leading-relaxed mt-1 line-clamp-4">
+                      {featuredEvent.description}
+                    </p>
 
-      {/* Full-width button */}
-      <Link
-        to={`/events/${featuredEvent.id}`}
-        state={{ event: featuredEvent }}
-        className="w-full mt-2 px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition text-center inline-flex items-center justify-center"
-        >
-          View Details
-      </Link>
-    </div>
-  </div>
-</div>
-      ): loading ? (
-        <p className="text-sm text-neutral-400">Loading featured event...</p>
-      ) : null}
-
-      </section>
+                    {/* Full-width button */}
+                    <Link
+                      to={`/events/${featuredEvent.id}`}
+                      state={{ event: featuredEvent }}
+                      className="w-full mt-2 px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition text-center inline-flex items-center justify-center"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ) : loading ? (
+              <p className="text-sm text-neutral-400">Loading featured event...</p>
+            ) : null}
+          </section>
 
           {/* ---------- FILTERS (MOVED BELOW FEATURED) ---------- */}
           <section className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -303,11 +295,11 @@ const EventPage: React.FC = () => {
                       key={filter}
                       onClick={() => setActiveFilter(filter)}
                       className={[
-                        "whitespace-nowrap px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition",
+                        'whitespace-nowrap px-4 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold transition',
                         isActive
-                          ? "bg-[#ffbf2b] text-black shadow-[0_0_20px_rgba(255,191,43,0.5)]"
-                          : "bg-slate-800/80 text-neutral-300 hover:bg-slate-700",
-                      ].join(" ")}
+                          ? 'bg-[#ffbf2b] text-black shadow-[0_0_20px_rgba(255,191,43,0.5)]'
+                          : 'bg-slate-800/80 text-neutral-300 hover:bg-slate-700',
+                      ].join(' ')}
                     >
                       {filter}
                     </button>
@@ -344,7 +336,7 @@ const EventPage: React.FC = () => {
               <p className="text-sm text-neutral-400 mt-4">Loading Events...</p>
             ) : error ? (
               <p className="text-sm text-red-400 mt-4">{error}</p>
-             ) : filteredEvents.length === 0 ? (
+            ) : filteredEvents.length === 0 ? (
               <p className="text-sm text-neutral-400 mt-4">
                 No events available under this filter.
               </p>
@@ -359,12 +351,10 @@ const EventPage: React.FC = () => {
 
           {/* ---------- CTA ---------- */}
           <section className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-700/70 px-6 md:px-8 py-8 md:py-10 text-center shadow-[0_22px_60px_rgba(15,23,42,0.9)]">
-            <p className="text-sm md:text-base font-semibold mb-2">
-              Ready to Join?
-            </p>
+            <p className="text-sm md:text-base font-semibold mb-2">Ready to Join?</p>
             <p className="text-[11px] sm:text-xs text-neutral-300 mb-5 max-w-xl mx-auto">
-              Become a TVK Member and unlock access to exclusive events, live
-              experiences, and our premium community.
+              Become a TVK Member and unlock access to exclusive events, live experiences, and our
+              premium community.
             </p>
             <Link
               to="/membership"
