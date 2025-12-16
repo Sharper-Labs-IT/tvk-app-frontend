@@ -203,7 +203,7 @@ const EventDetailsPage: React.FC = () => {
           <section className="rounded-3xl overflow-hidden border border-slate-800/80 bg-slate-950/90 shadow-[0_32px_80px_rgba(15,23,42,0.95)] flex flex-col lg:flex-row">
             {/* Left: poster */}
             <div className="relative w-full lg:w-1/2 min-h-[220px]">
-              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-contain p-4" />
               <div className="absolute top-4 left-4">
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
