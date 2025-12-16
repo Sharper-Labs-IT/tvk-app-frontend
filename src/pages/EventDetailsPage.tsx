@@ -5,7 +5,7 @@ import {useAuth} from  "../context/AuthContext";
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import type { EventCardData } from '../components/events/EventCard';
-import { fetchEventById, mapApiEventToCard, participateInEvent } from '../types/events';
+import { fetchEventById, mapApiEventToCard, participateInEvent, fetchMyEventParticipations } from '../types/events';
 
 interface LocationState {
   event?: EventCardData;
@@ -25,8 +25,11 @@ const EventDetailsPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [participating, setParticipating] = useState<boolean>(false);
-  const [participationSuccess, setParticipationSuccess] = useState<boolean>(false);
   const [participationError, setParticipationError] = useState<string | null>(null);
+
+  type ParticipationStatus = "pending" | "approved" | "rejected" | null;
+
+  const [participationStatus, setParticipationStatus] = useState<ParticipationStatus>(null);
   
 
   const handleParticipate = async () => {
@@ -43,7 +46,9 @@ const EventDetailsPage: React.FC = () => {
       const submissionText = "My entry for event";
       const data = await participateInEvent(event.id, submissionText);
       console.log("Participation response:", data);
-      setParticipationSuccess(true);
+      if(data?.participation?.status){
+        setParticipationStatus(data.participation.status);
+      }
     } catch (err: any) {
       console.error("Participation error:", err.response || err);
       const message =
@@ -57,6 +62,28 @@ const EventDetailsPage: React.FC = () => {
   };
 
   const numericId = id ? Number(id) : NaN;
+
+
+  //participant status load 
+
+  useEffect(() => {
+    if(!isLoggedIn || !event) return;
+
+    const loadParticipationStatus = async () => {
+      try {
+        const data = await fetchMyEventParticipations();
+
+        const participation = data.events.find((p) => p.event_id === event.id);
+
+        if(participation?.status){
+          setParticipationStatus(participation.status);
+        }
+      } catch(error){
+        console.log("No participation found or not loggedIn")
+      }
+    };
+    loadParticipationStatus();
+  }, [event, isLoggedIn]);
 
   useEffect(() => {
     if (!numericId || Number.isNaN(numericId)) {
@@ -210,21 +237,21 @@ const EventDetailsPage: React.FC = () => {
                   <span>{event.venue}</span>
                 </div>
 
-                <button
-                  className={`mt-3 w-full sm:w-auto px-6 py-2.5 rounded-full ${
-                    participationSuccess
-                      ? 'bg-green-500 hover:bg-green-600'
-                      : 'bg-[#ffbf2b] hover:bg-[#ffd65b]'
-                  } text-black text-[11px] sm:text-xs font-semibold transition`}
-                  onClick={handleParticipate}
-                  disabled={participating || participationSuccess}
-                >
-                  {participating
-                    ? 'Submitting...'
-                    : participationSuccess
-                    ? 'Registered'
-                    : 'Participate'}
-                </button>
+            <button
+  className={`mt-3 w-full sm:w-auto px-6 py-2.5 rounded-full ${
+    participationStatus === "pending"
+      ? "bg-green-500 hover:bg-green-600"
+      : "bg-[#ffbf2b] hover:bg-[#ffd65b]"
+  } text-black text-[11px] sm:text-xs font-semibold transition`}
+  onClick={handleParticipate}
+  disabled={participating || participationStatus === "pending"}
+>
+  {participating
+    ? "Submitting..."
+    : participationStatus === "pending"
+    ? "Registered"
+    : "Participate"}
+</button>
                 {participationError && (
                   <p className="text-red-400 text-[11px] mt-1">{participationError}</p>
                 )}

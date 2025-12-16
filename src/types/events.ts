@@ -104,6 +104,19 @@ export function mapApiEventToCard(e: ApiEvent): EventCardData {
   };
 }
 
+
+//Participation types
+export interface MyParticipation{
+  id: number;
+  event_id: number;
+  status: "pending" | "approved" | "rejected";
+}
+
+export interface MyEventsResponse{
+  user_id: number;
+  events: MyParticipation[];
+}
+
 // --- API calls ---
 
 export async function fetchEvents(page = 1) {
@@ -130,5 +143,11 @@ export async function participateInEvent(eventId: number, submission: string) {
     submission,
   });
 
+  return res.data;
+}
+
+//get auth users login participation status
+export async function fetchMyEventParticipations(){
+  const res = await axiosClient.get<MyEventsResponse>(`/events/my`);
   return res.data;
 }
