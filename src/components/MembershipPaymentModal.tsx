@@ -42,7 +42,8 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     }
 
     setLoading(true);
-     try {
+
+    try {
       // 1) Create PaymentMethod on Stripe
       const { paymentMethod, error: pmError } = await stripe.createPaymentMethod(
         {
@@ -92,7 +93,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         onSuccess();
       }
 
-     // onSuccess?.();
+    
       onClose();
     } catch (err: any) {
       console.error("payments/subscribe error:", err?.response || err);
@@ -110,7 +111,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   };
 
   const formattedPrice =
-    plan.price && plan.price !== "0.00" ? `$${plan.price}` : "Free";
+    plan.price && plan.price !== "0.00" ? `${plan.price}` : "Free";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">

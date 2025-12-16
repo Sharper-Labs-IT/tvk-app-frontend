@@ -98,6 +98,9 @@ export function mapApiEventToCard(e: ApiEvent): EventCardData {
     dateTime: formatDateRange(e.start_date, e.end_date),
     venue: e.venue_name || "",
     tag: mapEventTypeToTag(e.event_type),
+    rules: e.rules || "", // This is what you need!
+    rewardPoints: e.reward_points || 0,
+    isCancelled: e.is_cancelled,
   };
 }
 
@@ -118,4 +121,14 @@ export async function fetchFeaturedEvents() {
 export async function fetchEventById(id: number){
     const res = await axiosClient.get<ApiEvent>(`/events/${id}`);
     return res.data;
+}
+
+
+//Participate in event
+export async function participateInEvent(eventId: number, submission: string) {
+  const res = await axiosClient.post(`/events/${eventId}/participate`, {
+    submission,
+  });
+
+  return res.data;
 }
