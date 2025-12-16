@@ -4,6 +4,7 @@ import type { EventCardData } from '../components/events/EventCard';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { Link } from 'react-router-dom';
+import {useLocation} from 'react-router-dom';
 
 import { fetchEvents, fetchFeaturedEvents, mapApiEventToCard } from '../types/events';
 
@@ -97,6 +98,8 @@ const EventPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const location = useLocation();
+
   // ---------- Fetch data from API on mount ----------
   useEffect(() => {
     const load = async () => {
@@ -134,6 +137,17 @@ const EventPage: React.FC = () => {
 
     load();
   }, []);
+
+  //scroll effect
+
+  useEffect(() => {
+  if (location.hash) {
+    const el = document.querySelector(location.hash);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
+}, [location]);
 
   const filteredEvents = useMemo(() => {
     if (activeFilter === 'All') return events;
@@ -179,9 +193,9 @@ const EventPage: React.FC = () => {
                 <button className="px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-xs md:text-sm font-semibold hover:bg-[#ffd65b] transition">
                   Next Upcoming Event
                 </button>
-                <button className="px-5 py-2.5 rounded-full border border-yellow-500/40 text-xs md:text-sm font-semibold hover:bg-yellow-500/10 transition">
+                <Link to="/events#all-events" className="px-5 py-2.5 rounded-full border border-yellow-500/40 text-xs md:text-sm font-semibold hover:bg-yellow-500/10 transition">
                   View All Events
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -319,7 +333,7 @@ const EventPage: React.FC = () => {
           </section>
 
           {/* ---------- EVENTS GRID ---------- */}
-          <section className="mb-14 md:mb-16">
+          <section id="all-events" className="mb-14 md:mb-16">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base md:text-lg font-semibold">
