@@ -7,6 +7,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -336,6 +337,7 @@ const WhackAMoleGame: React.FC = () => {
 
   // --- Backend Integration ---
   const { refreshUser, user } = useAuth();
+  const { isPremium } = useGameAccess();
 
   // Calculate total trophies from user object
   const calculateTotalTrophies = (userTrophies: any): number => {
@@ -1192,7 +1194,7 @@ const WhackAMoleGame: React.FC = () => {
                 Body: { game: 'whack-a-mole', score: score, trophy: getTrophyFromScore('whack-a-mole', score) }
               */}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid ${isPremium ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 <button
                   onClick={() => navigate('/game/villain-hunt')}
                   className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center gap-2"
@@ -1201,13 +1203,15 @@ const WhackAMoleGame: React.FC = () => {
                   Home
                 </button>
                 
-                <button
-                  onClick={startGame}
-                  className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25"
-                >
-                  <RotateCcw size={18} />
-                  Play Again
-                </button>
+                {isPremium && (
+                  <button
+                    onClick={startGame}
+                    className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25"
+                  >
+                    <RotateCcw size={18} />
+                    Play Again
+                  </button>
+                )}
               </div>
 
             </motion.div>

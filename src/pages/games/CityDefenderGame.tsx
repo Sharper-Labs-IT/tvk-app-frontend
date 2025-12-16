@@ -7,6 +7,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -564,6 +565,7 @@ const CityDefenderGame: React.FC = () => {
 
   // --- Backend Integration ---
   const { refreshUser, user } = useAuth();
+  const { isPremium } = useGameAccess();
 
   // Calculate total trophies from user object
   const calculateTotalTrophies = (userTrophies: any): number => {
@@ -1111,13 +1113,15 @@ const CityDefenderGame: React.FC = () => {
                 >
                   Menu
                 </button>
-                <button 
-                  onClick={() => startGame(gameMode)}
-                  className="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-black text-lg hover:from-yellow-400 hover:to-orange-400 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-                >
-                  <RotateCcw className="w-6 h-6" />
-                  REPLAY
-                </button>
+                {isPremium && (
+                  <button 
+                    onClick={() => startGame(gameMode)}
+                    className="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 text-black font-black text-lg hover:from-yellow-400 hover:to-orange-400 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                  >
+                    <RotateCcw className="w-6 h-6" />
+                    REPLAY
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
