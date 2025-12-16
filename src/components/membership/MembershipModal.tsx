@@ -123,7 +123,7 @@ const MembershipModal: React.FC = () => {
 
               <div className="mb-4 relative z-10">
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-bold text-white">€9.99</span>
+                  <span className="text-2xl font-bold text-white">£9.99</span>
                   <span className="text-gray-400 text-[10px]">/month</span>
                 </div>
               </div>
@@ -149,8 +149,8 @@ const MembershipModal: React.FC = () => {
 
         <div className="mt-4 text-center shrink-0">
           <p className="text-gray-400 text-[10px] flex items-center justify-center gap-2">
-            <Zap size={10} className="text-yellow-500" />
-            Cancel anytime.
+            {/* <Zap size={10} className="text-yellow-500" /> */}
+            Cancel anytime
           </p>
         </div>
 
