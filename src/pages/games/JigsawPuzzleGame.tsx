@@ -12,6 +12,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -127,6 +128,7 @@ const JigsawPuzzleGame: React.FC = () => {
   const [currentImage, setCurrentImage] = useState<string>(PUZZLE_IMAGES[0]);
   
   const { user } = useAuth();
+  const { isPremium } = useGameAccess();
   
   // --- Stats & Progress ---
   const [timeLeft, setTimeLeft] = useState(0);
@@ -834,12 +836,14 @@ const JigsawPuzzleGame: React.FC = () => {
               )}
 
               <div className="flex flex-col gap-3">
-                <button
-                  onClick={startNewGame}
-                  className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1"
-                >
-                  {isWon ? 'Play Again' : 'Try Again'}
-                </button>
+                {isPremium && (
+                  <button
+                    onClick={startNewGame}
+                    className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1"
+                  >
+                    {isWon ? 'Play Again' : 'Try Again'}
+                  </button>
+                )}
                 <button
                   onClick={() => navigate('/game')}
                   className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"
