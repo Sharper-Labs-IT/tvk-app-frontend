@@ -13,25 +13,22 @@ import {
   Lock,
   Star,
   Gamepad2,
+  // New Icons added for Badges:
+  Sparkles,
+  Flame,
+  Medal,
+  Zap,
+  Ticket,
+  Award,
 } from 'lucide-react';
 import { userService } from '../../services/userService';
 import EditProfileModal from '../../components/dashboard/EditProfileModal';
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
 
 // --- 1. DYNAMIC URL CONFIGURATION ---
-// Get base URL from .env (e.g., "http://localhost:8000")
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
-
-// Clean the URL (remove trailing slash if it exists)
 const CLEAN_BASE_URL = API_BASE_URL.replace(/\/$/, '');
-
-// ⚠️ CHOOSE ONE OF THESE TWO LINES:
-
-// OPTION A: If you pasted images into "public/icons/..." (Direct Public Folder)
 const STORAGE_BASE_URL = CLEAN_BASE_URL;
-
-// OPTION B: If you pasted images into "storage/app/public/..." (Storage Folder)
-// const STORAGE_BASE_URL = `${CLEAN_BASE_URL}/storage`;
 
 const MemberProfile: React.FC = () => {
   const { user, login, token } = useAuth();
@@ -100,13 +97,41 @@ const MemberProfile: React.FC = () => {
     return diff > 0 ? diff : 0;
   };
 
-  // Helper: Construct Badge Image URL
+  // Helper: Construct Badge Image URL (Backend fallback)
   const getBadgeImageUrl = (iconPath?: string) => {
     if (!iconPath) return null;
-    // If the backend accidentally sends a full URL, use it
     if (iconPath.startsWith('http')) return iconPath;
-    // Otherwise append local storage path
     return `${STORAGE_BASE_URL}/${iconPath}`;
+  };
+
+  // --- NEW: Helper to Map Badge Names to Frontend Icons ---
+  const getBadgeVisuals = (badgeName: string) => {
+    const name = badgeName.toLowerCase().trim();
+
+    if (name.includes('new member')) {
+      return { icon: Sparkles, color: 'text-blue-400', bg: 'bg-blue-500/20' };
+    }
+    if (name.includes('verified')) {
+      return { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/20' };
+    }
+    if (name.includes('premium')) {
+      return { icon: Crown, color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
+    }
+    if (name.includes('event')) {
+      return { icon: Ticket, color: 'text-pink-400', bg: 'bg-pink-500/20' };
+    }
+    if (name.includes('top performer')) {
+      return { icon: Medal, color: 'text-orange-400', bg: 'bg-orange-500/20' };
+    }
+    if (name.includes('super fan')) {
+      return { icon: Flame, color: 'text-red-500', bg: 'bg-red-500/20' };
+    }
+    if (name.includes('legend')) {
+      return { icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/20' };
+    }
+
+    // Default Fallback
+    return { icon: Star, color: 'text-gold', bg: 'bg-gold/20' };
   };
 
   return (
@@ -234,7 +259,7 @@ const MemberProfile: React.FC = () => {
                 </ul>
               </div>
 
-              {/* DYNAMIC SUBSCRIPTION WIDGET */}
+              {/* SUBSCRIPTION WIDGET */}
               <div
                 className={`p-5 rounded-xl border relative overflow-hidden ${
                   isPremium
@@ -303,7 +328,7 @@ const MemberProfile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Achievements Section - UPDATED TO SHOW IMAGES */}
+              {/* Achievements Section - UPDATED TO MAP ICONS FROM FRONTEND */}
               <div className="bg-black/40 rounded-xl border border-white/5 p-6">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Trophy className="text-gold" size={20} /> Achievements
@@ -317,39 +342,47 @@ const MemberProfile: React.FC = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {/* Render Badges */}
                     {user?.badges?.map((badge) => {
-                      const imageUrl = getBadgeImageUrl(badge.icon);
+                      const backendImageUrl = getBadgeImageUrl(badge.icon);
+                      // Get visuals based on name (if image is missing/broken)
+                      const {
+                        icon: BadgeIcon,
+                        color: iconColor,
+                        bg: iconBg,
+                      } = getBadgeVisuals(badge.name);
 
                       return (
                         <div
                           key={badge.id}
-                          className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center group hover:bg-white/10 transition"
+                          className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center group hover:bg-white/10 transition border border-transparent hover:border-white/10"
                         >
                           <div className="w-16 h-16 mb-2 flex items-center justify-center">
-                            {imageUrl ? (
+                            {/* Priority 1: Backend Image */}
+                            {backendImageUrl ? (
                               <img
-                                src={imageUrl}
+                                src={backendImageUrl}
                                 alt={badge.name}
                                 className="w-full h-full object-contain drop-shadow-lg"
                                 onError={(e) => {
-                                  // Fallback to Icon if image fails to load
+                                  // Hide image and show fallback div immediately
                                   e.currentTarget.style.display = 'none';
-                                  e.currentTarget.parentElement?.classList.add('fallback-icon');
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                  e.currentTarget.nextElementSibling?.classList.add('flex');
                                 }}
                               />
                             ) : null}
 
-                            {/* Fallback Icon (Hidden by default, shown if image missing or error) */}
+                            {/* Priority 2: Frontend Mapped Icon (Shown if no URL or Error) */}
                             <div
-                              className={`hidden w-12 h-12 bg-gold/20 rounded-full items-center justify-center text-gold ${
-                                !imageUrl ? 'flex' : 'fallback-flex'
-                              }`}
+                              className={`${
+                                backendImageUrl ? 'hidden' : 'flex'
+                              } w-14 h-14 rounded-full items-center justify-center shadow-lg ${iconBg} ${iconColor} ring-1 ring-white/10`}
                             >
-                              <Star size={20} />
+                              <BadgeIcon size={28} strokeWidth={2} />
                             </div>
                           </div>
 
                           <span className="text-white text-sm font-bold">{badge.name}</span>
-                          <span className="text-gray-500 text-xs mt-1">
+                          <span className="text-gray-500 text-xs mt-1 font-mono">
                             {badge.points_required} PTS
                           </span>
                         </div>
@@ -413,13 +446,6 @@ const MemberProfile: React.FC = () => {
       />
 
       <ResetPasswordModal isOpen={isResetPassOpen} onClose={() => setIsResetPassOpen(false)} />
-
-      {/* CSS for Fallback (Can be moved to global css) */}
-      <style>{`
-        .fallback-icon .fallback-flex {
-            display: flex;
-        }
-      `}</style>
     </div>
   );
 };

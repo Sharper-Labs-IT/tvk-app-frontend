@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext'; // Import Auth Context
-import ConfirmationModal from '../../components/common/ConfirmationModal'; // Import Modal
+import { useAuth } from '../../context/AuthContext';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import {
   LayoutDashboard,
   FileText,
@@ -15,6 +15,8 @@ import {
   CreditCard,
   Gamepad2,
   Calendar,
+  Shield, // Added for Admins
+  UserPlus, // Added for Add Admin
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -40,7 +42,6 @@ const navItems: NavItem[] = [
       { name: 'Add New Post', path: '/admin/posts/create', icon: PlusCircle },
     ],
   },
-  // --- Game Management ---
   {
     name: 'Game Management',
     icon: Gamepad2,
@@ -49,7 +50,6 @@ const navItems: NavItem[] = [
       { name: 'Add New Game', path: '/admin/games/create', icon: PlusCircle },
     ],
   },
-  // --- Event Management ---
   {
     name: 'Event Management',
     icon: Calendar,
@@ -58,7 +58,6 @@ const navItems: NavItem[] = [
       { name: 'Create Event', path: '/admin/events/create', icon: PlusCircle },
     ],
   },
-  // ------------------------------------
   {
     name: 'Membership Plans',
     icon: CreditCard,
@@ -67,17 +66,27 @@ const navItems: NavItem[] = [
       { name: 'Add New Plan', path: '/admin/membership/create', icon: PlusCircle },
     ],
   },
-  { name: 'Member Management', path: '/admin/members', icon: Users },
+  // --- UPDATED MEMBER MANAGEMENT ---
+  {
+    name: 'Member Management',
+    icon: Users,
+    subItems: [
+      { name: 'All Members', path: '/admin/members', icon: Users },
+      { name: 'All Admins', path: '/admin/members/admins', icon: Shield },
+      { name: 'Add New Admin', path: '/admin/members/admins/create', icon: UserPlus },
+    ],
+  },
+  // --------------------------------
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // Hook for navigation
-  const { logout } = useAuth(); // Get logout function from context
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
-  const [showLogoutModal, setShowLogoutModal] = useState(false); // State for modal
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   // Automatically open the menu if the current path matches a sub-item
   useEffect(() => {
@@ -93,7 +102,6 @@ const AdminSidebar: React.FC = () => {
     setOpenMenu(openMenu === name ? null : name);
   };
 
-  // Handle Logout Logic
   const handleLogoutConfirm = () => {
     logout();
     setShowLogoutModal(false);
@@ -122,7 +130,7 @@ const AdminSidebar: React.FC = () => {
             return (
               <div key={item.name}>
                 {item.subItems ? (
-                  // 1. Dropdown Parent Item
+                  // Dropdown Parent Item
                   <button
                     onClick={() => toggleMenu(item.name)}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
@@ -143,7 +151,7 @@ const AdminSidebar: React.FC = () => {
                     {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                   </button>
                 ) : (
-                  // 2. Regular Single Item
+                  // Regular Single Item
                   <Link
                     to={item.path!}
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 group ${
@@ -164,7 +172,7 @@ const AdminSidebar: React.FC = () => {
                   </Link>
                 )}
 
-                {/* 3. Dropdown Children */}
+                {/* Dropdown Children */}
                 {item.subItems && isOpen && (
                   <div className="ml-4 pl-4 border-l border-white/10 space-y-1 mt-1">
                     {item.subItems.map((sub) => {
@@ -192,7 +200,7 @@ const AdminSidebar: React.FC = () => {
         {/* Footer / Logout */}
         <div className="p-4 border-t border-white/10">
           <button
-            onClick={() => setShowLogoutModal(true)} // Trigger the modal
+            onClick={() => setShowLogoutModal(true)}
             className="flex items-center gap-3 w-full px-4 py-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors text-sm font-medium"
           >
             <LogOut size={20} />
@@ -201,7 +209,6 @@ const AdminSidebar: React.FC = () => {
         </div>
       </aside>
 
-      {/* Confirmation Modal */}
       <ConfirmationModal
         isOpen={showLogoutModal}
         title="Confirm Logout"

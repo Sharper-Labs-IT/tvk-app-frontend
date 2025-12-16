@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../utils/api';
-// 👇 FIXED: Added 'type' keyword here
 import type { IContent, IContentResponse } from '../../types/content';
 import CreatePostWidget from '../../components/dashboard/CreatePostWidget';
 import PostCard from '../../components/dashboard/PostCard';
@@ -11,19 +10,47 @@ const MemberFeed: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // 🔒 Track if user is Premium
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+
   useEffect(() => {
     fetchFeed();
+    checkUserStatus();
   }, []);
+
+  const checkUserStatus = async () => {
+    try {
+      // 👇 FIXED: Added '/v1' because your routes are prefixed with v1
+      const response = await api.get('/v1/auth/me');
+
+      // 1. Get the user object (it wraps user in 'user' key)
+      const userData = response.data.user;
+
+      console.log('User Data from /v1/auth/me:', userData);
+
+      // 2. Check Membership
+      if (userData && userData.membership) {
+        // 3. Check Plan ID (1 is Free)
+        if (Number(userData.membership.plan_id) !== 1) {
+          setIsPremiumUser(true); // Paid Plan
+        } else {
+          setIsPremiumUser(false); // Free Plan (ID 1)
+        }
+      } else {
+        setIsPremiumUser(false); // No membership = Free
+      }
+    } catch (err) {
+      console.error('Failed to check user status', err);
+      setIsPremiumUser(false);
+    }
+  };
 
   const fetchFeed = async () => {
     try {
       setLoading(true);
       setError(null);
-
-      // Call your backend endpoint
       const response = await api.get<IContentResponse>('/v1/contents');
 
-      // Access the nested pagination data: response.data.contents.data
       if (response.data?.contents?.data) {
         setContents(response.data.contents.data);
       } else {
@@ -56,7 +83,6 @@ const MemberFeed: React.FC = () => {
         </button>
       </div>
 
-      {/* Create Post Widget */}
       <CreatePostWidget />
 
       {/* Error State */}
@@ -84,7 +110,7 @@ const MemberFeed: React.FC = () => {
       {/* Feed List */}
       <div className="space-y-6">
         {contents.map((post) => (
-          <PostCard key={post.id} post={post} />
+          <PostCard key={post.id} post={post} isPremiumUser={isPremiumUser} />
         ))}
       </div>
 
