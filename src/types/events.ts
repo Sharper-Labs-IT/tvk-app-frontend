@@ -96,6 +96,7 @@ export function mapApiEventToCard(e: ApiEvent): EventCardData {
     description: e.description || "",
     imageUrl,
     dateTime: formatDateRange(e.start_date, e.end_date),
+    startDate: e.start_date,
     venue: e.venue_name || "",
     tag: mapEventTypeToTag(e.event_type),
     rules: e.rules || "", // This is what you need!
