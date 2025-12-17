@@ -23,7 +23,7 @@ const Countdown = React.lazy(() => import('../pages/Countdown'));
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
-const Events = React.lazy(() => import('../pages/Events'));
+const EventPage = React.lazy(() => import('../pages/EventPage'));
 
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
 const Store = React.lazy(() => import('../pages/Store'));
@@ -53,14 +53,15 @@ const JigsawPuzzleGame = React.lazy(() => import('../pages/games/JigsawPuzzleGam
 const CityDefenderStart = React.lazy(() => import('../pages/games/CityDefenderStart'));
 const CityDefenderGame = React.lazy(() => import('../pages/games/CityDefenderGame'));
 
-// --- NEW ADMIN GAME PAGES ---
+const EventDetailsPage = React.lazy(() => import('../pages/EventDetailsPage'));
+
 const GameListPage = React.lazy(() => import('../pages/admin/games/GameListPage'));
 const CreateGamePage = React.lazy(() => import('../pages/admin/games/CreateGamePage'));
 const EditGamePage = React.lazy(() => import('../pages/admin/games/EditGamePage'));
 
 const EventListPage = React.lazy(() => import('../pages/admin/events/EventListPage'));
 const CreateEventPage = React.lazy(() => import('../pages/admin/events/CreateEventPage'));
-const EditEventPage = React.lazy(() => import('../pages/admin/events/EditEventPage')); // If created
+const EditEventPage = React.lazy(() => import('../pages/admin/events/EditEventPage'));
 
 /**
  * Helper to safely get role name string
@@ -161,7 +162,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/home" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
-          <Route path="/events" element={<Events />} />
+          <Route path="/events" element={<EventPage />} />
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
 
           {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
@@ -185,6 +186,9 @@ const AppRoutes: React.FC = () => {
           {/* Game Routes */}
           <Route path="/leaderboard" element={<Leaderboards />} />
           <Route path="/store" element={<Store />} />
+
+          {/* Event Details Route */}
+          <Route path="/events/:id" element={<EventDetailsPage />} />
 
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
           <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
