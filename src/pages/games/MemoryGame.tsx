@@ -241,7 +241,7 @@ const MemoryGame: React.FC = () => {
       const submitGameScore = async () => {
         try {
           setScoreSubmitted(true); // Prevent duplicate submissions
-          const _response = await gameService.submitScore(participantId, {
+          await gameService.submitScore(participantId, {
             score: coins, // Using coins as score
             coins: coins,
             data: { moves: moves, timeLeft: timeLeft, matches: matches }
