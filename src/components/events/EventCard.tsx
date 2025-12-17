@@ -8,6 +8,7 @@ export interface EventCardData {
   description: string;
   imageUrl: string;
   dateTime: string;
+  startDate: string;
   venue: string;
   tag: "Online" | "Live" | "Fan Meetup" | "Meetup" | "Other";
   rules?: string;

@@ -150,6 +150,9 @@ const EventPage: React.FC = () => {
 }, [location]);
 
   const filteredEvents = useMemo(() => {
+
+      const now = new Date();
+
     if (activeFilter === 'All') return events;
 
     if (activeFilter === 'Fan Meetup') {
@@ -162,7 +165,10 @@ const EventPage: React.FC = () => {
       return events.filter((e) => e.tag === 'Live');
     }
     if (activeFilter === 'Upcoming') {
-      return events; // later: filter by date
+      return events.filter((e) => {
+        const eventDate = new Date(e.startDate);
+        return eventDate > now;
+      })
     }
 
     return events;
