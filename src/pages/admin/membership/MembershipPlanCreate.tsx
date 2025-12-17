@@ -53,7 +53,6 @@ const MembershipPlanCreate: React.FC = () => {
 
       navigate('/admin/membership');
     } catch (err: any) {
-      console.error('Create error:', err);
       if (err.response && err.response.data && err.response.data.errors) {
         // Validation errors format
         setError(JSON.stringify(err.response.data.errors));

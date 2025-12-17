@@ -71,7 +71,6 @@ const MembershipPage: React.FC = () => {
 
         setPlans(activePlans);
       } catch (err) {
-        console.error(err);
         setError("Unable to load membership plans.");
       } finally {
         setLoading(false);
@@ -109,7 +108,6 @@ const MembershipPage: React.FC = () => {
 
   const handlePaymentSuccess = () => {
     // Here you can re-fetch membership status or show a toast
-    console.log("Payment & subscription completed.");
   };
 
   return (

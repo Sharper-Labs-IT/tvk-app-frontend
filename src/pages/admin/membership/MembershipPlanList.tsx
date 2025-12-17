@@ -19,7 +19,6 @@ const MembershipPlanList: React.FC = () => {
       const response = await api.get('/v1/membership/plans');
       setPlans(response.data.plans);
     } catch (err: any) {
-      console.error('Fetch error:', err);
       const msg = err.response?.data?.message || err.message || 'Failed to fetch plans.';
       setError(msg);
     } finally {

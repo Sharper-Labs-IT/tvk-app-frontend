@@ -68,7 +68,6 @@ const EditEventPage: React.FC = () => {
           setError('Event not found.');
         }
       } catch (err) {
-        console.error(err);
         setError('Failed to load event details.');
       } finally {
         setInitialLoading(false);
@@ -113,7 +112,6 @@ const EditEventPage: React.FC = () => {
         navigate('/admin/events');
       }, 1500);
     } catch (err: any) {
-      console.error(err);
       const msg = err.response?.data?.message || 'Failed to update event.';
       setError(msg);
     } finally {
