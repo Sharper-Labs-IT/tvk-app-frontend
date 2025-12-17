@@ -235,12 +235,10 @@ const SpaceInvadersGame: React.FC = () => {
             coins: collectedCoins,
             data: { lives: lives }
           });
-          console.log("Score submitted successfully");
           
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };
@@ -426,7 +424,6 @@ const SpaceInvadersGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.SPACE_INVADERS);
       setParticipantId(response.participant.id);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 
@@ -453,7 +450,6 @@ const SpaceInvadersGame: React.FC = () => {
 
   const playSound = (_: 'shoot' | 'explosion' | 'win' | 'lose' | 'coin') => {
     if (isMuted) return;
-    // console.log(`Playing sound: ${type}`);
   };
 
   const triggerShake = () => {

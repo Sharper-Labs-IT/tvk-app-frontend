@@ -206,9 +206,8 @@ const WhackAMoleGame: React.FC = () => {
   const gameLoopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Audio (Simulated) ---
-  const playSound = useCallback((type: 'hit' | 'bonus' | 'miss' | 'gameover' | 'boss_hit' | 'freeze') => {
+  const playSound = useCallback((_type: 'hit' | 'bonus' | 'miss' | 'gameover' | 'boss_hit' | 'freeze') => {
     if (isMuted) return;
-    console.log(`Playing sound: ${type}`);
   }, [isMuted]);
 
   // --- Preload Images ---
@@ -290,7 +289,6 @@ const WhackAMoleGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.WHACK_A_MOLE);
       setParticipantId(response.participant.id);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 
@@ -375,7 +373,6 @@ const WhackAMoleGame: React.FC = () => {
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };

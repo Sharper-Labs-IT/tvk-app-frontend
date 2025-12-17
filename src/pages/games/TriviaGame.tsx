@@ -258,7 +258,6 @@ const TriviaGame: React.FC = () => {
         const response = await gameService.joinGame(GAME_IDS.TRIVIA);
         setParticipantId(response.participant.id);
       } catch (e) {
-        console.error(e);
       }
     }
     init();
@@ -420,7 +419,6 @@ const TriviaGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.TRIVIA);
       setParticipantId(response.participant.id);
     } catch (e) {
-      console.error(e);
       return;
     }
     
@@ -484,7 +482,6 @@ const TriviaGame: React.FC = () => {
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };

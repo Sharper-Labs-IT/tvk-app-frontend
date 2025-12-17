@@ -48,8 +48,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Note: The userData coming from login MIGHT be missing roles depending on backend.
     // We set it for now, but the useEffect below will fix it on next reload.
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // Normalize avatar field (backend sends 'avatar' but we use 'avatar_url')
+    const normalizedUser = { ...userData, avatar_url: userData.avatar_url || userData.avatar || null };
+    setUser(normalizedUser);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
   }, []);
 
   // Function called to log out the user
@@ -68,7 +70,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!prevUser) return null;
       const updatedUser = { ...prevUser, ...updates };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      console.log('[AuthContext] User updated locally:', updates);
       return updatedUser;
     });
   }, []);
@@ -97,14 +98,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Calculate total coins from game_participation if not provided
         const totalCoins = calculateTotalCoins(fullUser);
-        const userWithCoins = { ...fullUser, coins: totalCoins };
+        
+        // Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
+        const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+        
+        const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
         
         setUser(userWithCoins);
         localStorage.setItem('user', JSON.stringify(userWithCoins));
-        console.log('[AuthContext] User refreshed from API:', userWithCoins, 'Total coins:', totalCoins);
       }
     } catch (error) {
-      console.error('[AuthContext] Failed to refresh user:', error);
     }
   }, []);
 
@@ -127,17 +130,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             // 3. Calculate total coins from game_participation
             const totalCoins = calculateTotalCoins(fullUser);
-            const userWithCoins = { ...fullUser, coins: totalCoins };
+            
+            // 3.5. Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
+            const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+            
+            const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
 
             // 4. Update State with the FULL user object (including roles and coins)
             setUser(userWithCoins);
 
             // 5. Update Local Storage so it's correct for next time
             localStorage.setItem('user', JSON.stringify(userWithCoins));
-            console.log('Auth Initialized: User roles loaded:', fullUser.roles, 'Total coins:', totalCoins);
           }
         } catch (error) {
-          console.error('Failed to fetch user profile on load:', error);
           // If the token is invalid/expired, log them out
           Cookies.remove('authToken');
           localStorage.removeItem('user');

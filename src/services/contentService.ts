@@ -18,8 +18,6 @@ export const contentService = {
 
   // POST /api/v1/contents/upload
   create: async (payload: ICreateContentPayload) => {
-    console.log('[ContentService] Starting upload...', payload); // Debug log 1
-
     const formData = new FormData();
 
     // Append standard text fields
@@ -39,11 +37,6 @@ export const contentService = {
       formData.append('file', payload.file);
     }
 
-    // Debug log 2: Verify what is actually inside FormData
-    for (const [key, value] of formData.entries()) {
-      console.log(`[ContentService] FormData Key: ${key}`, value);
-    }
-
     try {
       // CRITICAL FIX:
       // 1. We send 'formData' as the body.
@@ -57,10 +50,8 @@ export const contentService = {
         },
       });
 
-      console.log('[ContentService] Success:', response.data); // Debug log 3
       return response.data;
     } catch (error) {
-      console.error('[ContentService] Upload Failed:', error); // Debug log 4
       throw error;
     }
   },

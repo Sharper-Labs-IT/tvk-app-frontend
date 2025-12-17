@@ -241,18 +241,15 @@ const MemoryGame: React.FC = () => {
       const submitGameScore = async () => {
         try {
           setScoreSubmitted(true); // Prevent duplicate submissions
-          const response = await gameService.submitScore(participantId, {
+          const _response = await gameService.submitScore(participantId, {
             score: coins, // Using coins as score
             coins: coins,
             data: { moves: moves, timeLeft: timeLeft, matches: matches }
           });
           
-          console.log('[MemoryGame] Score submitted successfully:', response);
-          
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false); // Allow retry on error
         }
       };
@@ -265,7 +262,6 @@ const MemoryGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.MEMORY);
       setParticipantId(response.participant.id);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 

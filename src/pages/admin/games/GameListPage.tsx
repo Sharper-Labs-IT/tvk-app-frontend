@@ -17,7 +17,6 @@ const GameListPage: React.FC = () => {
       setGames(data);
       setError('');
     } catch (err) {
-      console.error(err);
       setError('Failed to load games. Please check your connection.');
     } finally {
       setLoading(false);

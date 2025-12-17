@@ -56,12 +56,10 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       }
 
       // 2) Call your existing backend endpoint
-      const res = await axiosClient.post("/payments/subscribe", {
+      const _res = await axiosClient.post("/payments/subscribe", {
         plan_id: plan.id,
         payment_method_id: paymentMethod.id, // this fixes the 422
       });
-
-      console.log("payments/subscribe response:", res.data);
 
       // Optional: handle success message/UI
       if (onSuccess) {
@@ -70,7 +68,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
       onClose();
     } catch (err: any) {
-      console.error("payments/subscribe error:", err?.response || err);
       const msg =
         err?.response?.data?.message ||
         (err?.response?.data?.errors

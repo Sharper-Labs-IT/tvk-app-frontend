@@ -13,13 +13,18 @@ import {
   Lock,
   Star,
   Gamepad2,
+  User,
+  Check,
+  X,
+  Coins,
 } from 'lucide-react';
 import { userService } from '../../services/userService';
 import EditProfileModal from '../../components/dashboard/EditProfileModal';
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
+import NicknameConfirmModal from '../../components/dashboard/NicknameConfirmModal';
 
 const MemberProfile: React.FC = () => {
-  const { user, login, token } = useAuth();
+  const { user, login, token, refreshUser } = useAuth();
 
   // Modals state
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
@@ -28,6 +33,14 @@ const MemberProfile: React.FC = () => {
   // File upload state
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  // Nickname editing state
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState(user?.nickname || '');
+  const [isUpdatingNickname, setIsUpdatingNickname] = useState(false);
+  const [nicknameError, setNicknameError] = useState('');
+  const [nicknameSuccess, setNicknameSuccess] = useState('');
+  const [showNicknameConfirmModal, setShowNicknameConfirmModal] = useState(false);
 
   // --- 1. CALCULATE REAL STATS FROM CONTEXT ---
   // We no longer need to fetch this separately because 'me()' returns it all.
@@ -69,18 +82,113 @@ const MemberProfile: React.FC = () => {
     try {
       const response = await userService.updateAvatar(file);
       if (token && user) {
+        // Update local state immediately
         login(token, { ...user, avatar_url: response.avatar_url });
+        // Refresh from backend to ensure consistency across app
+        await refreshUser();
       }
     } catch (error) {
-      console.error('Failed to upload avatar', error);
       alert('Failed to update profile picture.');
     } finally {
       setIsUploadingAvatar(false);
     }
   };
 
-  // Subscription Logic
-  const isPremium = user?.membership_tier && user.membership_tier !== 'free';
+  // Subscription Logic - Comprehensive premium check
+  const isPremium = useMemo(() => {
+    if (!user) return false;
+    
+    // Check membership_type (frontend standard)
+    if (user.membership_type === 'premium' || user.membership_type === 'vip') return true;
+    
+    // Check membership_tier (backend field) - only specific premium tiers
+    const premiumTiers = ['super_fan', 'superfan', 'premium', 'vip', 'gold', 'platinum'];
+    if (user.membership_tier && premiumTiers.includes(user.membership_tier.toLowerCase())) return true;
+    
+    // Check roles array for premium/super_fan/vip role names (but NOT just 'member')
+    if (user.roles && Array.isArray(user.roles)) {
+      const premiumRoleNames = ['premium', 'vip', 'super_fan', 'superfan', 'super-fan', 'admin'];
+      const hasPremiumRole = user.roles.some((role: any) => {
+        const roleName = (role.name?.toLowerCase() || role.toLowerCase?.() || '').trim();
+        return premiumRoleNames.includes(roleName);
+      });
+      if (hasPremiumRole) return true;
+    }
+    
+    return false;
+  }, [user]);
+
+  // Nickname update handler - Show confirmation modal
+  const handleNicknameUpdate = () => {
+    if (!nicknameInput.trim()) {
+      setNicknameError('Nickname cannot be empty');
+      return;
+    }
+
+    if (nicknameInput === user?.nickname) {
+      setIsEditingNickname(false);
+      return;
+    }
+
+    // Clear any previous errors and show confirmation modal
+    setNicknameError('');
+    setShowNicknameConfirmModal(true);
+  };
+
+  // Actual nickname update after confirmation
+  const confirmNicknameUpdate = async () => {
+
+    setIsUpdatingNickname(true);
+    setNicknameSuccess('');
+
+    try {
+      const response = await userService.updateNickname(nicknameInput.trim());
+      
+      if (token && user) {
+        // Update local state with new nickname and potentially deducted coins
+        const updatedUser = {
+          ...user,
+          nickname: response.user.nickname,
+          coins: response.user.coins,
+          nickname_changes: response.user.nickname_changes,
+        };
+        login(token, updatedUser);
+        
+        // Refresh from backend to ensure consistency
+        await refreshUser();
+      }
+
+      const coinsDeducted = response.coins_deducted || 0;
+      const hasFreeChange = !user?.nickname_changes || user.nickname_changes === 0;
+      
+      if (coinsDeducted > 0) {
+        setNicknameSuccess(`Nickname updated! ${coinsDeducted} coins deducted.`);
+      } else if (!isPremium && hasFreeChange) {
+        setNicknameSuccess('Nickname updated! (Free change used)');
+      } else {
+        setNicknameSuccess('Nickname updated successfully!');
+      }
+
+      setIsEditingNickname(false);
+      setShowNicknameConfirmModal(false);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setNicknameSuccess(''), 3000);
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.message || 'Failed to update nickname';
+      setNicknameError(errorMsg);
+      setShowNicknameConfirmModal(false);
+    } finally {
+      setIsUpdatingNickname(false);
+    }
+  };
+
+  const handleCancelNicknameEdit = () => {
+    setNicknameInput(user?.nickname || '');
+    setIsEditingNickname(false);
+    setNicknameError('');
+    setNicknameSuccess('');
+  };
 
   const calculateDaysLeft = () => {
     if (!user?.membership?.end_date) return 0;
@@ -143,10 +251,80 @@ const MemberProfile: React.FC = () => {
             {/* Name & Role */}
             <div className="mt-4 md:mt-0 md:ml-6 flex-1 w-full">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
+                <div className="w-full">
                   <h1 className="text-3xl md:text-4xl font-bold text-white font-zentry tracking-wide drop-shadow-md">
                     {user?.name}
                   </h1>
+                  
+                  {/* Nickname Section */}
+                  <div className="mt-2 mb-2">
+                    {!isEditingNickname ? (
+                      <div className="flex items-center gap-2">
+                        <User size={16} className="text-gold" />
+                        <span className="text-gray-300 text-sm">
+                          @{user?.nickname || 'No nickname set'}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setIsEditingNickname(true);
+                            setNicknameInput(user?.nickname || '');
+                          }}
+                          className="text-gold hover:text-white transition"
+                          title="Edit nickname"
+                        >
+                          <Edit size={14} />
+                        </button>
+                        {!isPremium && (
+                          <span className="text-xs text-gray-500">
+                            ({user?.nickname_changes === 0 ? '1 free change' : '2000 coins per change'})
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 mt-2">
+                        <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/10">
+                          <User size={16} className="text-gold" />
+                          <input
+                            type="text"
+                            value={nicknameInput}
+                            onChange={(e) => setNicknameInput(e.target.value)}
+                            className="bg-transparent text-white text-sm outline-none w-48"
+                            placeholder="Enter nickname"
+                            maxLength={30}
+                            disabled={isUpdatingNickname}
+                          />
+                        </div>
+                        <button
+                          onClick={handleNicknameUpdate}
+                          disabled={isUpdatingNickname}
+                          className="p-1.5 bg-green-600 hover:bg-green-500 text-white rounded transition disabled:opacity-50"
+                          title="Save"
+                        >
+                          <Check size={16} />
+                        </button>
+                        <button
+                          onClick={handleCancelNicknameEdit}
+                          disabled={isUpdatingNickname}
+                          className="p-1.5 bg-red-600 hover:bg-red-500 text-white rounded transition disabled:opacity-50"
+                          title="Cancel"
+                        >
+                          <X size={16} />
+                        </button>
+                        {!isPremium && user?.nickname_changes !== 0 && (
+                          <div className="flex items-center gap-1 text-xs text-yellow-500">
+                            <Coins size={12} />
+                            <span>2000</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {nicknameError && (
+                      <p className="text-red-500 text-xs mt-1">{nicknameError}</p>
+                    )}
+                    {nicknameSuccess && (
+                      <p className="text-green-500 text-xs mt-1">{nicknameSuccess}</p>
+                    )}
+                  </div>
                   <div className="flex flex-wrap items-center gap-3 mt-2">
                     {/* Render Roles Safely */}
                     {user?.roles?.map((role, idx) => {
@@ -366,6 +544,21 @@ const MemberProfile: React.FC = () => {
       />
 
       <ResetPasswordModal isOpen={isResetPassOpen} onClose={() => setIsResetPassOpen(false)} />
+
+      <NicknameConfirmModal
+        isOpen={showNicknameConfirmModal}
+        onClose={() => {
+          setShowNicknameConfirmModal(false);
+          setNicknameError('');
+        }}
+        onConfirm={confirmNicknameUpdate}
+        nickname={nicknameInput}
+        isPremium={isPremium}
+        hasFreeChange={!user?.nickname_changes || user.nickname_changes === 0}
+        currentCoins={user?.coins || 0}
+        cost={2000}
+        isLoading={isUpdatingNickname}
+      />
     </div>
   );
 };
