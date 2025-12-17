@@ -19,6 +19,7 @@ import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
 
 // Lazy Loaded Pages
+const Countdown = React.lazy(() => import('../pages/Countdown'));
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
@@ -121,7 +122,6 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const isMember = user.roles?.some((role) => allowedRoles.includes(getRoleName(role)));
 
   if (!isMember) {
-    console.warn('Access Denied: User does not have member role.', user.roles);
     return <Navigate to="/" replace />;
   }
 
@@ -157,7 +157,8 @@ const AppRoutes: React.FC = () => {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Countdown />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<Events />} />
