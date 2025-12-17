@@ -60,24 +60,12 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         return;
       }
 
-
-      // 2) Call your existing backend endpoint
-
-      await axiosClient.post("/payments/subscribe", {
-
-      const _res = await axiosClient.post("/payments/subscribe", {
-
       // 2) Call backend
       const res = await axiosClient.post("/payments/subscribe", {
-
         plan_id: plan.id,
         payment_method_id: paymentMethod.id,
         save_card: saveCard, // backend can ignore/handle this
       });
-
-
-      // Optional: handle success message/UI
-      if (onSuccess) {
 
       console.log("payments/subscribe response:", res.data);
       // const data = res.data;
@@ -125,11 +113,9 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       }
 
       if(onSuccess){
- main
         onSuccess();
       }
 
-     // onSuccess?.();
       onClose();
     } catch (err: any) {
       const msg =
