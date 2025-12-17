@@ -111,7 +111,6 @@ const playSound = (_: 'tap' | 'success' | 'win' | 'lose') => {
   // In a real app, you'd play audio files here.
   // For now, we'll just log or use browser beep if possible, 
   // but mostly this is a placeholder for the structure.
-  // console.log(`Playing sound: ${type}`);
 };
 
 const JigsawPuzzleGame: React.FC = () => {
@@ -248,7 +247,6 @@ const JigsawPuzzleGame: React.FC = () => {
           await refreshUser();
           // Trophies will be updated automatically via useEffect when user data changes
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };
@@ -306,7 +304,6 @@ const JigsawPuzzleGame: React.FC = () => {
       setParticipantId(response.participant.id);
       setScoreSubmitted(false);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 

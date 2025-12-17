@@ -40,7 +40,6 @@ const SpaceInvadersTVK: React.FC = () => {
     try {
       await refreshUser();
     } catch (error) {
-      console.error('Failed to fetch user stats:', error);
     } finally {
       setIsLoadingStats(false);
     }

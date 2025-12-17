@@ -33,7 +33,6 @@ export const authService = {
       const response = await api.get('/v1/user/stats');
       return response.data;
     } catch (error) {
-      console.warn('Stats endpoint missing - defaulting to 0');
       return null;
     }
   },

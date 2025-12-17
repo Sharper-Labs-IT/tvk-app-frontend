@@ -90,7 +90,6 @@ const EditGamePage: React.FC = () => {
         navigate('/admin/games');
       }, 1500);
     } catch (err: any) {
-      console.error(err);
       const msg = err.response?.data?.message || 'Failed to update game.';
       setError(msg);
     } finally {

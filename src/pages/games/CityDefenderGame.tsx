@@ -510,7 +510,6 @@ const CityDefenderGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.CITY_DEFENDER);
       setParticipantId(response.participant.id);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 
@@ -605,7 +604,6 @@ const CityDefenderGame: React.FC = () => {
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };

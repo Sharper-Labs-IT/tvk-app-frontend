@@ -45,7 +45,6 @@ const CreateGamePage: React.FC = () => {
         is_premium: false,
       });
     } catch (err: any) {
-      console.error(err);
       // Handle Laravel validation errors or 404s
       const msg = err.response?.data?.message || 'Failed to create game. Check console.';
       setError(msg);
