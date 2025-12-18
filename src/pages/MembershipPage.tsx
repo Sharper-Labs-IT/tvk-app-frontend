@@ -95,7 +95,9 @@ const MembershipPage: React.FC = () => {
 
   // SUPER FAN (PAID)
   if (!isLoggedIn) {
-    navigate("/login");
+    navigate("/login", {
+      state: {from: "/membership"}
+    });
     return;
   }
 
@@ -131,7 +133,7 @@ const MembershipPage: React.FC = () => {
           <div className='inline-flex rounded-full bg-[#07091a] p-1'>
             {([
               { id: "monthly", label: "Monthly" },
-              { id: "yearly", label: "Yearly" },
+             // { id: "yearly", label: "Yearly" },
             ] as { id: BillingPeriod; label: string }[]).map((opt) => {
               const active = billing === opt.id;
               return (
