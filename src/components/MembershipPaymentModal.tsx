@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
+import { useStripe, useElements, CardNumberElement,CardExpiryElement, CardCvcElement } from "@stripe/react-stripe-js";
 import axiosClient from "../api/axiosClient";
 import type { Plan } from "../types/plan";
 
@@ -35,19 +35,20 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) {
       setError("Unable to find card input field.");
       return;
     }
 
     setLoading(true);
-     try {
+
+    try {
       // 1) Create PaymentMethod on Stripe
       const { paymentMethod, error: pmError } = await stripe.createPaymentMethod(
         {
           type: "card",
-          card: cardElement,
+          card: cardNumberElement,
           billing_details: {
             name: cardholderName || undefined,
           },
@@ -132,7 +133,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   };
 
   const formattedPrice =
-    plan.price && plan.price !== "0.00" ? `$${plan.price}` : "Free";
+    plan.price && plan.price !== "0.00" ? `${plan.price}` : "Free";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -142,7 +143,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         onClick={() => !loading && onClose()}
       />
 
-      <div className="relative z-10 w-full max-w-2xl rounded-3xl bg-[#f9fafb] text-slate-900 shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-2xl max-h-[90vh] rounded-3xl bg-[#f9fafb] text-slate-900 shadow-2xl overflow-hidden flex flex-col">
         {/* Close button */}
         <button
           type="button"
@@ -189,7 +190,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-5">
+        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto px-6 pb-6 pt-4 space-y-5">
           {/* "Add a new card" row */}
           <div className="rounded-2xl bg-white border border-slate-200 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
@@ -207,43 +208,55 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
           </div>
 
           {/* Card + name fields (2-column feel like screenshot) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* CardElement styled like "Card number" field */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
-                Card number
-              </label>
-              <div className="rounded-xl bg-white border border-slate-300 px-3 py-2.5 shadow-sm focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
-                <CardElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: "14px",
-                        color: "#111827",
-                        "::placeholder": { color: "#9ca3af" },
-                      },
-                      invalid: { color: "#ef4444" },
-                    },
-                    hidePostalCode: false,
-                  }}
-                />
-              </div>
-            </div>
+          {/* Card details block */}
+<div className="rounded-2xl bg-white border border-slate-300 px-4 py-4 space-y-4 shadow-sm">
 
-            {/* Cardholder name */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
-                Cardholder name
-              </label>
-              <input
-                type="text"
-                className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] outline-none"
-                placeholder="Name on card"
-                value={cardholderName}
-                onChange={(e) => setCardholderName(e.target.value)}
-              />
-            </div>
-          </div>
+  {/* Card number */}
+  <div className="space-y-1">
+    <label className="text-xs font-medium text-slate-700">
+      Card number
+    </label>
+    <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
+      <CardNumberElement />
+    </div>
+  </div>
+
+  {/* Cardholder name */}
+  <div className="space-y-1">
+    <label className="text-xs font-medium text-slate-700">
+      Cardholder name
+    </label>
+    <input
+      type="text"
+      className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] outline-none transition-all"
+      placeholder="Name on card"
+      value={cardholderName}
+      onChange={(e) => setCardholderName(e.target.value)}
+    />
+  </div>
+
+  {/* Expiry + CVC */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div className="space-y-1">
+      <label className="text-xs font-medium text-slate-700">
+        Expiry date
+      </label>
+      <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
+        <CardExpiryElement />
+      </div>
+    </div>
+
+    <div className="space-y-1">
+      <label className="text-xs font-medium text-slate-700">
+        CVC
+      </label>
+      <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
+        <CardCvcElement />
+      </div>
+    </div>
+  </div>
+</div>
+
 
           {/* Save card toggle */}
           <label className="mt-1 flex items-center gap-2 text-xs md:text-sm text-slate-700 cursor-pointer">

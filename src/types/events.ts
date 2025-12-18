@@ -96,9 +96,26 @@ export function mapApiEventToCard(e: ApiEvent): EventCardData {
     description: e.description || "",
     imageUrl,
     dateTime: formatDateRange(e.start_date, e.end_date),
+    startDate: e.start_date,
     venue: e.venue_name || "",
     tag: mapEventTypeToTag(e.event_type),
+    rules: e.rules || "", // This is what you need!
+    rewardPoints: e.reward_points || 0,
+    isCancelled: e.is_cancelled,
   };
+}
+
+
+//Participation types
+export interface MyParticipation{
+  id: number;
+  event_id: number;
+  status: "pending" | "approved" | "rejected";
+}
+
+export interface MyEventsResponse{
+  user_id: number;
+  events: MyParticipation[];
 }
 
 // --- API calls ---
@@ -118,4 +135,20 @@ export async function fetchFeaturedEvents() {
 export async function fetchEventById(id: number){
     const res = await axiosClient.get<ApiEvent>(`/events/${id}`);
     return res.data;
+}
+
+
+//Participate in event
+export async function participateInEvent(eventId: number, submission: string) {
+  const res = await axiosClient.post(`/events/${eventId}/participate`, {
+    submission,
+  });
+
+  return res.data;
+}
+
+//get auth users login participation status
+export async function fetchMyEventParticipations(){
+  const res = await axiosClient.get<MyEventsResponse>(`/events/my`);
+  return res.data;
 }
