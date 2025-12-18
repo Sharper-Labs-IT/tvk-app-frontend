@@ -1,8 +1,43 @@
 import React, { useState, useEffect } from 'react';
-
 import Loader from '../components/Loader';
 import BlurText from '../components/BlurText';
 import { Instagram, Facebook, Youtube } from 'lucide-react';
+
+const Snowfall = () => {
+  return (
+    <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden" aria-hidden="true">
+      {[...Array(30)].map((_, i) => (
+        <div
+          key={i}
+          className="snowflake text-white absolute top-[-10%]"
+          style={{
+            left: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 10}s`,
+            animationDuration: `${Math.random() * 10 + 10}s`,
+            opacity: Math.random() * 0.6 + 0.2,
+            fontSize: `${Math.random() * 10 + 10}px`,
+          }}
+        >
+          {['❄', '❅', '❆'][Math.floor(Math.random() * 3)]}
+        </div>
+      ))}
+      <style>{`
+        @keyframes fall {
+          0% { transform: translateY(0) rotate(0deg) translateX(0); }
+          25% { transform: translateY(25vh) rotate(90deg) translateX(15px); }
+          50% { transform: translateY(50vh) rotate(180deg) translateX(-15px); }
+          75% { transform: translateY(75vh) rotate(270deg) translateX(15px); }
+          100% { transform: translateY(110vh) rotate(360deg) translateX(0); }
+        }
+        .snowflake {
+          animation-name: fall;
+          animation-timing-function: linear;
+          animation-iteration-count: infinite;
+        }
+      `}</style>
+    </div>
+  );
+};
 
 const CircleProgress = ({
   value,
@@ -40,7 +75,7 @@ const CircleProgress = ({
           <span className="text-[10px] md:text-xs uppercase tracking-widest text-yellow-500 font-bold mb-1">
             {label}
           </span>
-          <span className="text-4xl md:text-5xl font-bold">{value.toString()}</span>
+          <span className="text-4xl md:text-5xl font-bold">{value.toString().padStart(2, '0')}</span>
         </div>
       </div>
     </div>
@@ -50,11 +85,10 @@ const CircleProgress = ({
 const Countdown: React.FC = () => {
   const [loading, setLoading] = useState(true);
   
-  // --- NEW STATE FOR FORM ---
+  // --- FORM STATE ACTIVATED ---
 /*   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState(''); */
-  // --------------------------
 
   const targetDate = '2025-12-24';
 
@@ -87,11 +121,10 @@ const Countdown: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // --- NEW HANDLE SUBMIT FUNCTION ---
-/*   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Prevent page reload
+  // --- HANDLE SUBMIT ACTIVATED ---
+ /*  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    // 1. Basic Validation
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
       setStatus('error');
       setMessage('Please enter a valid email address.');
@@ -102,39 +135,35 @@ const Countdown: React.FC = () => {
     setMessage('');
 
     try {
-      // 2. SIMULATE API CALL (Replace this block with your real fetch call)
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000)); 
-      
-      // If using a real backend:
-      // const response = await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify({ email }) });
-      // if (!response.ok) throw new Error('Failed');
-
       setStatus('success');
       setMessage("You're on the list! Watch your inbox.");
-      setEmail(''); // Clear input
+      setEmail('');
     } catch (error) {
       setStatus('error');
       setMessage('Something went wrong. Please try again later.');
     }
-  }; */
-  // ----------------------------------
-
+  };
+ */
   if (loading) {
     return <Loader />;
   }
 
   return (
     <div className="min-h-screen relative flex flex-col items-center justify-center bg-gray-900 text-white overflow-hidden">
+      {/* Background Layer */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center"
-        style={{
-          backgroundImage: 'url("/img/countdown.webp")',
-        }}
+        style={{ backgroundImage: 'url("/img/countdown.webp")' }}
       >
         <div className="absolute inset-0 bg-black/70 md:bg-black/80"></div>
       </div>
 
-      <div className="z-10 container mx-auto px-4 text-center flex flex-col items-center">
+      {/* SNOW ANIMATION LAYER (Z-10) */}
+      <Snowfall />
+
+      <div className="z-20 container mx-auto px-4 text-center flex flex-col items-center">
         <div className="mb-8">
           <img
             src="/images/tvk-logo.png"
@@ -150,9 +179,11 @@ const Countdown: React.FC = () => {
           direction="top"
           className="text-2xl md:text-5xl font-extrabold tracking-tight drop-shadow-2xl mb-4 justify-center items-center"
         />
-        <h2 className="text-yellow-500 text-xl md:text-2xl font-semibold mb-4">December 24, 2025</h2>
+        <h2 className="text-yellow-500 text-xl md:text-2xl font-semibold mb-4 tracking-widest uppercase">
+          🎄 December 24, 2025
+        </h2>
         <p className="text-gray-300 text-base md:text-md mb-12 font-light max-w-xl">
-          Be among the first to witness the future of community, rewards, and entertainment. Stay tuned for something truly unique
+          Be among the first to witness the future of community, rewards, and entertainment. Stay tuned for something truly unique.
         </p>
 
         <div className="flex flex-wrap justify-center mb-10 w-full">
@@ -162,9 +193,9 @@ const Countdown: React.FC = () => {
           <CircleProgress value={timeLeft.seconds} maxValue={60} label="SECONDS" />
         </div>
 
-        {/* --- UPDATED FORM SECTION --- */}
-        {/* <div className="w-full max-w-lg relative mb-8">
-          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row shadow-2xl">
+        {/* --- FORM SECTION ACTIVATED --- */}
+       {/*  <div className="w-full max-w-lg relative mb-8">
+          <form onSubmit={handleSubmit} className="flex flex-col md:flex-row shadow-2xl bg-white/5 backdrop-blur-sm rounded-sm">
             <input
               type="email"
               placeholder="Enter your email"
@@ -172,7 +203,6 @@ const Countdown: React.FC = () => {
               onChange={(e) => setEmail(e.target.value)}
               disabled={status === 'loading' || status === 'success'}
               className="flex-grow bg-transparent border-2 border-gray-600 border-r-0 md:border-r-0 border-b-0 md:border-b-2 text-white px-4 py-3 placeholder-gray-400 focus:outline-none focus:border-yellow-500 transition-colors disabled:opacity-50"
-              style={{ borderRight: 'none' }}
             />
             <button
               type="submit"
@@ -194,15 +224,14 @@ const Countdown: React.FC = () => {
           
           <div className="hidden md:block absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-yellow-500/50 to-transparent"></div>
 
-       
           {message && (
             <div className={`mt-4 text-sm font-medium animate-pulse ${status === 'error' ? 'text-red-400' : 'text-green-400'}`}>
               {message}
             </div>
           )}
         </div> */}
-        {/* ---------------------------- */}
 
+        {/* Social Icons using Lucide */}
         <div className="text-gray-500 text-sm">
           <div className="flex justify-center gap-6 mb-4">
             <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-yellow-500 transition-colors">
