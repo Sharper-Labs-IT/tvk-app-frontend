@@ -42,7 +42,8 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     }
 
     setLoading(true);
-     try {
+
+    try {
       // 1) Create PaymentMethod on Stripe
       const { paymentMethod, error: pmError } = await stripe.createPaymentMethod(
         {
