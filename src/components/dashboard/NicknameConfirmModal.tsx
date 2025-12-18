@@ -176,7 +176,7 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
             ) : (
               <>
                 <CheckCircle size={18} />
-                {isPremium || hasFreeChange ? 'Confirm Update' : `Pay ${cost} Coins`}
+                {isPremium || hasFreeChange ? 'Confirm' : `Pay ${cost} Coins`}
               </>
             )}
           </button>
