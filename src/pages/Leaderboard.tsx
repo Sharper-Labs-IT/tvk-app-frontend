@@ -13,7 +13,7 @@ const S3_BASE_URL = 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
 interface UserTrophyData {
   userId: string;
   username: string;
-  nickname?: string; // Display name
+  nickname?: string; 
   avatar: string;
   totalTrophies: number;
   trophyBreakdown: {
