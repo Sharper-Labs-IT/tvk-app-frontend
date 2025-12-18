@@ -20,6 +20,7 @@ interface MembershipTireCardprops{
     badgeLabel?: string;
     features: TierFeature[];
      onSubscribe?: () => void;
+     buttonText?: string;
 
 }
 
@@ -32,6 +33,7 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
     badgeLabel,
     features,
     onSubscribe,
+    buttonText = "Subscribe Now",
 
 }) => {
     return (
@@ -78,7 +80,7 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
             ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a]"
             : "bg-[#111827] text-slate-100 hover:bg-[#181e37]"
             ].join(" ")}>
-               Subscribe Now
+               {buttonText}
             </button>
         </div>
         </div>

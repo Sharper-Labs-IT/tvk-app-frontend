@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {useAuth} from '../context/AuthContext';
 import {useNavigate} from 'react-router-dom';
 import Header from '../components/Header';
-import { Star, Users, Video, Bell } from "lucide-react";
+import { Star, Users, Video, Bell, AlertCircle } from "lucide-react";
 import Footer from '../components/Footer';
 
 import MembershipTireCard, {
@@ -15,6 +15,7 @@ import { motion, type Variants } from "framer-motion";
 import type {Plan} from '../types/plan';
 import axiosClient from "../api/axiosClient";
 import MembershipPaymentModal from "../components/MembershipPaymentModal";
+import { toast } from 'react-hot-toast';
 
 
 
@@ -56,6 +57,10 @@ const MembershipPage: React.FC = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
+  const [userMembershipTier, setUserMembershipTier] = useState<string | null>(null);
+  const [userMembershipStatus, setUserMembershipStatus] = useState<string | null>(null);
+  const [membershipLoading, setMembershipLoading] = useState(true);
+
    const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
@@ -80,6 +85,33 @@ const MembershipPage: React.FC = () => {
     fetchPlans();
   }, []);
 
+  // Fetch current user membership status (only if logged in)
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setMembershipLoading(false);
+      return;
+    }
+
+    const fetchUserMembership = async () => {
+      try {
+        // Assuming you have a protected endpoint that returns user profile with membership info
+        // If you don't have one yet, you can reuse login response or create GET /me
+        const response = await axiosClient.get('/auth/me'); // or '/user/profile'
+        const { membership_tier, membership } = response.data.user || response.data;
+
+        setUserMembershipTier(membership_tier || null);
+        setUserMembershipStatus(membership?.status || null);
+      } catch (err) {
+        console.error("Failed to fetch user membership", err);
+        // Optionally show toast
+      } finally {
+        setMembershipLoading(false);
+      }
+    };
+
+    fetchUserMembership();
+  }, [isLoggedIn]);
+
    const handleSubscribeClick = (plan: Plan) => {
   const isFree = plan.price === "0.00";
 
@@ -101,15 +133,43 @@ const MembershipPage: React.FC = () => {
     return;
   }
 
+  // If user already has this plan and it's active → show manage
+    if (userMembershipTier === plan.name && userMembershipStatus === 'active') {
+      toast("Manage your membership", { icon: <AlertCircle className="text-yellow-500" /> });
+      // You can open a modal here or navigate to a manage page
+      // For now, we'll just show a simple confirm to cancel
+      if (window.confirm("Do you want to cancel your Super Fan membership?")) {
+        handleCancelMembership();
+      }
+      return;
+    }
+
   // logged in + paid -> open payment modal
   setSelectedPlan(plan);
   setIsPaymentOpen(true);
 };
 
+const handleCancelMembership = async () => {
+    try {
+      // Replace with your actual cancel endpoint
+      await axiosClient.post('/membership/cancel');
+      toast.success("Membership cancelled successfully.");
+      // Update state
+      setUserMembershipTier(null);
+      setUserMembershipStatus(null);
+    } catch (err) {
+      toast.error("Failed to cancel membership.");
+      console.log(err);
+    }
+  };
+
 
 
   const handlePaymentSuccess = () => {
     // Here you can re-fetch membership status or show a toast
+    setUserMembershipTier("Super Fan");
+    setUserMembershipStatus("active");
+    toast.success("Welcome to Super Fan!");
   };
 
   return (
@@ -201,6 +261,13 @@ const MembershipPage: React.FC = () => {
 
             const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
 
+            // Determine button text
+            const isUserSuperFan = userMembershipTier === "Super Fan" && userMembershipStatus === "active";
+            const isThisSuperFanCard = plan.name === "Super Fan";
+            const buttonText = isUserSuperFan && isThisSuperFanCard
+              ? "Manage your membership"
+              : "Subscribe Now";
+
             return (
               <MembershipTireCard
                 key={plan.id}
@@ -212,6 +279,7 @@ const MembershipPage: React.FC = () => {
                 highlight={isHighlighted}
                 badgeLabel={isHighlighted ? "Most Popular" : undefined}
                 onSubscribe={() => handleSubscribeClick(plan)}
+                buttonText={buttonText}
               />
             );
           })}
