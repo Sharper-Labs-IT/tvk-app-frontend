@@ -1,13 +1,9 @@
 import React, { useState, useEffect } from 'react';
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 import {useAuth} from '../context/AuthContext';
 import {useNavigate} from 'react-router-dom';
-=======
-import { useNavigate } from "react-router-dom";
->>>>>>> 04727a6 (feat: connect subscribe API)
-=======
->>>>>>> 5ef12f1 (feat: connect strip and subscribe API)
+
+
 import Header from '../components/Header';
 import { Star, Users, Video, Bell } from "lucide-react";
 import Footer from '../components/Footer';
