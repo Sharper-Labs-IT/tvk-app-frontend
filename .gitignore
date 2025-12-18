@@ -28,3 +28,7 @@ Thumbs.db
 
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
+
+vitest.config.ts
+App.test.tsx
+setupTests.ts
