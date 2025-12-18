@@ -140,30 +140,22 @@ const MemberProfile: React.FC = () => {
 
     setIsUpdatingNickname(true);
     setNicknameSuccess('');
+    setNicknameError('');
 
     try {
       const response = await userService.updateNickname(nicknameInput.trim());
       
-      if (token && user) {
-        // Update local state with new nickname and potentially deducted coins
-        const updatedUser = {
-          ...user,
-          nickname: response.user.nickname,
-          coins: response.user.coins,
-          nickname_changes: response.user.nickname_changes,
-        };
-        login(token, updatedUser);
-        
-        // Refresh from backend to ensure consistency
-        await refreshUser();
-      }
-
+      // Determine the change status before updating
       const coinsDeducted = response.coins_deducted || 0;
-      const hasFreeChange = !user?.nickname_changes || user.nickname_changes === 0;
+      const previousChanges = user?.nickname_changes || 0;
       
+      // Refresh from backend to get the latest user data
+      await refreshUser();
+
+      // Set success message based on the change
       if (coinsDeducted > 0) {
         setNicknameSuccess(`Nickname updated! ${coinsDeducted} coins deducted.`);
-      } else if (!isPremium && hasFreeChange) {
+      } else if (!isPremium && previousChanges === 0) {
         setNicknameSuccess('Nickname updated! (Free change used)');
       } else {
         setNicknameSuccess('Nickname updated successfully!');
@@ -175,6 +167,7 @@ const MemberProfile: React.FC = () => {
       // Clear success message after 3 seconds
       setTimeout(() => setNicknameSuccess(''), 3000);
     } catch (error: any) {
+      console.error('Nickname update error:', error);
       const errorMsg = error.response?.data?.message || 'Failed to update nickname';
       setNicknameError(errorMsg);
       setShowNicknameConfirmModal(false);
@@ -269,8 +262,15 @@ const MemberProfile: React.FC = () => {
                             setIsEditingNickname(true);
                             setNicknameInput(user?.nickname || '');
                           }}
-                          className="text-gold hover:text-white transition"
-                          title="Edit nickname"
+                          className={`text-gold hover:text-white transition ${
+                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000 ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                          title={
+                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                              ? 'You need 2000 coins to change your nickname again.'
+                              : 'Edit nickname'
+                          }
+                          disabled={!isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000}
                         >
                           <Edit size={14} />
                         </button>

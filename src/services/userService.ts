@@ -70,7 +70,7 @@ export const userService = {
    * Free users: 1 free change, then 2000 coins per change
    */
   updateNickname: async (nickname: string) => {
-    const response = await api.post<{ user: IUser; message: string; coins_deducted?: number }>(
+    const response = await api.patch<{ user: IUser; message: string; coins_deducted?: number }>(
       '/v1/auth/update-nickname',
       { nickname }
     );
