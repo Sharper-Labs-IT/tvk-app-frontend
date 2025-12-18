@@ -208,9 +208,9 @@ const EventPage: React.FC = () => {
             <div className="flex-1 max-w-md w-full self-stretch">
               <div className="relative rounded-3xl overflow-hidden border border-yellow-500/20 aspect-[4/3] shadow-[0_18px_60px_rgba(15,23,42,0.9)]">
                 <img
-                  src="/images/event-vijay.png"
+                  src="/images/event-hero1.png"
                   alt="Event Hero"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-fill"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40"></div>
               </div>
