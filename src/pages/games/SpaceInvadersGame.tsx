@@ -7,6 +7,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -198,6 +199,7 @@ const SpaceInvadersGame: React.FC = () => {
 
   // --- Backend Integration ---
   const { refreshUser, user } = useAuth();
+  const { isPremium } = useGameAccess();
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
@@ -233,12 +235,10 @@ const SpaceInvadersGame: React.FC = () => {
             coins: collectedCoins,
             data: { lives: lives }
           });
-          console.log("Score submitted successfully");
           
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };
@@ -424,7 +424,6 @@ const SpaceInvadersGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.SPACE_INVADERS);
       setParticipantId(response.participant.id);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 
@@ -451,7 +450,6 @@ const SpaceInvadersGame: React.FC = () => {
 
   const playSound = (_: 'shoot' | 'explosion' | 'win' | 'lose' | 'coin') => {
     if (isMuted) return;
-    // console.log(`Playing sound: ${type}`);
   };
 
   const triggerShake = () => {
@@ -1194,13 +1192,15 @@ const SpaceInvadersGame: React.FC = () => {
               */}
 
               <div className="flex gap-4">
-                <button
-                  onClick={initGame}
-                  className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-full font-bold transition-colors flex items-center gap-2 border border-yellow-400 shadow-lg shadow-red-600/30"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                  PLAY AGAIN
-                </button>
+                {isPremium && (
+                  <button
+                    onClick={initGame}
+                    className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-full font-bold transition-colors flex items-center gap-2 border border-yellow-400 shadow-lg shadow-red-600/30"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    PLAY AGAIN
+                  </button>
+                )}
                 <button
                   onClick={() => navigate('/game/protect-area')}
                   className="px-8 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors"

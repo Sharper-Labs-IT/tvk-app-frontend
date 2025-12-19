@@ -8,13 +8,6 @@ const PLAY_COST = 500;
 const isPremiumUser = (user: any) => {
   if (!user) return false;
   
-  // Debug log to see what user data we have
-  console.log('[useGameAccess] Checking premium status for user:', {
-    membership_type: user.membership_type,
-    membership_tier: user.membership_tier,
-    roles: user.roles
-  });
-  
   // Check membership_type (frontend standard)
   if (user.membership_type === 'premium' || user.membership_type === 'vip') return true;
   
@@ -88,7 +81,6 @@ export const useGameAccess = () => {
         
         // For now, update local user state if possible or just proceed
         // Ideally AuthContext should expose a way to update user coins
-        console.log(`Deducting ${PLAY_COST} coins...`);
         
         // Update local storage for coins simulation if needed
         // const currentCoins = user.coins || 0;
@@ -99,7 +91,6 @@ export const useGameAccess = () => {
         
         return true;
       } catch (error) {
-        console.error("Failed to deduct coins", error);
         return false;
       }
     } else {

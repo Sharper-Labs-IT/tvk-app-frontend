@@ -24,7 +24,6 @@ const AvailablePlans: React.FC = () => {
       const response = await api.get('/v1/membership/plans');
       setPlans(response.data.plans);
     } catch (err) {
-      console.error('Failed to load plans', err);
       setError('Unable to load membership plans at this time.');
     } finally {
       setLoading(false);

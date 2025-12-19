@@ -82,7 +82,12 @@ export interface IRole {
 export interface IUser {
   id: number;
   name: string;
-  nickname?: string;
+  
+  // MERGE FIX: Kept 'development' version because 'nickname_changes' is required 
+  // for the Profile page logic (free nickname change calculation).
+  nickname?: string; // Display name (shown instead of username)
+  nickname_changes?: number; // Track how many times nickname has been changed
+  
   email: string;
   mobile?: string;
   is_verified: boolean;
@@ -94,9 +99,9 @@ export interface IUser {
   // Roles can now be objects (Old) OR strings (New Backend)
   roles?: (IRole | string)[];
 
-  // Images
+  // Images (backend sends 'avatar', but we normalize to avatar_url for consistency)
   avatar_url?: string | null;
-  avatar?: string | null;
+  avatar?: string | null; // Legacy field from backend
 
   created_at?: string;
   last_login_at?: string;

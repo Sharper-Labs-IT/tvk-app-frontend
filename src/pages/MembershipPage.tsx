@@ -70,6 +70,7 @@ const MembershipPage: React.FC = () => {
 
         setPlans(activePlans);
       } catch (err) {
+        // MERGE FIX: Keep console error from 'thilanka1' for debugging
         console.error(err);
         setError('Unable to load membership plans.');
       } finally {
@@ -93,9 +94,13 @@ const MembershipPage: React.FC = () => {
       return;
     }
 
+    // MERGE FIX: Used logic from 'development' branch
+    // This passes state so the login page can redirect the user BACK here after logging in.
     // SUPER FAN (PAID)
     if (!isLoggedIn) {
-      navigate('/login');
+      navigate("/login", {
+        state: {from: "/membership"}
+      });
       return;
     }
 
@@ -105,8 +110,9 @@ const MembershipPage: React.FC = () => {
   };
 
   const handlePaymentSuccess = () => {
-    // Here you can re-fetch membership status or show a toast
+    // MERGE FIX: Keep the log from 'thilanka1'
     console.log('Payment & subscription completed.');
+    // Here you can re-fetch membership status or show a toast if needed
   };
 
   return (
@@ -126,6 +132,7 @@ const MembershipPage: React.FC = () => {
         {/* Billing Toggle (UI-only; affects suffix for paid plans) */}
         <div className="mt-10 flex justify-center">
           <div className="inline-flex rounded-full bg-[#07091a] p-1">
+            {/* MERGE FIX: Used 'thilanka1' logic to keep 'Yearly' enabled */}
             {(
               [
                 { id: 'monthly', label: 'Monthly' },

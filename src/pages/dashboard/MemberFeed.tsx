@@ -57,7 +57,6 @@ const MemberFeed: React.FC = () => {
         setContents([]);
       }
     } catch (err) {
-      console.error('Feed fetch error:', err);
       setError('Failed to load feed.');
     } finally {
       setLoading(false);

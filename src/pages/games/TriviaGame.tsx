@@ -10,6 +10,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { GAME_IDS } from '../../constants/games';
 import { useAuth } from '../../context/AuthContext';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -75,7 +76,7 @@ interface Question {
   question: string;
   options: string[];
   correctAnswer: number;
-  image?: string; // New Optional Image Property
+  image?: string;
 }
 
 interface LifelineState {
@@ -84,25 +85,60 @@ interface LifelineState {
   freeze: boolean;
 }
 
-// --- Question Data ---
-const QUESTIONS: Question[] = [
+// --- Question Data (Expanded Pool) ---
+const QUESTION_POOL: Question[] = [
+  // Classic / Early Career
   { id: 1, question: "What is Thalapathy Vijay's debut movie as a lead actor?", options: ["Vetri", "Naalaiya Theerpu", "Sendhoorapandi", "Rasigan"], correctAnswer: 1 },
   { id: 2, question: "Which movie features the chartbuster song 'Appadi Podu'?", options: ["Thirumalai", "Ghilli", "Madhurey", "Sivakasi"], correctAnswer: 1 },
-  { id: 3, question: "In which movie did Vijay play a triple role for the first time?", options: ["Bigil", "Theri", "Mersal", "Puli"], correctAnswer: 2 },
-  { id: 4, question: "What is the name of Vijay's character in the movie 'Thuppakki'?", options: ["Jagadish", "Joseph", "Saravanan", "Vetri"], correctAnswer: 0 },
-  { id: 5, question: "Which year was the blockbuster 'Leo' released?", options: ["2022", "2023", "2024", "2021"], correctAnswer: 1 },
-  // Example with Image (You need to add these images to your public folder)
+  { id: 3, question: "What is the title of Vijay's 50th film?", options: ["Sura", "Vettaikaran", "Kaavalan", "Velayudham"], correctAnswer: 0 },
+  { id: 4, question: "Which film gave Vijay the title 'Ilayathalapathy'?", options: ["Rasigan", "Rajavin Parvaiyile", "Poove Unakkaga", "Love Today"], correctAnswer: 0 },
+  { id: 5, question: "In which movie did Vijay act alongside Surya?", options: ["Nerrukku Ner", "Friends", "Both A & B", "Kaavalan"], correctAnswer: 2 },
+  { id: 6, question: "Who directed the blockbuster movie 'Pokkiri'?", options: ["Perarasu", "Prabhu Deva", "Dharani", "Ramana"], correctAnswer: 1 },
+  
+  // Mid Career / Blockbusters
+  { id: 7, question: "What is the name of Vijay's character in the movie 'Thuppakki'?", options: ["Jagadish", "Joseph", "Saravanan", "Vetri"], correctAnswer: 0 },
+  { id: 8, question: "In 'Kaththi', what social issue does the protagonist fight for?", options: ["Education", "Farmers' Water Rights", "Medical Mafia", "Corruption"], correctAnswer: 1 },
+  { id: 9, question: "Which movie marked the first collaboration between Vijay and Atlee?", options: ["Mersal", "Bigil", "Theri", "Raja Rani"], correctAnswer: 2 },
+  { id: 10, question: "In 'Nanban', Vijay's character is a remake of which Bollywood character?", options: ["Rancho (3 Idiots)", "Munna Bhai", "Bajrangi", "Kabir Singh"], correctAnswer: 0 },
+  { id: 11, question: "What was the tagline of the movie 'Thalaivaa'?", options: ["Time to Lead", "Born to Win", "The Leader", "Rise of a Hero"], correctAnswer: 0 },
+  { id: 12, question: "In which movie did Vijay play a triple role for the first time?", options: ["Bigil", "Theri", "Mersal", "Puli"], correctAnswer: 2 },
+  
+  // Recent Hits
+  { id: 13, question: "Which year was the blockbuster 'Leo' released?", options: ["2022", "2023", "2024", "2021"], correctAnswer: 1 },
+  { id: 14, question: "Who played the antagonist in the movie 'Master'?", options: ["Arjun", "Sanjay Dutt", "Vijay Sethupathi", "Prakash Raj"], correctAnswer: 2 },
+  { id: 15, question: "In 'Beast', what is the name of the mall hijacked by terrorists?", options: ["Express Avenue", "Phoenix Marketcity", "East Coast Mall", "Skywalk"], correctAnswer: 2 },
+  { id: 16, question: "Who is the music director of 'Varisu'?", options: ["Anirudh", "Thaman S", "A.R. Rahman", "Yuvan"], correctAnswer: 1 },
+  { id: 17, question: "What is the name of the political party founded by Vijay?", options: ["Makkal Needhi Maiam", "Tamizhaga Vettri Kazhagam", "Naam Tamilar", "DMDK"], correctAnswer: 1 },
+  
+  // Family & Personal
+  { id: 18, question: "What is the name of Vijay's father?", options: ["S.A. Chandrasekhar", "Bharathiraja", "Gangai Amaran", "T. Rajendar"], correctAnswer: 0 },
+  { id: 19, question: "In which movie did Vijay's son, Jason Sanjay, make a cameo appearance?", options: ["Vettaikaran", "Villu", "Sura", "Pokkiri"], correctAnswer: 0 },
+  { id: 20, question: "Which of these movies features Vijay as a football coach?", options: ["Thalaivaa", "Bigil", "Kaththi", "Jilla"], correctAnswer: 1 },
+
+  // Music & Songs
+  { id: 21, question: "Which song did Vijay sing in 'Leo'?", options: ["Naa Ready", "Badass", "Bloody Sweet", "Ordinary Person"], correctAnswer: 0 },
+  { id: 22, question: "Who composed the music for 'Ghilli'?", options: ["Harris Jayaraj", "Vidyasagar", "Deva", "Yuvan Shankar Raja"], correctAnswer: 1 },
+  { id: 23, question: "The song 'Google Google' is from which movie?", options: ["Kaththi", "Thuppakki", "Thalaivaa", "Jilla"], correctAnswer: 1 },
+
+  // Directors & Collabs
+  { id: 24, question: "How many movies have Vijay and Director A.R. Murugadoss collaborated on?", options: ["2", "3", "4", "5"], correctAnswer: 1 },
+  { id: 25, question: "Which movie features Vijay alongside Mohanlal?", options: ["Jilla", "Velayudham", "Kaavalan", "Puli"], correctAnswer: 0 },
+  
+  // Image Based (Ensure these paths exist in public folder)
   { 
-    id: 6, 
+    id: 26, 
     question: "Identify the movie from this iconic scene.", 
     options: ["Master", "Kaththi", "Thuppakki", "Mersal"], 
     correctAnswer: 0,
-    image: "/img/master.webp" // Example image path
+    image: "/img/master.webp" 
   },
-  { id: 7, question: "What is the title of Vijay's 50th film?", options: ["Sura", "Vettaikaran", "Kaavalan", "Velayudham"], correctAnswer: 0 },
-  { id: 8, question: "In 'Kaththi', what social issue does the protagonist fight for?", options: ["Education", "Farmers' Water Rights", "Medical Mafia", "Corruption"], correctAnswer: 1 },
-  { id: 9, question: "Which movie marked the first collaboration between Vijay and Atlee?", options: ["Mersal", "Bigil", "Theri", "Raja Rani"], correctAnswer: 2 },
-  { id: 10, question: "What is the name of the political party founded by Vijay?", options: ["Makkal Needhi Maiam", "Tamizhaga Vettri Kazhagam", "Naam Tamilar", "DMDK"], correctAnswer: 1 },
+  { 
+    id: 27, 
+    question: "This still belongs to which movie?", 
+    options: ["Theri", "Mersal", "Bigil", "Sarkar"], 
+    correctAnswer: 0,
+    image: "/img/theri-scene.jpg" 
+  }
 ];
 
 const BACKGROUNDS = [
@@ -130,6 +166,12 @@ const getRank = (score: number) => {
   return { title: "ROOKIE", color: "text-gray-400" };
 };
 
+// --- Helper: Get Random Questions ---
+const getRandomQuestions = (count: number): Question[] => {
+  const shuffled = [...QUESTION_POOL].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
 const TriviaGame: React.FC = () => {
   const navigate = useNavigate();
   
@@ -138,6 +180,7 @@ const TriviaGame: React.FC = () => {
   const [loadingProgress, setLoadingProgress] = useState(0);
 
   // Game State
+  const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
@@ -165,15 +208,21 @@ const TriviaGame: React.FC = () => {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
-  // --- Preload Images ---
+  // --- Initialize Game & Preload ---
   useEffect(() => {
+    // 1. Select random questions for this session
+    const questionsForSession = getRandomQuestions(10);
+    setGameQuestions(questionsForSession);
+
+    // 2. Preload images
     const preloadImages = async () => {
       const imageUrls = [
         ...BACKGROUNDS,
         '/img/master.webp',
         '/img/happy.webp',
         '/img/sad.png',
-        ...QUESTIONS.filter(q => q.image).map(q => q.image!)
+        // Preload only images relevant to the selected questions to save data
+        ...questionsForSession.filter(q => q.image).map(q => q.image!)
       ];
 
       let loadedCount = 0;
@@ -209,7 +258,6 @@ const TriviaGame: React.FC = () => {
         const response = await gameService.joinGame(GAME_IDS.TRIVIA);
         setParticipantId(response.participant.id);
       } catch (e) {
-        console.error(e);
       }
     }
     init();
@@ -275,7 +323,7 @@ const TriviaGame: React.FC = () => {
   const useFiftyFifty = () => {
     if (!lifelines.fiftyFifty || isAnswered) return;
     playSound('click');
-    const current = QUESTIONS[currentQuestionIndex];
+    const current = gameQuestions[currentQuestionIndex];
     const wrongOptions = current.options
       .map((_, idx) => idx)
       .filter(idx => idx !== current.correctAnswer);
@@ -295,7 +343,7 @@ const TriviaGame: React.FC = () => {
   const useAudience = () => {
     if (!lifelines.audience || isAnswered) return;
     playSound('click');
-    const current = QUESTIONS[currentQuestionIndex];
+    const current = gameQuestions[currentQuestionIndex];
     const isAudienceRight = Math.random() < 0.8;
     
     let percentages = [0, 0, 0, 0];
@@ -329,7 +377,7 @@ const TriviaGame: React.FC = () => {
     setIsAnswered(true);
     setIsFrozen(false); 
 
-    const currentQuestion = QUESTIONS[currentQuestionIndex];
+    const currentQuestion = gameQuestions[currentQuestionIndex];
     const isCorrect = optionIndex === currentQuestion.correctAnswer;
 
     if (isCorrect) {
@@ -352,7 +400,7 @@ const TriviaGame: React.FC = () => {
   };
 
   const nextQuestion = () => {
-    if (currentQuestionIndex < QUESTIONS.length - 1) {
+    if (currentQuestionIndex < gameQuestions.length - 1) {
       setCurrentQuestionIndex((prev) => prev + 1);
       setTimeLeft(TIMER_SECONDS);
       setSelectedOption(null);
@@ -371,9 +419,12 @@ const TriviaGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.TRIVIA);
       setParticipantId(response.participant.id);
     } catch (e) {
-      console.error(e);
       return;
     }
+    
+    // Shuffle new questions for the new game
+    setGameQuestions(getRandomQuestions(10));
+    
     setScoreSubmitted(false);
     setCurrentQuestionIndex(0);
     setScore(0);
@@ -391,6 +442,7 @@ const TriviaGame: React.FC = () => {
 
   // --- Backend Integration ---
   const { refreshUser, user } = useAuth();
+  const { isPremium } = useGameAccess();
 
   // Helper function to calculate total trophies from user object
   const calculateTotalTrophies = (userTrophies: any): number => {
@@ -429,9 +481,7 @@ const TriviaGame: React.FC = () => {
           
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
-          // Trophies will be updated automatically via useEffect when user data changes
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };
@@ -483,12 +533,17 @@ const TriviaGame: React.FC = () => {
     }, 1500);
   };
 
-  const currentQ = QUESTIONS[currentQuestionIndex];
+  const currentQ = gameQuestions[currentQuestionIndex];
   const rank = getRank(score);
 
   // --- Loading Screen ---
   if (!assetsLoaded) {
     return <GamingLoader progress={loadingProgress} />;
+  }
+
+  // Ensure gameQuestions is not empty before rendering
+  if (gameQuestions.length === 0) {
+    return <GamingLoader progress={100} />;
   }
 
   return (
@@ -613,7 +668,7 @@ const TriviaGame: React.FC = () => {
                 {/* Question Info */}
                 <div className="flex justify-between items-center mb-6">
                   <div className="flex gap-1 flex-wrap">
-                    {QUESTIONS.map((_, idx) => (
+                    {gameQuestions.map((_, idx) => (
                       <div key={idx} className={`h-1.5 w-4 md:w-8 rounded-full transition-all ${idx < currentQuestionIndex ? 'bg-brand-gold shadow-[0_0_10px_#FCD34D]' : idx === currentQuestionIndex ? 'bg-white animate-pulse' : 'bg-gray-800'}`} />
                     ))}
                   </div>
@@ -627,7 +682,7 @@ const TriviaGame: React.FC = () => {
                   </div>
                 </div>
 
-                {/* --- NEW: IMAGE DISPLAY --- */}
+                {/* --- IMAGE DISPLAY --- */}
                 {currentQ.image && (
                   <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -769,12 +824,6 @@ const TriviaGame: React.FC = () => {
                   return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
                 })()}
               </div>
-              
-              {/* 
-                TODO: Send score and trophy to backend
-                POST /api/scores
-                Body: { game: 'trivia', score: score, trophy: getTrophyFromScore('trivia', score) }
-              */}
 
               <div className="space-y-3">
                 <button
@@ -791,13 +840,15 @@ const TriviaGame: React.FC = () => {
                   )}
                   {isCollecting ? "Collecting..." : "Collect Coins"}
                 </button>
-                <button
-                  onClick={restartGame}
-                  className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                  Play Again
-                </button>
+                {isPremium && (
+                  <button
+                    onClick={restartGame}
+                    className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2"
+                  >
+                    <RotateCcw className="w-5 h-5" />
+                    Play Again
+                  </button>
+                )}
                 <button
                    onClick={() => navigate('/')}
                    className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-white py-4 rounded-xl font-bold transition-colors border border-transparent hover:border-white/10"

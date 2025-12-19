@@ -24,6 +24,7 @@ const CreateAdminPage = React.lazy(() => import('../pages/admin/member/CreateAdm
 const EditAdminPage = React.lazy(() => import('../pages/admin/member/EditAdminPage'));
 
 // Lazy Loaded Pages
+const Countdown = React.lazy(() => import('../pages/Countdown'));
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
@@ -82,7 +83,7 @@ const getRoleName = (role: any): string => {
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
   if (!isAuthInitialized) return <Loader />;
-  return !isLoggedIn ? <>{element}</> : <Navigate to="/" replace />;
+  return !isLoggedIn ? <>{element}</> : <Navigate to="/home" replace />;
 };
 
 /**
@@ -127,7 +128,6 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const isMember = user.roles?.some((role) => allowedRoles.includes(getRoleName(role)));
 
   if (!isMember) {
-    console.warn('Access Denied: User does not have member role.', user.roles);
     return <Navigate to="/" replace />;
   }
 
@@ -163,7 +163,8 @@ const AppRoutes: React.FC = () => {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Countdown />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />

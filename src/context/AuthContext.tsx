@@ -57,8 +57,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(newToken);
     Cookies.set('authToken', newToken, { expires: 7 });
 
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // MERGE FIX: Used logic from 'development' branch to handle avatar normalization
+    // Note: The userData coming from login MIGHT be missing roles depending on backend.
+    // We set it for now, but the useEffect below will fix it on next reload.
+    // Normalize avatar field (backend sends 'avatar' but we use 'avatar_url')
+    const normalizedUser = { ...userData, avatar_url: userData.avatar_url || userData.avatar || null };
+    setUser(normalizedUser);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
   }, []);
 
   // Function called to log out the user
@@ -76,7 +81,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (!prevUser) return null;
       const updatedUser = { ...prevUser, ...updates };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      console.log('[AuthContext] User updated locally:', updates);
       return updatedUser;
     });
   }, []);
@@ -104,14 +108,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.data && response.data.user) {
         const fullUser = response.data.user;
         const totalCoins = calculateTotalCoins(fullUser);
-        const userWithCoins = { ...fullUser, coins: totalCoins };
-
+        
+        // MERGE FIX: Kept 'development' logic to ensure avatar_url is set
+        // Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
+        const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+        
+        const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
+        
         setUser(userWithCoins);
         localStorage.setItem('user', JSON.stringify(userWithCoins));
         console.log('[AuthContext] User refreshed from API:', userWithCoins);
       }
     } catch (error) {
-      console.error('[AuthContext] Failed to refresh user:', error);
+       console.error("Failed to refresh user:", error);
     }
   }, []);
 
@@ -130,7 +139,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (response.data && response.data.user) {
             const fullUser = response.data.user;
             const totalCoins = calculateTotalCoins(fullUser);
-            const userWithCoins = { ...fullUser, coins: totalCoins };
+            
+            // 3.5. Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
+            const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+            
+            const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
 
             setUser(userWithCoins);
             localStorage.setItem('user', JSON.stringify(userWithCoins));
@@ -139,7 +152,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (error) {
           console.error('Failed to sync user profile on load:', error);
 
-          // Only logout if it's strictly a 401 Unauthorized error
+          // MERGE FIX: Used logic from 'thilanka1' branch
+          // Only logout if it's strictly a 401 Unauthorized error (avoids logout on network error)
           if ((error as any).response && (error as any).response.status === 401) {
             Cookies.remove('authToken');
             localStorage.removeItem('user');

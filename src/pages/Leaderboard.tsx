@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Crown, Target, Search, Users } from 'lucide-react';
 import LogoHeader from '../components/common/LogoHeader';
@@ -6,11 +6,14 @@ import Footer from '../components/Footer';
 import { type TrophyTier } from '../utils/trophySystem';
 import { gameService } from '../services/gameService'; // Import gameService
 
+// S3 Configuration
+const S3_BASE_URL = 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
+
 // --- Types ---
 interface UserTrophyData {
   userId: string;
   username: string;
-  nickname?: string; // Display name
+  nickname?: string; 
   avatar: string;
   totalTrophies: number;
   trophyBreakdown: {
@@ -81,59 +84,107 @@ const DUMMY_LEADERBOARD_DATA: UserTrophyData[] = [
   },
 ];
 
+// Helper function to get full avatar URL
+// The backend should return signed S3 URLs, but if it returns relative paths,
+// we request a signed URL from the backend
+const getAvatarUrl = (avatar: string | null | undefined): string => {
+  if (!avatar) {
+    // Return empty string, will use fallback later
+    return '';
+  }
+  
+  // If already a full URL (with S3 signature), return as is
+  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+    return avatar;
+  }
+  
+  // If it's a relative S3 path, we need to get a signed URL from backend
+  // For now, construct the public S3 URL (works if bucket has public read access)
+  // Better solution: backend should return signed URLs in leaderboard API
+  if (avatar.startsWith('avatars/')) {
+    // Construct full S3 URL
+    return `${S3_BASE_URL}/${avatar}`;
+  }
+  
+  // Return as is (might be a data URI or other format)
+  return avatar;
+};
+
 const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<UserTrophyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'platinum' | 'gold'>('all');
 
-  useEffect(() => {
-    // --- Backend API Integration ---
-    const fetchLeaderboard = async () => {
+  // --- Backend API Integration ---
+  const fetchLeaderboard = useCallback(async () => {
       try {
         const response = await gameService.getLeaderboard();
-        console.log('[Leaderboard] API Response:', response);
         
         // Handle potential response wrapping (e.g. { leaderboard: [...] } or { data: [...] })
         const data = Array.isArray(response) 
           ? response 
           : (response as any).leaderboard || (response as any).data || [];
-        console.log('[Leaderboard] Parsed data:', data);
         
         // If no data from API, use dummy data
         if (!data || data.length === 0) {
-          console.log('[Leaderboard] No data from API, using dummy data');
           setLeaderboardData(DUMMY_LEADERBOARD_DATA);
           return;
         }
         
         // Map backend data to frontend format
-        // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, nickname } }
-        const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => ({
-          userId: entry.user_id?.toString() || entry.user?.id?.toString() || '0',
-          username: entry.user?.name || entry.username || 'Unknown',
-          nickname: entry.user?.nickname || entry.nickname || null,
-          avatar: entry.user?.avatar || entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.user?.nickname || entry.user?.name || entry.username}`,
-          totalTrophies: entry.total_trophies || 0,
-          trophyBreakdown: entry.trophy_breakdown || {
-            PLATINUM: entry.platinum_count || 0,
-            GOLD: entry.gold_count || 0,
-            SILVER: entry.silver_count || 0,
-            BRONZE: entry.bronze_count || 0
-          },
-          rank: entry.rank || index + 1
-        }));
-        console.log('[Leaderboard] Formatted data:', formattedData);
+        // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, avatar_url, nickname } }
+        const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => {
+          
+          // Check for both avatar_url (updated avatar) and avatar (old field)
+          // Priority: user.avatar_url > user.avatar > entry.avatar_url > entry.avatar
+          const rawAvatar = entry.user?.avatar_url || entry.user?.avatar || entry.avatar_url || entry.avatar;
+          
+          // Convert relative path to full URL
+          let avatarUrl = getAvatarUrl(rawAvatar);
+          
+          // If no avatar provided, use generated one
+          if (!avatarUrl) {
+            avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.user?.nickname || entry.user?.name || entry.username}`;
+          }
+          
+          return {
+            userId: entry.user_id?.toString() || entry.user?.id?.toString() || '0',
+            username: entry.user?.name || entry.username || 'Unknown',
+            nickname: entry.user?.nickname || entry.nickname || null,
+            avatar: avatarUrl,
+            totalTrophies: entry.total_trophies || 0,
+            trophyBreakdown: entry.trophy_breakdown || {
+              PLATINUM: entry.platinum_count || 0,
+              GOLD: entry.gold_count || 0,
+              SILVER: entry.silver_count || 0,
+              BRONZE: entry.bronze_count || 0
+            },
+            rank: entry.rank || index + 1
+          };
+        });
         setLeaderboardData(formattedData);
       } catch (error) {
-        console.error("[Leaderboard] Failed to fetch leaderboard:", error);
         // Fallback to dummy data
         setLeaderboardData(DUMMY_LEADERBOARD_DATA);
       } finally {
         setLoading(false);
       }
-    };
+    }, []);
+
+  // Fetch on mount
+  useEffect(() => {
     fetchLeaderboard();
-  }, []);
+  }, [fetchLeaderboard]);
+
+  // Refresh when window gains focus (e.g., after updating avatar)
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchLeaderboard();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchLeaderboard]);
 
   const topThree = leaderboardData.slice(0, 3);
   const restOfPlayers = leaderboardData.slice(3);
@@ -325,6 +376,10 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                         src={user.avatar} 
                         alt={user.username} 
                         className={`rounded-full object-cover bg-zinc-800 ${isFirst ? 'w-24 h-24' : 'w-20 h-20'}`}
+                        onError={(e) => {
+                          // Fallback to generated avatar if S3 image fails
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nickname || user.username)}&background=E6C65B&color=000&size=200`;
+                        }}
                     />
                     <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-black bg-black border ${isFirst ? 'border-yellow-500 text-yellow-400' : 'border-zinc-700 text-white'}`}>
                         #{rank}
@@ -367,7 +422,15 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
 
             {/* User Info */}
             <div className="flex-1 flex items-center gap-4">
-                <img src={user.avatar} alt={user.nickname || user.username} className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors" />
+                <img 
+                    src={user.avatar} 
+                    alt={user.nickname || user.username} 
+                    className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors"
+                    onError={(e) => {
+                      // Fallback to generated avatar if S3 image fails
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nickname || user.username)}&background=E6C65B&color=000&size=200`;
+                    }}
+                />
                 <div>
                     <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.nickname || user.username}</h4>
                     <div className="flex gap-3 text-xs text-zinc-500">

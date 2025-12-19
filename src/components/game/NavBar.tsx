@@ -10,7 +10,7 @@ const navItems = [
   { name: "Game", path: "/game" },
   { name: "Events", path: "/events" },
   { name: "Leaderboard", path: "/leaderboard" },
-  { name: "Store", path: "/store" }
+  { name: "Store", path: "/store" },
 ];
 
 const NavBar = () => {
@@ -19,6 +19,7 @@ const NavBar = () => {
 
   // audio + visual indicator toggle
   const [isAudioPlaying] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // Mobile menu state
 
   // refs
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -42,6 +43,13 @@ const NavBar = () => {
   useEffect(() => {
     if (!navContainerRef.current) return;
 
+    // Don't hide navbar if mobile menu is open
+    if (isMenuOpen) {
+      setIsNavVisible(true);
+      navContainerRef.current.classList.remove("floating-nav");
+      return;
+    }
+
     if (currentScrollY === 0) {
       setIsNavVisible(true);
       navContainerRef.current.classList.remove("floating-nav");
@@ -54,7 +62,7 @@ const NavBar = () => {
     }
 
     setLastScrollY(currentScrollY);
-  }, [currentScrollY, lastScrollY]);
+  }, [currentScrollY, lastScrollY, isMenuOpen]);
 
   // gsap animation for sliding navbar
   useEffect(() => {
@@ -67,59 +75,113 @@ const NavBar = () => {
     });
   }, [isNavVisible]);
 
-  return (
-    <div
-      ref={navContainerRef}
-      className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
-    >
-      <header className="absolute top-1/2 w-full -translate-y-1/2">
-        <nav className="flex size-full items-center justify-between p-4">
-          {/* Logo and product button */}
-          <div className="flex items-center gap-7">
-            <img src="/images/tvk-logo.png" alt="logo" className="w-24" />
-          </div>
+  const toggleMenu = () => setIsMenuOpen((prev) => !prev);
 
-          {/* Navigation links + Audio */}
-          <div className="flex h-full items-center">
-            <div className="hidden md:block">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.path}
-                  className={clsx("nav-hover-btn !text-lg hover:text-brand-gold hover:after:bg-brand-gold", {
-                    "!text-brand-gold after:!scale-x-100 after:!bg-brand-gold": isActive(item.path),
-                  })}
-                >
-                  {item.name}
-                </Link>
-              ))}
+  return (
+    <>
+      <div
+        ref={navContainerRef}
+        className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-700 sm:inset-x-6"
+      >
+        <header className="absolute top-1/2 w-full -translate-y-1/2">
+          <nav className="flex size-full items-center justify-between p-4">
+            {/* Logo */}
+            <div className="flex items-center gap-7">
+              <img src="/images/tvk-logo.png" alt="logo" className="w-24" />
             </div>
 
-            {/* <button
-              onClick={toggleAudioIndicator}
-              className="ml-10 flex items-center space-x-0.5"
-            >
-              <audio
-                ref={audioElementRef}
-                className="hidden"
-                src="/audio/loop.mp3"
-                loop
-              />
+            {/* Desktop Navigation */}
+            <div className="flex h-full items-center">
+              <div className="hidden md:block">
+                {navItems.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.path}
+                    className={clsx(
+                      "nav-hover-btn !text-lg hover:text-brand-gold hover:after:bg-brand-gold",
+                      {
+                        "!text-brand-gold after:!scale-x-100 after:!bg-brand-gold":
+                          isActive(item.path),
+                      }
+                    )}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
 
-              {[1, 2, 3, 4].map((bar) => (
-                <div
-                  key={bar}
-                  className={clsx("indicator-line", {
-                    active: isIndicatorActive,
-                  })}
-                  style={{ animationDelay: `${bar * 0.1}s` }}
-                />
-              ))}
-            </button> */}
-          </div>
-        </nav>
-      </header>
-    </div>
+              {/* Mobile Menu Toggle Button */}
+              <button
+                onClick={toggleMenu}
+                className="ml-4 block md:hidden text-white focus:outline-none"
+                aria-label="Toggle Menu"
+              >
+                {isMenuOpen ? (
+                  // Close Icon (X)
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                ) : (
+                  // Hamburger Icon
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-8 w-8"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 12h16m-7 6h7"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
+          </nav>
+        </header>
+      </div>
+
+      {/* Mobile Navigation Drawer (Full Screen Overlay) */}
+      <div
+        className={clsx(
+          "fixed inset-0 z-40 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md transition-transform duration-300 ease-in-out md:hidden",
+          {
+            "translate-x-0": isMenuOpen,
+            "translate-x-full": !isMenuOpen,
+          }
+        )}
+      >
+        <div className="flex flex-col items-center space-y-8">
+          {navItems.map((item) => (
+            <Link
+              key={item.name}
+              to={item.path}
+              onClick={() => setIsMenuOpen(false)} // Close menu on click
+              className={clsx(
+                "text-2xl font-bold uppercase tracking-widest transition-colors duration-200",
+                isActive(item.path) ? "text-brand-gold" : "text-white hover:text-brand-gold"
+              )}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </div>
+      </div>
+    </>
   );
 };
 

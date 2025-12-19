@@ -22,7 +22,6 @@ const PostListPage: React.FC = () => {
       setContents(data.data);
     } catch (err) {
       setError('Failed to load posts.');
-      console.error(err);
     } finally {
       setLoading(false);
     }
