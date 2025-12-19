@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { adminMemberService } from '../../../services/adminMemberService';
 import type { User } from '../../../types/user';
 import Loader from '../../../components/Loader';
-import { Plus, Shield, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const AdminListPage: React.FC = () => {

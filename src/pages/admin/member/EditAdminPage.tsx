@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import type { User } from '../../../types/user';
 import { adminMemberService } from '../../../services/adminMemberService';
-import { ArrowLeft, Shield, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Trash2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const EditAdminPage: React.FC = () => {
-  const { id } = useParams();
+  useParams();
   const navigate = useNavigate();
   const location = useLocation();
 

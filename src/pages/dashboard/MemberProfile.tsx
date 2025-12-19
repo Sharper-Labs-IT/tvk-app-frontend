@@ -23,7 +23,6 @@ import {
   Medal,
   Zap,
   Ticket,
-  Award,
 } from 'lucide-react';
 import { userService } from '../../services/userService';
 import EditProfileModal from '../../components/dashboard/EditProfileModal';
@@ -104,14 +103,15 @@ const MemberProfile: React.FC = () => {
   // --- MERGE: Subscription Logic (Used 'development' version as it is more robust) ---
   const isPremium = useMemo(() => {
     if (!user) return false;
-    
+
     // Check membership_type (frontend standard)
     if (user.membership_type === 'premium' || user.membership_type === 'vip') return true;
-    
+
     // Check membership_tier (backend field) - only specific premium tiers
     const premiumTiers = ['super_fan', 'superfan', 'premium', 'vip', 'gold', 'platinum'];
-    if (user.membership_tier && premiumTiers.includes(user.membership_tier.toLowerCase())) return true;
-    
+    if (user.membership_tier && premiumTiers.includes(user.membership_tier.toLowerCase()))
+      return true;
+
     // Check roles array for premium/super_fan/vip role names (but NOT just 'member')
     if (user.roles && Array.isArray(user.roles)) {
       const premiumRoleNames = ['premium', 'vip', 'super_fan', 'superfan', 'super-fan', 'admin'];
@@ -121,12 +121,12 @@ const MemberProfile: React.FC = () => {
       });
       if (hasPremiumRole) return true;
     }
-    
+
     return false;
   }, [user]);
 
   // --- MERGE: Nickname Logic (From 'development') ---
-  
+
   // Nickname update handler - Show confirmation modal
   const handleNicknameUpdate = () => {
     if (!nicknameInput.trim()) {
@@ -152,11 +152,11 @@ const MemberProfile: React.FC = () => {
 
     try {
       const response = await userService.updateNickname(nicknameInput.trim());
-      
+
       // Determine the change status before updating
       const coinsDeducted = response.coins_deducted || 0;
       const previousChanges = user?.nickname_changes || 0;
-      
+
       // Refresh from backend to get the latest user data
       await refreshUser();
 
@@ -171,7 +171,7 @@ const MemberProfile: React.FC = () => {
 
       setIsEditingNickname(false);
       setShowNicknameConfirmModal(false);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setNicknameSuccess(''), 3000);
     } catch (error: any) {
@@ -293,7 +293,7 @@ const MemberProfile: React.FC = () => {
                   <h1 className="text-3xl md:text-4xl font-bold text-white font-zentry tracking-wide drop-shadow-md">
                     {user?.name}
                   </h1>
-                  
+
                   {/* Nickname Section */}
                   <div className="mt-2 mb-2">
                     {!isEditingNickname ? (
@@ -308,20 +308,28 @@ const MemberProfile: React.FC = () => {
                             setNicknameInput(user?.nickname || '');
                           }}
                           className={`text-gold hover:text-white transition ${
-                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000 ? 'opacity-50 cursor-not-allowed' : ''
+                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
                           }`}
                           title={
                             !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
                               ? 'You need 2000 coins to change your nickname again.'
                               : 'Edit nickname'
                           }
-                          disabled={!isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000}
+                          disabled={
+                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                          }
                         >
                           <Edit size={14} />
                         </button>
                         {!isPremium && (
                           <span className="text-xs text-gray-500">
-                            ({user?.nickname_changes === 0 ? '1 free change' : '2000 coins per change'})
+                            (
+                            {user?.nickname_changes === 0
+                              ? '1 free change'
+                              : '2000 coins per change'}
+                            )
                           </span>
                         )}
                       </div>
@@ -363,9 +371,7 @@ const MemberProfile: React.FC = () => {
                         )}
                       </div>
                     )}
-                    {nicknameError && (
-                      <p className="text-red-500 text-xs mt-1">{nicknameError}</p>
-                    )}
+                    {nicknameError && <p className="text-red-500 text-xs mt-1">{nicknameError}</p>}
                     {nicknameSuccess && (
                       <p className="text-green-500 text-xs mt-1">{nicknameSuccess}</p>
                     )}
