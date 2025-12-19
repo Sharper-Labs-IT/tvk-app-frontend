@@ -44,3 +44,5 @@ userService.test.ts
 adminEventServices.test.ts
 movies.test.ts
 trophySystem.test.ts
+
+__tests__/
