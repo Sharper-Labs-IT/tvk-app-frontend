@@ -144,7 +144,7 @@ const MembershipPage: React.FC = () => {
   // If user already has this plan and it's active → show manage
     if (userMembershipTier === plan.name && userMembershipStatus === 'active') {
       toast("Manage your membership", { icon: <AlertCircle className="text-yellow-500" /> });
-      
+
       // For now, we'll just show a simple confirm to cancel
       setIsCancelModalOpen(true);
       return;
@@ -156,12 +156,12 @@ const MembershipPage: React.FC = () => {
 };
 
 const handleCancelMembership = async () => {
-  
-  
+
+
     try {
       // Replace with your actual cancel endpoint
       await axiosClient.post('/membership/cancel');
-    
+
       toast.success("Membership cancelled successfully.");
       // Update state
       setUserMembershipTier(null);
@@ -174,7 +174,7 @@ const handleCancelMembership = async () => {
       setIsSuccessModalOpen(true);
       toast.success("Membership Cancelled Successfully");
     } catch (err) {
-      
+
       toast.error("Failed to cancel membership.");
       console.log(err);
     }
@@ -241,7 +241,7 @@ const handleCancelMembership = async () => {
         {/* Membership Tier Cards (API-driven) */}
         <div className='mt-10 grid gap-6 md:grid-cols-2'>
 
-          {isLoggedIn && membershipLoading && (
+        {isLoggedIn && membershipLoading && (
     <p className="col-span-2 text-center text-slate-400">
       Checking your membership status...
     </p>
@@ -258,7 +258,7 @@ const handleCancelMembership = async () => {
             </p>
           )}
 
-          {!loading&& !error && plans.length === 0 && (
+          {!loading && !error && plans.length === 0 && (
             <p className="col-span-2 text-center text-slate-400">
               No membership plans available.
             </p>
