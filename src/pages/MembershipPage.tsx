@@ -240,7 +240,7 @@ const handleCancelMembership = async () => {
 
         {/* Membership Tier Cards (API-driven) */}
         <div className='mt-10 grid gap-6 md:grid-cols-2'>
-          {loading && (
+          {membershipLoading && (
             <p className="col-span-2 text-center text-slate-300">
               Loading membership plans...
             </p>
