@@ -13,15 +13,26 @@ import {
   Lock,
   Star,
   Gamepad2,
+  // MERGE: Combined icons from both branches
   User,
   Check,
   X,
   Coins,
+  Sparkles,
+  Flame,
+  Medal,
+  Zap,
+  Ticket,
 } from 'lucide-react';
 import { userService } from '../../services/userService';
 import EditProfileModal from '../../components/dashboard/EditProfileModal';
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
 import NicknameConfirmModal from '../../components/dashboard/NicknameConfirmModal';
+
+// --- 1. DYNAMIC URL CONFIGURATION ---
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const CLEAN_BASE_URL = API_BASE_URL.replace(/\/$/, '');
+const STORAGE_BASE_URL = CLEAN_BASE_URL;
 
 const MemberProfile: React.FC = () => {
   const { user, login, token, refreshUser } = useAuth();
@@ -34,7 +45,7 @@ const MemberProfile: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
-  // Nickname editing state
+  // --- MERGE: Keep Nickname State from 'development' ---
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(user?.nickname || '');
   const [isUpdatingNickname, setIsUpdatingNickname] = useState(false);
@@ -42,24 +53,19 @@ const MemberProfile: React.FC = () => {
   const [nicknameSuccess, setNicknameSuccess] = useState('');
   const [showNicknameConfirmModal, setShowNicknameConfirmModal] = useState(false);
 
-  // --- 1. CALCULATE REAL STATS FROM CONTEXT ---
-  // We no longer need to fetch this separately because 'me()' returns it all.
-
+  // Stats
   const totalPoints = user?.points || 0;
   const gamesPlayed = user?.game_participation?.length || 0;
   const badgeCount = user?.badges?.length || 0;
 
-  // Calculate Trophies (Handle if it comes as Array or Object)
+  // Calculate Trophies
   const trophyCount = useMemo(() => {
     if (!user?.trophies) return 0;
     if (Array.isArray(user.trophies)) return user.trophies.length;
-    // If grouped by tier (object), sum all arrays
     return Object.values(user.trophies).reduce((acc: number, group: any) => acc + group.length, 0);
   }, [user?.trophies]);
 
-  // --- 2. HELPER FUNCTIONS ---
-
-  // Format Date
+  // Helper: Format Date
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -69,7 +75,7 @@ const MemberProfile: React.FC = () => {
     });
   };
 
-  // Avatar Upload
+  // Helper: Avatar Upload
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
@@ -94,17 +100,18 @@ const MemberProfile: React.FC = () => {
     }
   };
 
-  // Subscription Logic - Comprehensive premium check
+  // --- MERGE: Subscription Logic (Used 'development' version as it is more robust) ---
   const isPremium = useMemo(() => {
     if (!user) return false;
-    
+
     // Check membership_type (frontend standard)
     if (user.membership_type === 'premium' || user.membership_type === 'vip') return true;
-    
+
     // Check membership_tier (backend field) - only specific premium tiers
     const premiumTiers = ['super_fan', 'superfan', 'premium', 'vip', 'gold', 'platinum'];
-    if (user.membership_tier && premiumTiers.includes(user.membership_tier.toLowerCase())) return true;
-    
+    if (user.membership_tier && premiumTiers.includes(user.membership_tier.toLowerCase()))
+      return true;
+
     // Check roles array for premium/super_fan/vip role names (but NOT just 'member')
     if (user.roles && Array.isArray(user.roles)) {
       const premiumRoleNames = ['premium', 'vip', 'super_fan', 'superfan', 'super-fan', 'admin'];
@@ -114,9 +121,11 @@ const MemberProfile: React.FC = () => {
       });
       if (hasPremiumRole) return true;
     }
-    
+
     return false;
   }, [user]);
+
+  // --- MERGE: Nickname Logic (From 'development') ---
 
   // Nickname update handler - Show confirmation modal
   const handleNicknameUpdate = () => {
@@ -137,18 +146,17 @@ const MemberProfile: React.FC = () => {
 
   // Actual nickname update after confirmation
   const confirmNicknameUpdate = async () => {
-
     setIsUpdatingNickname(true);
     setNicknameSuccess('');
     setNicknameError('');
 
     try {
       const response = await userService.updateNickname(nicknameInput.trim());
-      
+
       // Determine the change status before updating
       const coinsDeducted = response.coins_deducted || 0;
       const previousChanges = user?.nickname_changes || 0;
-      
+
       // Refresh from backend to get the latest user data
       await refreshUser();
 
@@ -163,7 +171,7 @@ const MemberProfile: React.FC = () => {
 
       setIsEditingNickname(false);
       setShowNicknameConfirmModal(false);
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setNicknameSuccess(''), 3000);
     } catch (error: any) {
@@ -189,6 +197,43 @@ const MemberProfile: React.FC = () => {
     const now = new Date().getTime();
     const diff = Math.ceil((end - now) / (1000 * 3600 * 24));
     return diff > 0 ? diff : 0;
+  };
+
+  // Helper: Construct Badge Image URL (Backend fallback)
+  const getBadgeImageUrl = (iconPath?: string) => {
+    if (!iconPath) return null;
+    if (iconPath.startsWith('http')) return iconPath;
+    return `${STORAGE_BASE_URL}/${iconPath}`;
+  };
+
+  // --- MERGE: Badge Visuals Helper (From 'thilanka1') ---
+  const getBadgeVisuals = (badgeName: string) => {
+    const name = badgeName.toLowerCase().trim();
+
+    if (name.includes('new member')) {
+      return { icon: Sparkles, color: 'text-blue-400', bg: 'bg-blue-500/20' };
+    }
+    if (name.includes('verified')) {
+      return { icon: ShieldCheck, color: 'text-emerald-400', bg: 'bg-emerald-500/20' };
+    }
+    if (name.includes('premium')) {
+      return { icon: Crown, color: 'text-yellow-400', bg: 'bg-yellow-500/20' };
+    }
+    if (name.includes('event')) {
+      return { icon: Ticket, color: 'text-pink-400', bg: 'bg-pink-500/20' };
+    }
+    if (name.includes('top performer')) {
+      return { icon: Medal, color: 'text-orange-400', bg: 'bg-orange-500/20' };
+    }
+    if (name.includes('super fan')) {
+      return { icon: Flame, color: 'text-red-500', bg: 'bg-red-500/20' };
+    }
+    if (name.includes('legend')) {
+      return { icon: Zap, color: 'text-purple-400', bg: 'bg-purple-500/20' };
+    }
+
+    // Default Fallback
+    return { icon: Star, color: 'text-gold', bg: 'bg-gold/20' };
   };
 
   return (
@@ -248,7 +293,7 @@ const MemberProfile: React.FC = () => {
                   <h1 className="text-3xl md:text-4xl font-bold text-white font-zentry tracking-wide drop-shadow-md">
                     {user?.name}
                   </h1>
-                  
+
                   {/* Nickname Section */}
                   <div className="mt-2 mb-2">
                     {!isEditingNickname ? (
@@ -263,20 +308,28 @@ const MemberProfile: React.FC = () => {
                             setNicknameInput(user?.nickname || '');
                           }}
                           className={`text-gold hover:text-white transition ${
-                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000 ? 'opacity-50 cursor-not-allowed' : ''
+                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                              ? 'opacity-50 cursor-not-allowed'
+                              : ''
                           }`}
                           title={
                             !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
                               ? 'You need 2000 coins to change your nickname again.'
                               : 'Edit nickname'
                           }
-                          disabled={!isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000}
+                          disabled={
+                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                          }
                         >
                           <Edit size={14} />
                         </button>
                         {!isPremium && (
                           <span className="text-xs text-gray-500">
-                            ({user?.nickname_changes === 0 ? '1 free change' : '2000 coins per change'})
+                            (
+                            {user?.nickname_changes === 0
+                              ? '1 free change'
+                              : '2000 coins per change'}
+                            )
                           </span>
                         )}
                       </div>
@@ -318,9 +371,7 @@ const MemberProfile: React.FC = () => {
                         )}
                       </div>
                     )}
-                    {nicknameError && (
-                      <p className="text-red-500 text-xs mt-1">{nicknameError}</p>
-                    )}
+                    {nicknameError && <p className="text-red-500 text-xs mt-1">{nicknameError}</p>}
                     {nicknameSuccess && (
                       <p className="text-green-500 text-xs mt-1">{nicknameSuccess}</p>
                     )}
@@ -393,7 +444,7 @@ const MemberProfile: React.FC = () => {
                 </ul>
               </div>
 
-              {/* DYNAMIC SUBSCRIPTION WIDGET */}
+              {/* SUBSCRIPTION WIDGET */}
               <div
                 className={`p-5 rounded-xl border relative overflow-hidden ${
                   isPremium
@@ -462,7 +513,7 @@ const MemberProfile: React.FC = () => {
                 </div>
               </div>
 
-              {/* Achievements Section */}
+              {/* Achievements Section - UPDATED TO MAP ICONS FROM FRONTEND */}
               <div className="bg-black/40 rounded-xl border border-white/5 p-6">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                   <Trophy className="text-gold" size={20} /> Achievements
@@ -475,17 +526,53 @@ const MemberProfile: React.FC = () => {
                 ) : (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {/* Render Badges */}
-                    {user?.badges?.map((badge) => (
-                      <div
-                        key={badge.id}
-                        className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center"
-                      >
-                        <div className="w-10 h-10 bg-gold/20 rounded-full flex items-center justify-center text-gold mb-2">
-                          <Star size={16} />
+                    {user?.badges?.map((badge) => {
+                      const backendImageUrl = getBadgeImageUrl(badge.icon);
+                      // Get visuals based on name (if image is missing/broken)
+                      const {
+                        icon: BadgeIcon,
+                        color: iconColor,
+                        bg: iconBg,
+                      } = getBadgeVisuals(badge.name);
+
+                      return (
+                        <div
+                          key={badge.id}
+                          className="bg-white/5 p-3 rounded-lg flex flex-col items-center text-center group hover:bg-white/10 transition border border-transparent hover:border-white/10"
+                        >
+                          <div className="w-16 h-16 mb-2 flex items-center justify-center">
+                            {/* Priority 1: Backend Image */}
+                            {backendImageUrl ? (
+                              <img
+                                src={backendImageUrl}
+                                alt={badge.name}
+                                className="w-full h-full object-contain drop-shadow-lg"
+                                onError={(e) => {
+                                  // Hide image and show fallback div immediately
+                                  e.currentTarget.style.display = 'none';
+                                  e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                  e.currentTarget.nextElementSibling?.classList.add('flex');
+                                }}
+                              />
+                            ) : null}
+
+                            {/* Priority 2: Frontend Mapped Icon (Shown if no URL or Error) */}
+                            <div
+                              className={`${
+                                backendImageUrl ? 'hidden' : 'flex'
+                              } w-14 h-14 rounded-full items-center justify-center shadow-lg ${iconBg} ${iconColor} ring-1 ring-white/10`}
+                            >
+                              <BadgeIcon size={28} strokeWidth={2} />
+                            </div>
+                          </div>
+
+                          <span className="text-white text-sm font-bold">{badge.name}</span>
+                          <span className="text-gray-500 text-xs mt-1 font-mono">
+                            {badge.points_required} PTS
+                          </span>
                         </div>
-                        <span className="text-white text-sm font-bold">{badge.name}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
