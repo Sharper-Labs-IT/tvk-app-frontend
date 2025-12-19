@@ -283,7 +283,7 @@ const Features = () => {
               />
             </BentoTilt>
 
-            <BentoTilt className="bento-tilt_1 ms-32 md:col-span-1 md:ms-0">
+            {/* <BentoTilt className="bento-tilt_1 ms-32 md:col-span-1 md:ms-0">
               <BentoCard
                 src="videos/feature-3.mp4"
                 title={<>Protect the Queen</>}
@@ -316,7 +316,7 @@ const Features = () => {
                 alt="city defender"
                 className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
               />
-            </BentoTilt>
+            </BentoTilt> */}
           </div>
         </div>
       </section>
