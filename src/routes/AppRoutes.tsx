@@ -78,7 +78,7 @@ const getRoleName = (role: any): string => {
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
   if (!isAuthInitialized) return <Loader />;
-  return !isLoggedIn ? <>{element}</> : <Navigate to="/" replace />;
+  return !isLoggedIn ? <>{element}</> : <Navigate to="/home" replace />;
 };
 
 /**

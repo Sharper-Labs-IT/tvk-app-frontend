@@ -75,7 +75,9 @@ const CircleProgress = ({
           <span className="text-[10px] md:text-xs uppercase tracking-widest text-yellow-500 font-bold mb-1">
             {label}
           </span>
-          <span className="text-4xl md:text-5xl font-bold">{value.toString().padStart(2, '0')}</span>
+          <span className="text-4xl md:text-5xl font-bold">
+            {value.toString().padStart(2, '0')}
+          </span>
         </div>
       </div>
     </div>
@@ -84,9 +86,9 @@ const CircleProgress = ({
 
 const Countdown: React.FC = () => {
   const [loading, setLoading] = useState(true);
-  
+
   // --- FORM STATE ACTIVATED ---
-/*   const [email, setEmail] = useState('');
+  /*   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState(''); */
 
@@ -122,7 +124,7 @@ const Countdown: React.FC = () => {
   }, []);
 
   // --- HANDLE SUBMIT ACTIVATED ---
- /*  const handleSubmit = async (e: React.FormEvent) => {
+  /*  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !/\S+@\S+\.\S+/.test(email)) {
@@ -183,7 +185,8 @@ const Countdown: React.FC = () => {
           🎄 December 24, 2025
         </h2>
         <p className="text-gray-300 text-base md:text-md mb-12 font-light max-w-xl">
-          Be among the first to witness the future of community, rewards, and entertainment. Stay tuned for something truly unique.
+          Be among the first to witness the future of community, rewards, and entertainment. Stay
+          tuned for something truly unique.
         </p>
 
         <div className="flex flex-wrap justify-center mb-10 w-full">
@@ -194,7 +197,7 @@ const Countdown: React.FC = () => {
         </div>
 
         {/* --- FORM SECTION ACTIVATED --- */}
-       {/*  <div className="w-full max-w-lg relative mb-8">
+        {/*  <div className="w-full max-w-lg relative mb-8">
           <form onSubmit={handleSubmit} className="flex flex-col md:flex-row shadow-2xl bg-white/5 backdrop-blur-sm rounded-sm">
             <input
               type="email"
@@ -234,13 +237,31 @@ const Countdown: React.FC = () => {
         {/* Social Icons using Lucide */}
         <div className="text-gray-500 text-sm">
           <div className="flex justify-center gap-6 mb-4">
-            <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-yellow-500 transition-colors">
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="hover:text-yellow-500 transition-colors"
+            >
               <Instagram className="h-7 w-7" />
             </a>
-            <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-yellow-500 transition-colors">
+            <a
+              href="https://www.facebook.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="hover:text-yellow-500 transition-colors"
+            >
               <Facebook className="h-7 w-7" />
             </a>
-            <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube" className="hover:text-yellow-500 transition-colors">
+            <a
+              href="https://www.youtube.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube"
+              className="hover:text-yellow-500 transition-colors"
+            >
               <Youtube className="h-7 w-7" />
             </a>
           </div>
