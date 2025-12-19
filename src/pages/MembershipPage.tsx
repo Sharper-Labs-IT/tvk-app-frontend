@@ -15,6 +15,9 @@ import { motion, type Variants } from "framer-motion";
 import type {Plan} from '../types/plan';
 import axiosClient from "../api/axiosClient";
 import MembershipPaymentModal from "../components/MembershipPaymentModal";
+import MembershipCancelModal from '../components/MembershipCancelModal';
+import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
+import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
 import { toast } from 'react-hot-toast';
 
 
@@ -60,6 +63,11 @@ const MembershipPage: React.FC = () => {
   const [userMembershipTier, setUserMembershipTier] = useState<string | null>(null);
   const [userMembershipStatus, setUserMembershipStatus] = useState<string | null>(null);
   const [membershipLoading, setMembershipLoading] = useState(true);
+
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+  const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
 
    const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -136,11 +144,9 @@ const MembershipPage: React.FC = () => {
   // If user already has this plan and it's active → show manage
     if (userMembershipTier === plan.name && userMembershipStatus === 'active') {
       toast("Manage your membership", { icon: <AlertCircle className="text-yellow-500" /> });
-      // You can open a modal here or navigate to a manage page
+      
       // For now, we'll just show a simple confirm to cancel
-      if (window.confirm("Do you want to cancel your Super Fan membership?")) {
-        handleCancelMembership();
-      }
+      setIsCancelModalOpen(true);
       return;
     }
 
@@ -150,14 +156,25 @@ const MembershipPage: React.FC = () => {
 };
 
 const handleCancelMembership = async () => {
+  
+  
     try {
       // Replace with your actual cancel endpoint
       await axiosClient.post('/membership/cancel');
+    
       toast.success("Membership cancelled successfully.");
       // Update state
       setUserMembershipTier(null);
       setUserMembershipStatus(null);
+
+      //close cancel modal (if still open)
+      setIsCancelModalOpen(false);
+
+      //Show success modal
+      setIsSuccessModalOpen(true);
+      toast.success("Membership Cancelled Successfully");
     } catch (err) {
+      
       toast.error("Failed to cancel membership.");
       console.log(err);
     }
@@ -169,6 +186,12 @@ const handleCancelMembership = async () => {
     // Here you can re-fetch membership status or show a toast
     setUserMembershipTier("Super Fan");
     setUserMembershipStatus("active");
+
+    // Close the payment modal
+    setIsPaymentOpen(false);
+
+    // Show the dedicated payment success modal
+    setIsPaymentSuccessOpen(true);
     toast.success("Welcome to Super Fan!");
   };
 
@@ -342,6 +365,25 @@ const handleCancelMembership = async () => {
           </motion.div>
         </motion.div>
       </section>
+
+      {/* Cancellation Modal */}
+    <MembershipCancelModal
+      isOpen={isCancelModalOpen}
+      onClose={() => setIsCancelModalOpen(false)}
+      onConfirm={handleCancelMembership}
+    />
+
+    {/* Success Modal - Shown after cancellation */}
+    <MembershipCancelledSuccessModal
+      isOpen={isSuccessModalOpen}
+      onClose={() => setIsSuccessModalOpen(false)}
+    />
+
+    {/* Payment Success Modal */}
+    <MembershipPaymentSuccessModal
+      isOpen={isPaymentSuccessOpen}
+      onClose={() => setIsPaymentSuccessOpen(false)}
+    />
 
       {/* Payment modal (Stripe Elements) */}
       <MembershipPaymentModal
