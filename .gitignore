@@ -34,3 +34,15 @@ docker-compose.yml
 vitest.config.ts
 setupTests.ts
 App.test.tsx
+
+reports/
+countdown.test.tsx
+store.test.tsx
+eventService.test.ts
+gameService.test.ts
+userService.test.ts
+adminEventServices.test.ts
+movies.test.ts
+trophySystem.test.ts
+
+__tests__/
