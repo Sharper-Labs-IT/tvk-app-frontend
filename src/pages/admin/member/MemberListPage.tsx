@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { adminMemberService } from '../../../services/adminMemberService';
 import type { User } from '../../../types/user';
 import Loader from '../../../components/Loader';
-import { CheckCircle, XCircle, Trash2, Ban } from 'lucide-react';
+import { CheckCircle, Trash2, Ban } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const MemberListPage: React.FC = () => {
