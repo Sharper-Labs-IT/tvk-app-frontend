@@ -252,7 +252,7 @@ const handleCancelMembership = async () => {
             </p>
           )}
 
-          {!loading && !error && plans.length === 0 && (
+          {!membershipLoading&& !error && plans.length === 0 && (
             <p className="col-span-2 text-center text-slate-400">
               No membership plans available.
             </p>
