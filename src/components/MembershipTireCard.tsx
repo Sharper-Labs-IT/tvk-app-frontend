@@ -81,7 +81,7 @@ const MembershipTireCard: React.FC<MembershipTireCardprops> =({
             : "bg-[#111827] text-slate-100 hover:bg-[#181e37]"
             ].join(" ")}>
                {buttonText}
-            </button>
+             </button>
         </div>
         </div>
     )
