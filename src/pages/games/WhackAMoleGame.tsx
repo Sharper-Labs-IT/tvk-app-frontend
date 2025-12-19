@@ -68,7 +68,7 @@ const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
 };
 
 // --- Constants ---
-const GAME_DURATION = 60; // Increased duration
+const GAME_DURATION = 60;
 const INITIAL_MOLE_DURATION = 1000;
 const MIN_MOLE_DURATION = 400;
 const GRID_SIZE = 9;
@@ -80,9 +80,9 @@ const FREEZE_DURATION = 3000;
 // --- Assets ---
 const ASSETS = {
   villain: [
-    '/img/villain-1.webp',
-    '/img/villain-2.webp',
-    '/img/villain-3.webp',
+    '/img/villain-1.png',
+    '/img/villain-2.png',
+    '/img/villain-3.png',
   ],
   hero: '/img/happy.webp',
   bomb: '/img/bomb.png',
@@ -383,23 +383,18 @@ const WhackAMoleGame: React.FC = () => {
   const scheduleNextMole = () => {
     if (gameState === 'gameover') return;
 
-    // If frozen, check again in 500ms but don't spawn
     if (isFrozenRef.current) {
         gameLoopRef.current = setTimeout(scheduleNextMole, 500);
         return;
     }
 
-    // If Boss is active, don't spawn new moles until boss is cleared or despawns (optional, but cleaner)
-    // Actually, let's allow minions with boss for chaos
-    
     let baseDelay = 800;
-    // Speed up as level increases
     baseDelay = Math.max(300, baseDelay - (levelRef.current * 50));
     
     if (isFeverRef.current) {
-        baseDelay = 550; // Slower speed for Coin Rush (was 250)
+        baseDelay = 550;
     } else if (isGodlikeRef.current) {
-        baseDelay = baseDelay * 1.3; // Slow down spawn rate for Godlike
+        baseDelay = baseDelay * 1.3;
     }
 
     gameLoopRef.current = setTimeout(() => {
@@ -409,16 +404,13 @@ const WhackAMoleGame: React.FC = () => {
   };
 
   const spawnMole = () => {
-    // Find empty holes
     const currentActive = Object.keys(activeHoles).map(Number);
     const available = Array.from({ length: GRID_SIZE }, (_, i) => i).filter(i => !currentActive.includes(i));
     
     if (available.length === 0) return;
 
-    // Pick random hole
     const holeIndex = available[Math.floor(Math.random() * available.length)];
     
-    // Determine type
     const rand = Math.random();
     let type: MoleType = 'villain';
     
@@ -432,11 +424,9 @@ const WhackAMoleGame: React.FC = () => {
          else if (rand > 0.2) type = 'coin';
          else type = 'trap';
     } else {
-        // Boss Spawn Chance (Only if no boss active and level > 2)
         if (!bossDataRef.current && currentLevel >= 2 && rand > 0.98) {
             type = 'boss';
         }
-        // Freeze Spawn Chance
         else if (rand > 0.96) type = 'freeze';
         else if (currentCombo >= 3) {
             if (!lastWasCoin && rand > 0.6) type = 'coin';
@@ -452,18 +442,16 @@ const WhackAMoleGame: React.FC = () => {
 
     lastSpawnTypeRef.current = type;
 
-    // Set active
     setActiveHoles(prev => ({ ...prev, [holeIndex]: type }));
 
     if (type === 'boss') {
         setBossData({ index: holeIndex, hp: BOSS_HP_MAX });
     }
 
-    // Schedule removal
     let duration = Math.max(MIN_MOLE_DURATION, INITIAL_MOLE_DURATION - (currentLevel * 50));
     if (currentIsFever) duration = 1100;
-    if (isGodlikeRef.current) duration = duration * 1.5; // Slow down mole duration for Godlike
-    if (type === 'boss') duration = 4000; // Boss stays longer
+    if (isGodlikeRef.current) duration = duration * 1.5;
+    if (type === 'boss') duration = 4000;
 
     const timer = setTimeout(() => {
       setActiveHoles(prev => {
@@ -501,11 +489,9 @@ const WhackAMoleGame: React.FC = () => {
         return;
     }
 
-    // Hit Stop Effect
     setIsHitStop(true);
     setTimeout(() => setIsHitStop(false), 50);
 
-    // Get coordinates
     let clientX, clientY;
     if ('touches' in e) {
         clientX = e.touches[0].clientX;
@@ -515,15 +501,13 @@ const WhackAMoleGame: React.FC = () => {
         clientY = (e as React.MouseEvent).clientY;
     }
 
-    // Handle Boss Logic
     if (type === 'boss') {
         if (bossData && bossData.index === index) {
             const newHp = bossData.hp - 1;
             playSound('boss_hit');
-            spawnParticles(clientX, clientY, '#ef4444'); // Red particles
+            spawnParticles(clientX, clientY, '#ef4444');
             
             if (newHp <= 0) {
-                // Boss Defeated
                 setBossData(null);
                 const newHoles = { ...activeHoles };
                 delete newHoles[index];
@@ -536,21 +520,17 @@ const WhackAMoleGame: React.FC = () => {
                 triggerWinConfetti();
             } else {
                 setBossData({ ...bossData, hp: newHp });
-                // Visual shake handled by component re-render or local state in sub-component ideally, 
-                // but here we can just show a small feedback
                 setFeedbacks(prev => [...prev, { id: Date.now(), x: clientX, y: clientY, text: "HIT!", color: "text-white", value: 0, rotation: Math.random() * 30 - 15 }]);
             }
         }
         return;
     }
 
-    // Clear mole immediately
     const newHoles = { ...activeHoles };
     delete newHoles[index];
     setActiveHoles(newHoles);
     if (moleTimersRef.current[index]) clearTimeout(moleTimersRef.current[index]);
 
-    // Calculate Score
     let points = 0;
     let feedbackText = "";
     let feedbackColor = "";
@@ -611,14 +591,11 @@ const WhackAMoleGame: React.FC = () => {
           feedbackColor = "text-red-500";
           controls.start({ x: [0, -10, 10, -10, 10, 0], transition: { duration: 0.4 } });
           if (navigator.vibrate) navigator.vibrate(200);
-          
-          // Glitch Effect
           setGlitchActive(true);
           setTimeout(() => setGlitchActive(false), 500);
       }
     }
 
-    // Level Up Logic
     const newScore = score + points;
     setScore(Math.max(0, newScore));
     
@@ -629,7 +606,6 @@ const WhackAMoleGame: React.FC = () => {
         playSound('bonus');
     }
 
-    // Add Feedback
     const id = Date.now();
     setFeedbacks(prev => [...prev, { id, x: clientX, y: clientY, text: feedbackText, color: feedbackColor, value: points, rotation: Math.random() * 30 - 15 }]);
     setTimeout(() => {
@@ -648,87 +624,97 @@ const WhackAMoleGame: React.FC = () => {
     frame();
   };
 
-  // --- Render Helpers ---
-  const getMoleContent = (type: MoleType, _index: number) => {
+  // --- Render Helpers (UPDATED FOR 3D & SIZE) ---
+ const getMoleContent = (type: MoleType, _index: number) => {
+    // Common styles for 3D effect
+    const popEffect = "filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)] transform transition-transform";
+    
+    // Helper class to align items to the bottom of the hole
+    const containerClass = "w-full h-full flex items-end justify-center pb-2 relative"; 
+
     switch (type) {
       case 'boss':
         return (
-            <div className="w-full h-full flex flex-col items-center justify-center relative">
-                <div className="absolute inset-0 bg-purple-600/30 blur-2xl rounded-full animate-pulse" />
-                <div className="absolute -top-4 w-16 h-2 bg-slate-700 rounded-full overflow-hidden border border-white/20 z-20">
+            <div className={containerClass}>
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-purple-600/40 blur-2xl rounded-full animate-pulse" />
+                {/* Boss HP Bar - Moved up slightly */}
+                <div className="absolute top-0 w-20 h-3 bg-slate-900 rounded-full overflow-hidden border-2 border-white/20 z-20 shadow-lg">
                     <div 
-                        className="h-full bg-red-500 transition-all duration-200"
+                        className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-200"
                         style={{ width: `${((bossData?.hp || 0) / BOSS_HP_MAX) * 100}%` }}
                     />
                 </div>
-                <div className="w-24 h-24 bg-purple-900 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(147,51,234,0.6)] border-4 border-purple-500 animate-bounce relative z-10">
-                    <Skull className="w-12 h-12 text-white fill-current" />
+                {/* Bigger Boss Icon */}
+                <div className={`w-32 h-32 bg-gradient-to-br from-purple-800 to-purple-950 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(147,51,234,0.6)] border-[6px] border-purple-500 animate-bounce relative z-10 ${popEffect}`}>
+                    <Skull className="w-20 h-20 text-white fill-current drop-shadow-md" />
                 </div>
             </div>
         );
       case 'freeze':
         return (
-            <div className="w-full h-full flex items-center justify-center relative">
-                <div className="absolute inset-0 bg-cyan-400/30 blur-xl rounded-full animate-pulse" />
-                <div className="w-20 h-20 bg-cyan-200 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(165,243,252,0.8)] border-4 border-white animate-pulse relative z-10">
-                    <Snowflake className="w-10 h-10 text-cyan-600 fill-current animate-spin-slow" />
+            <div className={containerClass}>
+                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-cyan-400/40 blur-xl rounded-full animate-pulse" />
+                <div className={`w-28 h-28 bg-gradient-to-br from-cyan-100 to-cyan-300 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(165,243,252,0.8)] border-[6px] border-white animate-pulse relative z-10 ${popEffect}`}>
+                    <Snowflake className="w-16 h-16 text-cyan-700 fill-current animate-spin-slow" />
                 </div>
             </div>
         );
       case 'bonus':
         return (
-          <div className="w-full h-full flex items-center justify-center relative">
-             <div className="absolute inset-0 bg-yellow-400/30 blur-xl rounded-full animate-pulse" />
-             <div className="w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(250,204,21,0.6)] border-4 border-yellow-200 animate-pulse relative z-10">
-                <Zap className="w-10 h-10 text-black fill-current" />
+          <div className={containerClass}>
+             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-yellow-400/40 blur-xl rounded-full animate-pulse" />
+             <div className={`w-28 h-28 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(250,204,21,0.6)] border-[6px] border-yellow-100 animate-pulse relative z-10 ${popEffect}`}>
+                <Zap className="w-16 h-16 text-black fill-current" />
              </div>
           </div>
         );
       case 'trap':
         return (
-          <div className="w-full h-full flex items-center justify-center relative">
-             <div className="absolute inset-0 bg-red-500/40 blur-xl rounded-full animate-pulse" />
-             <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(220,38,38,0.6)] border-4 border-red-400 relative z-10">
-                <Bomb className="w-10 h-10 text-white fill-current animate-bounce" />
+          <div className={containerClass}>
+             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-red-500/50 blur-xl rounded-full animate-pulse" />
+             <div className={`w-28 h-28 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(220,38,38,0.6)] border-[6px] border-red-300 relative z-10 ${popEffect}`}>
+                <Bomb className="w-16 h-16 text-white fill-current animate-bounce" />
              </div>
           </div>
         );
       case 'coin':
         return (
-           <div className="w-full h-full flex items-center justify-center relative">
-              <div className="absolute inset-0 bg-yellow-400/40 blur-xl rounded-full animate-pulse" />
+           <div className={containerClass}>
+              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-yellow-400/50 blur-xl rounded-full animate-pulse" />
               <img 
                 src={ASSETS.coin} 
                 alt="Coin" 
-                className="w-[95%] h-[95%] object-contain drop-shadow-[0_0_15px_rgba(250,204,21,0.5)] animate-bounce pointer-events-none select-none relative z-10"
+                className={`w-32 h-32 object-contain drop-shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-bounce pointer-events-none select-none relative z-10 ${popEffect}`}
               />
            </div>
         );
       case 'clock':
         return (
-          <div className="w-full h-full flex items-center justify-center relative">
-             <div className="absolute inset-0 bg-blue-500/30 blur-xl rounded-full animate-pulse" />
-             <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(59,130,246,0.6)] border-4 border-blue-300 animate-pulse relative z-10">
-                <Clock className="w-10 h-10 text-white fill-current" />
+          <div className={containerClass}>
+             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-blue-500/40 blur-xl rounded-full animate-pulse" />
+             <div className={`w-28 h-28 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.6)] border-[6px] border-blue-200 animate-pulse relative z-10 ${popEffect}`}>
+                <Clock className="w-16 h-16 text-white fill-current" />
              </div>
           </div>
         );
       case 'shield':
         return (
-          <div className="w-full h-full flex items-center justify-center relative">
-             <div className="absolute inset-0 bg-cyan-500/30 blur-xl rounded-full animate-pulse" />
-             <div className="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(6,182,212,0.6)] border-4 border-cyan-300 animate-pulse relative z-10">
-                <Shield className="w-10 h-10 text-white fill-current" />
+          <div className={containerClass}>
+             <div className="absolute inset-x-0 bottom-0 h-1/2 bg-cyan-500/40 blur-xl rounded-full animate-pulse" />
+             <div className={`w-28 h-28 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.6)] border-[6px] border-cyan-200 animate-pulse relative z-10 ${popEffect}`}>
+                <Shield className="w-16 h-16 text-white fill-current" />
              </div>
           </div>
         );
       default:
+        // VILLAIN: Use object-bottom to align feet to the hole
         return (
-           <div className="w-full h-full flex items-center justify-center relative">
+           <div className={`${containerClass} overflow-visible`}>
               <img 
                 src={ASSETS.villain[Math.floor(Math.random() * ASSETS.villain.length)]} 
                 alt="Villain" 
-                className="w-[90%] h-[90%] object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] filter hover:brightness-125 hover:scale-105 transition-all duration-75 select-none pointer-events-none rounded-full relative z-10"
+                // UPDATED: Increased height to 180%, added width 140%, and scale-110 for "more bigger" look
+                className={`w-[140%] h-[180%] object-contain object-bottom filter drop-shadow-[0_15px_10px_rgba(0,0,0,0.6)] hover:brightness-110 transition-all duration-75 select-none pointer-events-none relative z-10 origin-bottom transform scale-110`}
                 onError={(e) => { e.currentTarget.src = PLACEHOLDER_VILLAIN; }}
               />
            </div>
@@ -939,26 +925,47 @@ const WhackAMoleGame: React.FC = () => {
              style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '20px 20px' }} 
         />
 
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 h-full">
-            {Array.from({ length: GRID_SIZE }).map((_, index) => (
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 h-full relative">
+            {Array.from({ length: GRID_SIZE }).map((_, index) => {
+              // Calculate Z-Index for perspective: Lower rows (higher index) must be on top of upper rows
+              const rowIndex = Math.floor(index / 3);
+              const zIndex = rowIndex * 10 + 10;
+
+              return (
               <div 
                 key={index}
                 className="relative group"
+                style={{ zIndex }} // Apply perspective Z-Index
                 onMouseDown={(e) => handleWhack(index, e)}
                 onTouchStart={(e) => handleWhack(index, e)}
               >
-                <div className="absolute inset-0 bg-black/60 rounded-full transform scale-x-100 scale-y-90 translate-y-2 border-b-4 border-white/5 shadow-[inset_0_10px_20px_rgba(0,0,0,0.8)] ring-4 ring-slate-800" />
+                {/* Hole Graphic (Remains inside the tile) */}
+                <div className="absolute inset-0 bg-black rounded-full transform scale-x-100 scale-y-90 translate-y-2 border-b-[6px] border-white/5 shadow-[inset_0_20px_20px_rgba(0,0,0,1)] ring-4 ring-slate-800" />
                 
-                <div className="absolute inset-0 rounded-full overflow-hidden">
+                {/* MOLE CONTAINER:
+                   1. Removed 'overflow-hidden'
+                   2. Height increased to 200% to allow character to stand tall
+                   3. Positioned bottom-0 so it grows upwards
+                   4. Added pointer-events-none to wrapper so it doesn't block clicks on empty space, 
+                      but we'll rely on the parent div click handler anyway.
+                */}
+                <div className="absolute bottom-4 left-0 right-0 h-[200%] flex items-end justify-center pointer-events-none">
                     <AnimatePresence mode='wait'>
                         {activeHoles[index] && (
                             <motion.div
                                 key={`${index}-${activeHoles[index]}`}
-                                initial={{ y: "110%" }}
-                                animate={{ y: "10%" }}
-                                exit={{ y: "110%" }}
-                                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                                className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                                // Animation adjusted for "Pop Out" effect without clipping
+                                initial={{ y: "100%", scale: 0.5, opacity: 0 }} // Start low and invisible
+                                animate={{ y: "5%", scale: 1.1, opacity: 1 }} // Pop up and stand
+                                exit={{ y: "100%", scale: 0.5, opacity: 0 }} // Drop back down
+                                transition={{ 
+                                    type: "spring", 
+                                    stiffness: 400, 
+                                    damping: 25,
+                                    mass: 0.5
+                                }}
+                                className="w-full h-full flex items-end justify-center cursor-pointer origin-bottom"
+                                style={{ transformStyle: 'preserve-3d' }}
                             >
                                 {getMoleContent(activeHoles[index], index)}
                             </motion.div>
@@ -966,9 +973,9 @@ const WhackAMoleGame: React.FC = () => {
                     </AnimatePresence>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none rounded-b-full opacity-50" />
+                <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-slate-900 to-transparent pointer-events-none rounded-b-full opacity-50 z-0" />
               </div>
-            ))}
+            )})}
         </div>
       </motion.div>
 
@@ -1184,12 +1191,6 @@ const WhackAMoleGame: React.FC = () => {
                   return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
                 })()}
               </div>
-              
-              {/* 
-                TODO: Send score and trophy to backend
-                POST /api/scores
-                Body: { game: 'whack-a-mole', score: score, trophy: getTrophyFromScore('whack-a-mole', score) }
-              */}
 
               <div className={`grid ${isPremium ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 <button
