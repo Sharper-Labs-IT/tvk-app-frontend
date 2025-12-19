@@ -240,7 +240,13 @@ const handleCancelMembership = async () => {
 
         {/* Membership Tier Cards (API-driven) */}
         <div className='mt-10 grid gap-6 md:grid-cols-2'>
-          {membershipLoading && (
+
+          {isLoggedIn && membershipLoading && (
+    <p className="col-span-2 text-center text-slate-400">
+      Checking your membership status...
+    </p>
+  )}
+          {loading && (
             <p className="col-span-2 text-center text-slate-300">
               Loading membership plans...
             </p>
@@ -252,7 +258,7 @@ const handleCancelMembership = async () => {
             </p>
           )}
 
-          {!membershipLoading&& !error && plans.length === 0 && (
+          {!loading&& !error && plans.length === 0 && (
             <p className="col-span-2 text-center text-slate-400">
               No membership plans available.
             </p>
