@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, X, Star } from 'lucide-react';
+import {  X, Star } from 'lucide-react';
 
 interface MembershipPaymentSuccessModalProps {
   isOpen: boolean;
