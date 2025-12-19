@@ -39,7 +39,7 @@ const benefitsContainerVariants: Variants = {
 
 const benefitItemVariants: Variants = {
   hidden: { opacity: 0, y: 20, scale: 0.98 },
-  show: {'
+  show: {
     opacity: 1,
     y: 0,
     scale: 1,
