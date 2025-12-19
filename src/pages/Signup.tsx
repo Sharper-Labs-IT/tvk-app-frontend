@@ -7,12 +7,7 @@ import LogoHeader from '../components/common/LogoHeader';
 import MessageModal from '../components/common/MessageModal';
 import type { ISignupPayload, ISignupResponse } from '../types/auth';
 
-/**
- * @fileoverview Signup Page component - Dark Theme Redesign
- * Updated with Country Code Selector and Enhanced Validation
- */
-
-// --- Country Data (Comprehensive List) ---
+// --- Country Data ---
 const COUNTRY_CODES = [
   { code: '+1', country: 'USA/Canada' },
   { code: '+44', country: 'UK' },
@@ -62,13 +57,11 @@ const COUNTRY_CODES = [
   { code: '+973', country: 'Bahrain' },
   { code: '+968', country: 'Oman' },
   { code: '+965', country: 'Kuwait' },
-  // Add more as needed
 ].sort((a, b) => a.country.localeCompare(b.country));
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
-  // Form State
   const [formData, setFormData] = useState<ISignupPayload>({
     name: '',
     email: '',
@@ -77,24 +70,15 @@ const Signup: React.FC = () => {
     password_confirmation: '',
   });
 
-  // Specific state for Country Code
-  const [countryCode, setCountryCode] = useState('+94'); // Default to Sri Lanka or your target region
-
+  const [countryCode, setCountryCode] = useState('+94');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Validation Error State for individual fields
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-
-  // Success Flow State
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-
-  // Animation State
   const [isVisible, setIsVisible] = useState(false);
 
-  // 1. Trigger animations
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -102,9 +86,9 @@ const Signup: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // 2. Manage Success Modal
   useEffect(() => {
     if (successData) {
+      // We still save email/name to session for convenience on the next page
       sessionStorage.setItem('temp_signup_email', formData.email);
       sessionStorage.setItem('temp_signup_name', formData.name);
 
@@ -115,11 +99,8 @@ const Signup: React.FC = () => {
     }
   }, [successData, formData.email, formData.name]);
 
-  // Handle Input Change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-
-    // Clear specific field error when user types
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const newErrors = { ...prev };
@@ -139,22 +120,20 @@ const Signup: React.FC = () => {
     if (successData) {
       setSuccessData(null);
       setShowSuccessModal(false);
+      // Pass the ID normally
       navigate('/verify-otp', { state: { user_id: successData.user_id } });
     }
   };
 
-  // --- Validation Logic ---
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
     let isValid = true;
 
-    // Name Validation
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
       isValid = false;
     }
 
-    // Email Validation (Strict Regex)
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
@@ -164,25 +143,19 @@ const Signup: React.FC = () => {
       isValid = false;
     }
 
-    // Mobile Validation
     if (!formData.mobile.trim()) {
       newErrors.mobile = 'Mobile number is required';
       isValid = false;
     } else if (!/^\d+$/.test(formData.mobile)) {
       newErrors.mobile = 'Mobile number must contain only digits';
       isValid = false;
-    } else if (formData.mobile.length < 7 || formData.mobile.length > 15) {
-      newErrors.mobile = 'Invalid mobile number length';
-      isValid = false;
     }
 
-    // Password Validation
     if (formData.password.length < 6) {
       newErrors.password = 'Password must be at least 6 characters';
       isValid = false;
     }
 
-    // Password Match Validation
     if (formData.password !== formData.password_confirmation) {
       newErrors.password_confirmation = 'Passwords do not match';
       isValid = false;
@@ -192,21 +165,17 @@ const Signup: React.FC = () => {
     return isValid;
   };
 
-  // Handle Form Submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccessData(null);
 
-    // Run Validation
     if (!validateForm()) {
       setLoading(false);
       return;
     }
 
-    // Combine Country Code and Mobile Number
-    // Ensure we don't duplicate code if user typed it
     const finalMobile = `${countryCode}${formData.mobile}`;
 
     const payload = {
@@ -219,7 +188,6 @@ const Signup: React.FC = () => {
       setSuccessData(response.data);
     } catch (err: any) {
       let errorMessage = 'Registration failed. Please check your details.';
-
       if (err.response && err.response.status === 422) {
         if (err.response.data.errors) {
           errorMessage = Object.values(err.response.data.errors).flat().join(' ');
@@ -227,14 +195,11 @@ const Signup: React.FC = () => {
       } else if (err.message) {
         errorMessage = `Network error: ${err.message}`;
       }
-
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-
-  // --- Visual Helpers ---
 
   const getAnimationClass = (delayClass: string) => {
     return `transform transition-all duration-700 ease-out ${
@@ -242,7 +207,6 @@ const Signup: React.FC = () => {
     } ${delayClass}`;
   };
 
-  // Icons
   const UserIcon = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -314,34 +278,27 @@ const Signup: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-tvk-dark flex flex-col relative overflow-hidden font-sans">
-        {/* Background Glow Effect */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
           <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-gold/10 rounded-full blur-[100px] animate-pulse-slow"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[100px] animate-pulse-slow"></div>
         </div>
 
-        {/* Reusable Header */}
         <LogoHeader isVisible={isVisible} delayClass="delay-0" />
 
-        {/* Main Content */}
         <div className="flex-grow flex items-center justify-center px-4 sm:px-6 z-10 py-10">
           <div className={`max-w-md w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
-            {/* Card Container */}
             <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl">
-              {/* Header Text */}
               <div className={`text-center mb-8 ${getAnimationClass('delay-[200ms]')}`}>
                 <h2 className="text-3xl font-bold text-tvk-accent-gold mb-2">Create an Account</h2>
                 <p className="text-gray-400 text-sm">Join the TVK Membership Program today</p>
               </div>
 
-              {/* General Error Message */}
               {error && (
                 <div className="mb-6 bg-red-900/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg text-sm text-center animate-pulse">
                   {error}
                 </div>
               )}
 
-              {/* Form */}
               <form
                 className={`space-y-5 ${getAnimationClass('delay-[300ms]')}`}
                 onSubmit={handleSubmit}
@@ -380,13 +337,11 @@ const Signup: React.FC = () => {
                   )}
                 </div>
 
-                {/* Modified Mobile Section with Country Code */}
                 <div>
                   <label htmlFor="mobile" className="block text-sm font-medium text-gray-300 mb-1">
                     Mobile Number
                   </label>
                   <div className="relative flex rounded-lg shadow-sm">
-                    {/* Country Code Select */}
                     <div className="relative">
                       <select
                         name="countryCode"
@@ -401,19 +356,7 @@ const Signup: React.FC = () => {
                           </option>
                         ))}
                       </select>
-                      {/* Dropdown Arrow */}
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                        <svg
-                          className="h-4 w-4 fill-current"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                        </svg>
-                      </div>
                     </div>
-
-                    {/* Mobile Input */}
                     <div className="relative flex-grow">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         {PhoneIcon}
@@ -479,27 +422,10 @@ const Signup: React.FC = () => {
                     className="flex justify-center items-center gap-2 group"
                   >
                     <span>Sign Up & Verify</span>
-                    {!loading && (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 7l5 5m0 0l-5 5m5-5H6"
-                        />
-                      </svg>
-                    )}
                   </Button>
                 </div>
               </form>
 
-              {/* Footer / Login Link */}
               <div className={`text-center text-sm mt-8 ${getAnimationClass('delay-[400ms]')}`}>
                 <p className="text-gray-500">
                   Already have an account?{' '}
@@ -514,8 +440,6 @@ const Signup: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Footer Copyright */}
         <div
           className={`text-center py-6 text-xs text-gray-600 z-10 ${getAnimationClass(
             'delay-[500ms]'
@@ -525,7 +449,6 @@ const Signup: React.FC = () => {
         </div>
       </div>
 
-      {/* SUCCESS MODAL */}
       <MessageModal
         isOpen={showSuccessModal}
         title="Account Created!"

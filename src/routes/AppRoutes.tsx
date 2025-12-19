@@ -17,6 +17,11 @@ import PostCreatePage from '../pages/admin/posts/PostCreatePage';
 import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
 import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
+// --- NEW IMPORTS FOR MEMBER MANAGEMENT ---
+const MemberListPage = React.lazy(() => import('../pages/admin/member/MemberListPage'));
+const AdminListPage = React.lazy(() => import('../pages/admin/member/AdminListPage'));
+const CreateAdminPage = React.lazy(() => import('../pages/admin/member/CreateAdminPage'));
+const EditAdminPage = React.lazy(() => import('../pages/admin/member/EditAdminPage'));
 
 // Lazy Loaded Pages
 const Countdown = React.lazy(() => import('../pages/Countdown'));
@@ -224,10 +229,19 @@ const AppRoutes: React.FC = () => {
             <Route path="events/create" element={<CreateEventPage />} />
             <Route path="events/edit/:id" element={<EditEventPage />} />
 
-            <Route
-              path="members"
-              element={<div className="text-white p-8">Member Management</div>}
-            />
+            {/* --- MEMBER MANAGEMENT ROUTES --- */}
+            <Route path="members" element={<MemberListPage />} />
+
+            {/* View All Admins */}
+            <Route path="members/admins" element={<AdminListPage />} />
+
+            {/* Create New Admin */}
+            <Route path="members/admins/create" element={<CreateAdminPage />} />
+
+            {/* Edit Admin */}
+            <Route path="members/admins/edit/:id" element={<EditAdminPage />} />
+
+            <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
 
