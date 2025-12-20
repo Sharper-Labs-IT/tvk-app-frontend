@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, Triangle, X, Target, Shield, Coins, Hammer, Trophy } from 'lucide-react';
+import {  Triangle, X, Target, Shield, Coins, Hammer, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TextType from '../../components/TextType';
 import TrueFocus from '../../components/TrueFocus';
@@ -215,7 +215,7 @@ const WhackAMoleStart: React.FC = () => {
           )}
           {isPremium && (
             <p className="mt-4 text-green-400 text-sm flex items-center justify-center gap-2">
-              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access.
+               You're a Super Fan of VJ! Enjoy unlimited access.
             </p>
           )}
         </main>
@@ -223,9 +223,7 @@ const WhackAMoleStart: React.FC = () => {
         {/* Footer */}
         <footer className="px-6 py-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-sm mt-auto bg-slate-900/20 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none">
           <div className="text-center md:text-left">© 2025 TVK. All rights reserved.</div>
-          <div className="flex items-center gap-6">
-            <Gamepad2 className="w-6 h-6 hover:text-white transition-colors cursor-pointer" />
-          </div>
+       
         </footer>
       </div>
 
