@@ -10,6 +10,13 @@ const CityDefenderStart: React.FC = () => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+
+  // Debug logs for user, coins, trophies
+  console.log('[CityDefenderStart] User:', user);
+  if (user) {
+    console.log('[CityDefenderStart] Coins:', user.coins);
+    console.log('[CityDefenderStart] Trophies:', user.trophies);
+  }
   const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessCost, setAccessCost] = useState(0);
