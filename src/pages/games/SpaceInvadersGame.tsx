@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, RotateCcw, Play, Pause, Volume2, VolumeX, SkipForward } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Play, Pause, Volume2, VolumeX, SkipForward, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
-import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem';
+/* import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/trophySystem'; */
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
@@ -24,16 +24,16 @@ const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-12 text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+          <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-500 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]">
             TVK SPACE INVADERS
           </h1>
-          <p className="text-slate-400 text-sm tracking-[0.3em] uppercase mt-2 font-bold">
+          <p className="text-slate-400 text-xs md:text-sm tracking-[0.3em] uppercase mt-2 font-bold">
             System Initialization
           </p>
         </motion.div>
 
         {/* Progress Bar Container */}
-        <div className="w-full h-4 bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
+        <div className="w-full h-3 md:h-4 bg-slate-800/50 rounded-full overflow-hidden border border-slate-700/50 backdrop-blur-sm relative shadow-[0_0_20px_rgba(0,0,0,0.5)]">
           {/* Animated Progress Fill */}
           <motion.div 
             className="h-full bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-300 relative"
@@ -41,11 +41,8 @@ const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
             animate={{ width: `${progress}%` }}
             transition={{ type: "spring", stiffness: 50, damping: 15 }}
           >
-            {/* Glare effect on bar */}
             <div className="absolute top-0 left-0 w-full h-[1px] bg-white/50" />
             <div className="absolute bottom-0 left-0 w-full h-[1px] bg-black/20" />
-            
-            {/* Moving shine effect */}
             <motion.div 
               className="absolute top-0 bottom-0 w-10 bg-white/30 skew-x-[-20deg] blur-sm"
               animate={{ x: ["-100%", "500%"] }}
@@ -55,13 +52,10 @@ const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
         </div>
 
         {/* Percentage & Status Text */}
-        <div className="w-full flex justify-between items-center mt-3 font-mono text-xs md:text-sm text-yellow-500/80">
+        <div className="w-full flex justify-between items-center mt-3 font-mono text-[10px] md:text-sm text-yellow-500/80">
           <span className="animate-pulse">LOADING ASSETS...</span>
           <span className="font-bold">{Math.round(progress)}%</span>
         </div>
-
-        {/* Decorative Elements */}
-        <div className="absolute -z-10 w-64 h-64 bg-yellow-500/10 rounded-full blur-[80px] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
       </div>
     </div>
   );
@@ -82,14 +76,17 @@ const STORY_LINES = [
 ];
 
 // Game Constants
-const CANVAS_WIDTH = 1280;
-const CANVAS_HEIGHT = 960;
-const PLAYER_WIDTH = 140;
-const PLAYER_HEIGHT = 190;
-const BULLET_WIDTH = 6;
-const BULLET_HEIGHT = 20;
-const ENEMY_WIDTH = 70;
-const ENEMY_HEIGHT = 70;
+const DEFAULT_CANVAS_WIDTH = 1280;
+const DEFAULT_CANVAS_HEIGHT = 960; // Desktop aspect ratio (4:3)
+const MOBILE_CANVAS_HEIGHT = 1920; // Mobile aspect ratio (Tall)
+
+// UPDATED SIZES:
+const PLAYER_WIDTH = 200; 
+const PLAYER_HEIGHT = 260; 
+const BULLET_WIDTH = 8; 
+const BULLET_HEIGHT = 30; 
+const ENEMY_WIDTH = 90; 
+const ENEMY_HEIGHT = 90; 
 const ENEMY_ROWS = 4;
 const ENEMY_COLS = 10;
 const PARTICLE_COUNT = 15;
@@ -182,6 +179,26 @@ const SpaceInvadersGame: React.FC = () => {
   const navigate = useNavigate();
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // --- Dynamic Game Dimensions ---
+  const [gameWidth] = useState(DEFAULT_CANVAS_WIDTH);
+  const [gameHeight, setGameHeight] = useState(DEFAULT_CANVAS_HEIGHT);
+
+  useEffect(() => {
+    const handleResize = () => {
+      // If mobile portrait, use tall aspect ratio
+      if (window.innerHeight > window.innerWidth) {
+        setGameHeight(MOBILE_CANVAS_HEIGHT);
+      } else {
+        setGameHeight(DEFAULT_CANVAS_HEIGHT);
+      }
+    };
+
+    handleResize(); // Init
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+
   // --- Loading State ---
   const [assetsLoaded, setAssetsLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -189,7 +206,6 @@ const SpaceInvadersGame: React.FC = () => {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [collectedCoins, setCollectedCoins] = useState(0);
-  // Added 'intro' state
   const [gameState, setGameState] = useState<
     'intro' | 'start' | 'playing' | 'paused' | 'gameover' | 'victory'
   >('intro');
@@ -203,7 +219,6 @@ const SpaceInvadersGame: React.FC = () => {
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
-  // Calculate total trophies from user object
   const calculateTotalTrophies = (userTrophies: any): number => {
     if (!userTrophies) return 0;
     if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
@@ -218,7 +233,6 @@ const SpaceInvadersGame: React.FC = () => {
     return 0;
   };
 
-  // Update trophy count when user changes
   useEffect(() => {
     if (user?.trophies) {
       setTotalTrophies(calculateTotalTrophies(user.trophies));
@@ -235,8 +249,6 @@ const SpaceInvadersGame: React.FC = () => {
             coins: collectedCoins,
             data: { lives: lives }
           });
-          
-          // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
           setScoreSubmitted(false);
@@ -264,8 +276,8 @@ const SpaceInvadersGame: React.FC = () => {
 
   // Game State Refs
   const playerRef = useRef<GameObject>({
-    x: CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2,
-    y: CANVAS_HEIGHT - PLAYER_HEIGHT - 20,
+    x: 0, // Set in initGame
+    y: 0,
     width: PLAYER_WIDTH,
     height: PLAYER_HEIGHT,
     color: '#DC2626',
@@ -336,15 +348,15 @@ const SpaceInvadersGame: React.FC = () => {
     const stars: Star[] = [];
     for (let i = 0; i < 100; i++) {
       stars.push({
-        x: Math.random() * CANVAS_WIDTH,
-        y: Math.random() * CANVAS_HEIGHT,
+        x: Math.random() * gameWidth,
+        y: Math.random() * gameHeight,
         size: Math.random() * 2 + 0.5,
         speed: Math.random() * 2 + 0.5,
         brightness: Math.random(),
       });
     }
     starsRef.current = stars;
-  }, [assetsLoaded]);
+  }, [assetsLoaded, gameWidth, gameHeight]);
 
   // --- Story Logic ---
   const advanceStory = () => {
@@ -360,12 +372,11 @@ const SpaceInvadersGame: React.FC = () => {
     setGameState('start');
   };
 
-  // Auto-advance story (optional, slow pace)
   useEffect(() => {
     if (gameState !== 'intro') return;
     const timer = setTimeout(() => {
         advanceStory();
-    }, 4000); // 4 seconds per line
+    }, 4000);
     return () => clearTimeout(timer);
   }, [gameState, storyIndex]);
 
@@ -400,7 +411,7 @@ const SpaceInvadersGame: React.FC = () => {
     const enemies: Enemy[] = [];
     const enemyGap = 20;
     const totalEnemyWidth = ENEMY_COLS * ENEMY_WIDTH + (ENEMY_COLS - 1) * enemyGap;
-    const startX = (CANVAS_WIDTH - totalEnemyWidth) / 2;
+    const startX = (gameWidth - totalEnemyWidth) / 2;
 
     for (let row = 0; row < ENEMY_ROWS; row++) {
       for (let col = 0; col < ENEMY_COLS; col++) {
@@ -416,7 +427,7 @@ const SpaceInvadersGame: React.FC = () => {
       }
     }
     enemiesRef.current = enemies;
-    enemyMoveIntervalRef.current = 800;
+    enemyMoveIntervalRef.current = 400; // Increased speed from 800
   };
 
   const initGame = async () => {
@@ -431,14 +442,17 @@ const SpaceInvadersGame: React.FC = () => {
     setScore(0);
     setLives(3);
     setCollectedCoins(0);
+    
+    // IMPORTANT: Reset player position based on CURRENT gameHeight
     playerRef.current = {
-      x: CANVAS_WIDTH / 2 - PLAYER_WIDTH / 2,
-      y: CANVAS_HEIGHT - PLAYER_HEIGHT - 20,
+      x: gameWidth / 2 - PLAYER_WIDTH / 2,
+      y: gameHeight - PLAYER_HEIGHT - 20, // Bottom margin
       width: PLAYER_WIDTH,
       height: PLAYER_HEIGHT,
       color: '#DC2626',
       active: true,
     };
+    
     bulletsRef.current = [];
     enemyBulletsRef.current = [];
     coinsRef.current = [];
@@ -479,18 +493,14 @@ const SpaceInvadersGame: React.FC = () => {
 
   // Game Loop
   useEffect(() => {
-    // Only run loop if playing
     if (gameState !== 'playing') {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
-      // We still want to draw the background if in intro/start for ambience
       if (gameState === 'intro' || gameState === 'start') {
-          // Optional: Render just the stars for background
           const canvas = canvasRef.current;
           const ctx = canvas?.getContext('2d');
           if (canvas && ctx) {
              ctx.fillStyle = '#000000';
-             ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-             // Draw static stars or simple animation could go here
+             ctx.fillRect(0, 0, gameWidth, gameHeight);
           }
       }
       return;
@@ -501,19 +511,19 @@ const SpaceInvadersGame: React.FC = () => {
     if (!canvas || !ctx) return;
 
     const update = (timestamp: number) => {
-      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.clearRect(0, 0, gameWidth, gameHeight);
       
       // Draw Background
       ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.fillRect(0, 0, gameWidth, gameHeight);
 
       // Update and Draw Stars
       ctx.fillStyle = '#ffffff';
       starsRef.current.forEach(star => {
         star.y += star.speed;
-        if (star.y > CANVAS_HEIGHT) {
+        if (star.y > gameHeight) {
           star.y = 0;
-          star.x = Math.random() * CANVAS_WIDTH;
+          star.x = Math.random() * gameWidth;
         }
         ctx.globalAlpha = 0.5 + Math.sin(timestamp * 0.005 + star.x) * 0.5;
         ctx.beginPath();
@@ -526,9 +536,12 @@ const SpaceInvadersGame: React.FC = () => {
       if (keysRef.current['ArrowLeft'] && playerRef.current.x > 0) {
         playerRef.current.x -= 5;
       }
-      if (keysRef.current['ArrowRight'] && playerRef.current.x < CANVAS_WIDTH - PLAYER_WIDTH) {
+      if (keysRef.current['ArrowRight'] && playerRef.current.x < gameWidth - PLAYER_WIDTH) {
         playerRef.current.x += 5;
       }
+
+      // Keep Player at correct bottom position (in case of resize mid-game)
+      playerRef.current.y = gameHeight - PLAYER_HEIGHT - 20;
 
       // Player Shooting
       if (keysRef.current['Space'] && timestamp - lastShotTimeRef.current > 300) {
@@ -559,7 +572,7 @@ const SpaceInvadersGame: React.FC = () => {
           if (!enemy.active) return;
           if (
             (enemy.x <= 0 && enemyDirectionRef.current === -1) ||
-            (enemy.x >= CANVAS_WIDTH - ENEMY_WIDTH && enemyDirectionRef.current === 1)
+            (enemy.x >= gameWidth - ENEMY_WIDTH && enemyDirectionRef.current === 1)
           ) {
             touchEdge = true;
           }
@@ -604,7 +617,7 @@ const SpaceInvadersGame: React.FC = () => {
       // Update Enemy Bullets
       enemyBulletsRef.current.forEach((bullet) => {
         bullet.y += bullet.dy;
-        if (bullet.y > CANVAS_HEIGHT) bullet.active = false;
+        if (bullet.y > gameHeight) bullet.active = false;
       });
       enemyBulletsRef.current = enemyBulletsRef.current.filter((b) => b.active);
 
@@ -645,7 +658,7 @@ const SpaceInvadersGame: React.FC = () => {
       // Update Coins
       coinsRef.current.forEach((coin) => {
         coin.y += coin.dy;
-        if (coin.y > CANVAS_HEIGHT) coin.active = false;
+        if (coin.y > gameHeight) coin.active = false;
       });
       coinsRef.current = coinsRef.current.filter((c) => c.active);
 
@@ -785,7 +798,7 @@ const SpaceInvadersGame: React.FC = () => {
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [gameState]);
+  }, [gameState, gameWidth, gameHeight]);
 
   const createParticles = (x: number, y: number, color: string) => {
     for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -807,7 +820,7 @@ const SpaceInvadersGame: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden font-sans select-none">
+    <div className="h-screen bg-slate-900 flex flex-col relative overflow-hidden font-sans select-none">
       {/* Background Image */}
       <div
         className="absolute inset-0 z-0 opacity-40"
@@ -828,7 +841,6 @@ const SpaceInvadersGame: React.FC = () => {
             className="absolute inset-0 z-[100] bg-black flex flex-col items-center justify-center p-8 text-center cursor-pointer"
             onClick={advanceStory}
           >
-            {/* Stars background for intro */}
              <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
                 {[...Array(20)].map((_, i) => (
                     <div key={i} className="absolute bg-white rounded-full animate-pulse" 
@@ -850,10 +862,10 @@ const SpaceInvadersGame: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -30, scale: 1.1 }}
                     transition={{ duration: 0.6, ease: "easeOut" }}
-                    className="max-w-4xl relative z-10"
+                    className="max-w-4xl relative z-10 px-4"
                 >
-                    <p className={`font-mono font-bold leading-relaxed tracking-wider
-                        ${storyIndex === STORY_LINES.length - 1 ? 'text-5xl md:text-7xl text-red-500 uppercase' : 'text-2xl md:text-4xl text-yellow-400'}
+                    <p className={`font-mono font-bold leading-relaxed tracking-wider break-words
+                        ${storyIndex === STORY_LINES.length - 1 ? 'text-3xl md:text-5xl lg:text-7xl text-red-500 uppercase' : 'text-lg md:text-2xl lg:text-4xl text-yellow-400'}
                     `}>
                         {STORY_LINES[storyIndex]}
                     </p>
@@ -861,10 +873,10 @@ const SpaceInvadersGame: React.FC = () => {
             </AnimatePresence>
 
             <div className="absolute bottom-12 left-0 right-0 flex flex-col items-center gap-4 text-gray-500">
-                <p className="text-sm animate-pulse">Tap screen to continue</p>
+                <p className="text-xs md:text-sm animate-pulse">Tap screen to continue</p>
                 <button 
                     onClick={skipStory}
-                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-700 hover:bg-gray-800 hover:text-white transition-colors text-xs uppercase tracking-widest"
+                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-700 hover:bg-gray-800 hover:text-white transition-colors text-[10px] md:text-xs uppercase tracking-widest"
                 >
                     <SkipForward size={14} /> Skip Intro
                 </button>
@@ -873,372 +885,334 @@ const SpaceInvadersGame: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Header / HUD - Hidden during intro */}
+      {/* Header / HUD - Sits at the top */}
       {gameState !== 'intro' && (
-      <div className="z-10 w-full max-w-[1280px] flex justify-between items-center p-4 text-white mb-4 bg-red-900/80 backdrop-blur-sm rounded-xl border border-yellow-500/50 shadow-lg shadow-red-900/20 mx-4">
-        <div className="flex items-center gap-4">
+      <div className="z-20 w-full flex justify-between items-center p-2 md:p-4 text-white bg-red-900/80 backdrop-blur-sm border-b border-yellow-500/50 shadow-lg shadow-red-900/20 shrink-0">
+        <div className="flex items-center gap-2 md:gap-4">
           <button
             onClick={() => navigate('/game/protect-area')}
-            className="p-2 hover:bg-red-800 rounded-full transition-colors"
+            className="p-1.5 md:p-2 hover:bg-red-800 rounded-full transition-colors"
           >
-            <ArrowLeft className="w-6 h-6 text-yellow-400" />
+            <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
           </button>
           <div className="flex flex-col">
-            <span className="text-xs text-yellow-200 uppercase tracking-wider font-bold">
+            <span className="text-[10px] md:text-xs text-yellow-200 uppercase tracking-wider font-bold">
               Score
             </span>
-            <span className="text-2xl font-bold font-mono text-white drop-shadow-md">
+            <span className="text-lg md:text-2xl font-bold font-mono text-white drop-shadow-md leading-none">
               {score.toString().padStart(6, '0')}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6">
           <div className="flex flex-col items-center">
-            <span className="text-xs text-yellow-200 uppercase tracking-wider mb-1 font-bold">
+            <span className="text-[10px] md:text-xs text-yellow-200 uppercase tracking-wider mb-0.5 md:mb-1 font-bold">
               Coins
             </span>
-            <div className="flex items-center gap-1 bg-yellow-900/50 px-3 py-1 rounded-full border border-yellow-500/30">
-              <span className="text-yellow-400 text-lg">🪙</span>
-              <span className="text-white font-bold font-mono">{collectedCoins}</span>
+            <div className="flex items-center gap-1 bg-yellow-900/50 px-2 md:px-3 py-0.5 md:py-1 rounded-full border border-yellow-500/30">
+              <span className="text-yellow-400 text-sm md:text-lg">🪙</span>
+              <span className="text-white font-bold font-mono text-xs md:text-base">{collectedCoins}</span>
             </div>
           </div>
 
           <div className="flex flex-col items-center">
-            <span className="text-xs text-yellow-200 uppercase tracking-wider mb-1 font-bold">
+            <span className="text-[10px] md:text-xs text-yellow-200 uppercase tracking-wider mb-0.5 md:mb-1 font-bold">
               Lives
             </span>
             <div className="flex gap-1">
               {[...Array(Math.max(0, lives))].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm shadow-yellow-200"
+                <Heart 
+                    key={i} 
+                    className="w-4 h-4 md:w-6 md:h-6 text-red-500 fill-red-500 drop-shadow-sm" 
                 />
               ))}
             </div>
           </div>
 
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            className="p-2 hover:bg-red-800 rounded-full transition-colors text-yellow-400"
-          >
-            {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
-          </button>
+          <div className="flex gap-1 md:gap-2">
+            <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="p-1.5 md:p-2 hover:bg-red-800 rounded-full transition-colors text-yellow-400"
+            >
+                {isMuted ? <VolumeX className="w-5 h-5 md:w-6 md:h-6" /> : <Volume2 className="w-5 h-5 md:w-6 md:h-6" />}
+            </button>
 
-          <button
-            onClick={() => setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))}
-            className="p-2 hover:bg-red-800 rounded-full transition-colors text-yellow-400"
-          >
-            {gameState === 'playing' ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
-          </button>
+            <button
+                onClick={() => setGameState((prev) => (prev === 'playing' ? 'paused' : 'playing'))}
+                className="p-1.5 md:p-2 hover:bg-red-800 rounded-full transition-colors text-yellow-400"
+            >
+                {gameState === 'playing' ? <Pause className="w-5 h-5 md:w-6 md:h-6" /> : <Play className="w-5 h-5 md:w-6 md:h-6" />}
+            </button>
+          </div>
         </div>
       </div>
       )}
 
-      {/* Feedback Overlay */}
-      <AnimatePresence>
-        {showFeedback && gameState === 'playing' && (
-          <motion.div
-            key={`${feedbackSide}-${feedbackText}`}
-            initial={{ x: feedbackSide === 'right' ? 300 : -300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: feedbackSide === 'right' ? 300 : -300, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-            className={`fixed z-[60] flex pointer-events-none ${
-               feedbackType === 'alien' ? 'top-28 items-start' : 'bottom-10 items-end'
-            } ${
-               feedbackSide === 'right' ? 'right-0 md:right-10' : 'left-0 md:left-10'
-            }`}
-          >
-            <div className={`flex ${feedbackType === 'alien' ? 'items-start' : 'items-end'} ${feedbackSide === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
+      {/* Main Game Area - Flex Grow to take available space */}
+      <div className="flex-1 flex items-center justify-center relative w-full overflow-hidden p-2">
+        {/* Feedback Overlay - Positioned RELATIVE to this container on Desktop, Absolute on Mobile */}
+        <AnimatePresence>
+          {showFeedback && gameState === 'playing' && (
+            <motion.div
+              key={`${feedbackSide}-${feedbackText}`}
+              initial={{ x: feedbackSide === 'right' ? 300 : -300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: feedbackSide === 'right' ? 300 : -300, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 200, damping: 20 }}
+              className={`absolute z-[60] flex pointer-events-none 
+                 ${/* MOBILE: Always top to avoid controls */ 'top-4 items-start'}
+                 ${/* DESKTOP: Bottom for hero, top for alien */ 'md:top-auto md:bottom-10 md:items-end'}
+                 ${feedbackType === 'alien' ? 'md:top-20 md:bottom-auto md:items-start' : ''}
+                 ${feedbackSide === 'right' ? 'right-0 md:right-10' : 'left-0 md:left-10'}
+              `}
+            >
+              <div className={`flex ${feedbackType === 'alien' ? 'items-start' : 'items-end'} ${feedbackSide === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
+                  
+                  <img 
+                    src={feedbackType === 'vijay' ? "/img/angry-vijay.png" : "/img/angry-alien.webp"} 
+                    alt={feedbackType === 'vijay' ? "Vijay" : "Alien"} 
+                    className={`w-16 sm:w-24 md:w-56 h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] filter brightness-110 relative z-10 ${
+                        feedbackSide === 'left' ? 'scale-x-[-1]' : ''
+                    }`}
+                  />
+
+                  <div className={`z-20 ${
+                      /* Mobile margin adjustments */
+                      feedbackType === 'alien' ? 'mt-2 sm:mt-8 md:mt-12' : 'mb-8 sm:mb-16 md:mb-28'
+                  } ${
+                      /* Desktop margin adjustments to align with new "Top" mobile position */
+                      'mt-4 md:mt-auto md:mb-28' 
+                  } ${
+                      feedbackSide === 'right' ? 'mr-[-10px] md:mr-[-40px]' : 'ml-[-10px] md:ml-[-40px]'
+                  }`}>
+                     <motion.div
+                       initial={{ scale: 0, opacity: 0 }}
+                       animate={{ scale: 1, opacity: 1 }}
+                       className={`relative px-3 py-1.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl border-2 shadow-xl ${
+                         feedbackType === 'vijay' 
+                           ? 'bg-yellow-400 border-yellow-200 text-black' 
+                           : 'bg-red-600 border-red-400 text-white'
+                       }`}
+                     >
+                        <p className="font-black uppercase italic text-[10px] sm:text-base md:text-xl whitespace-normal text-center leading-tight max-w-[160px] md:max-w-none">
+                          "{feedbackText}"
+                        </p>
+                        
+                        <div className={`absolute w-3 h-3 md:w-4 md:h-4 transform border-r-2 border-b-2 ${
+                           feedbackType === 'vijay' ? 'bg-yellow-400 border-yellow-200' : 'bg-red-600 border-red-400'
+                        } ${
+                            /* Tail position logic */
+                            'bottom-[-6px] md:bottom-[-8px]' 
+                        } ${
+                            feedbackType === 'alien' ? 'top-[-6px] md:top-[-8px] bottom-auto' : ''
+                        } ${
+                            feedbackSide === 'right' 
+                              ? (feedbackType === 'alien' ? 'right-4 md:right-6 rotate-[225deg]' : 'right-4 md:right-6 rotate-45')
+                              : (feedbackType === 'alien' ? 'left-4 md:left-6 rotate-[315deg]' : 'left-4 md:left-6 rotate-[135deg]')
+                        }`}></div>
+                     </motion.div>
+                  </div>
+
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Game Canvas */}
+        <div className={`relative z-10 shadow-2xl shadow-red-600/20 rounded-lg overflow-hidden border-2 md:border-4 border-yellow-600 transition-transform duration-100 w-full max-w-5xl h-full max-h-full ${isShaking ? 'translate-x-2 translate-y-2' : ''}`}>
+          <canvas
+            ref={canvasRef}
+            width={gameWidth}
+            height={gameHeight}
+            className="bg-black block w-full h-full object-contain" 
+          />
+
+          {/* Overlays (Start/Pause/GameOver) - Kept inside canvas container */}
+          {gameState === 'start' && (
+            <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white p-4 md:p-8 text-center backdrop-blur-sm z-50">
+              <h1 className="text-3xl md:text-6xl font-extrabold mb-2 md:mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-yellow-400 drop-shadow-lg tracking-tighter leading-tight">
+                VJ'S
+                <br />
+                GALAXY FORCE
+              </h1>
+              <p className="mb-4 md:mb-8 text-yellow-100 text-xs md:text-lg max-w-md font-medium px-4">
+                Lead the TVK fleet and defend the galaxy! <br className="hidden md:block"/>
+                Use{' '}
+                <span className="text-red-500 font-bold bg-white/10 px-1 md:px-2 rounded">Arrow Keys</span> to
+                move and{' '}
+                <span className="text-red-500 font-bold bg-white/10 px-1 md:px-2 rounded">Space</span> to
+                fire.
+              </p>
+              <button
+                onClick={initGame}
+                className="group relative px-6 py-3 md:px-10 md:py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-lg shadow-red-600/50 border-2 border-yellow-400"
+              >
+                <span className="flex items-center gap-2 text-base md:text-xl uppercase tracking-wide">
+                  <Play className="w-5 h-5 md:w-6 md:h-6 fill-current" />
+                  Start Mission
+                </span>
+              </button>
+              <button 
+                  onClick={() => { setGameState('intro'); setStoryIndex(0); }}
+                  className="mt-4 md:mt-6 text-yellow-500 hover:text-yellow-400 underline text-xs md:text-sm"
+              >
+                  Replay Intro Story
+              </button>
+            </div>
+          )}
+
+          {gameState === 'paused' && (
+            <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white backdrop-blur-sm z-50">
+              <h2 className="text-3xl md:text-5xl font-bold mb-4 md:mb-6 text-yellow-400 tracking-widest">PAUSED</h2>
+              <button
+                onClick={() => setGameState('playing')}
+                className="px-6 py-2 md:px-8 md:py-3 bg-red-600 hover:bg-red-500 rounded-full font-bold transition-colors flex items-center gap-2 border border-yellow-400 text-sm md:text-base"
+              >
+                <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                RESUME ACTION
+              </button>
+            </div>
+          )}
+
+          {gameState === 'gameover' && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center text-white backdrop-blur-md p-4 z-50"
+              style={{
+                backgroundImage: "url('/img/game-over.webp')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                opacity: 0.9,
+              }}
+            >
+              <div className="absolute inset-0 bg-black/90" />
+              <div className="relative z-10 flex flex-col items-center w-full max-w-lg">
+                <img src="/img/sad.png" alt="Game Over" className="w-24 md:w-64 mb-4 md:mb-6" />
+                <h2 className="text-3xl md:text-5xl font-bold mb-1 md:mb-2 text-red-500 tracking-tighter text-center">
+                  I AM WAITING...
+                </h2>
+                <p className="text-sm md:text-xl text-gray-400 mb-4 md:mb-6">Mission Failed</p>
                 
-                <img 
-                  src={feedbackType === 'vijay' ? "/img/angry-vijay.png" : "/img/angry-alien.webp"} 
-                  alt={feedbackType === 'vijay' ? "Vijay" : "Alien"} 
-                  className={`w-32 sm:w-40 md:w-56 h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] filter brightness-110 relative z-10 ${
-                      feedbackSide === 'left' ? 'scale-x-[-1]' : ''
-                  }`}
-                />
-
-                <div className={`z-20 ${
-                    feedbackType === 'alien' ? 'mt-4 sm:mt-8 md:mt-12' : 'mb-16 sm:mb-20 md:mb-28'
-                } ${
-                    feedbackSide === 'right' ? 'mr-[-20px] md:mr-[-40px]' : 'ml-[-20px] md:ml-[-40px]'
-                }`}>
-                   <motion.div
-                     initial={{ scale: 0, opacity: 0 }}
-                     animate={{ scale: 1, opacity: 1 }}
-                     className={`relative px-4 py-2 md:px-6 md:py-3 rounded-2xl border-2 shadow-xl ${
-                       feedbackType === 'vijay' 
-                         ? 'bg-yellow-400 border-yellow-200 text-black' 
-                         : 'bg-red-600 border-red-400 text-white'
-                     }`}
-                   >
-                      <p className="font-black uppercase italic text-sm sm:text-base md:text-xl whitespace-nowrap">
-                        "{feedbackText}"
-                      </p>
-                      
-                      <div className={`absolute w-4 h-4 transform border-r-2 border-b-2 ${
-                         feedbackType === 'vijay' ? 'bg-yellow-400 border-yellow-200' : 'bg-red-600 border-red-400'
-                      } ${
-                          feedbackType === 'alien' 
-                            ? 'top-[-8px]' 
-                            : 'bottom-[-8px]'
-                      } ${
-                          feedbackSide === 'right' 
-                            ? (feedbackType === 'alien' ? 'right-6 rotate-[225deg]' : 'right-6 rotate-45')
-                            : (feedbackType === 'alien' ? 'left-6 rotate-[315deg]' : 'left-6 rotate-[135deg]')
-                      }`}></div>
-                   </motion.div>
+                <div className="flex flex-col gap-2 md:gap-4 mb-4 md:mb-8 w-full items-center">
+                  <div className="flex gap-4 md:gap-8 justify-center">
+                    <p className="text-xl md:text-3xl font-mono">
+                      Score: <span className="text-yellow-400">{score}</span>
+                    </p>
+                    <p className="text-xl md:text-3xl font-mono">
+                      Coins: <span className="text-yellow-400">{collectedCoins}</span>
+                    </p>
+                  </div>
+                  <div className="flex justify-center">
+                    <p className="text-base md:text-2xl font-mono flex items-center gap-2">
+                      Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
+                    </p>
+                  </div>
                 </div>
 
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Game Container */}
-      <div className={`relative z-10 shadow-2xl shadow-red-600/20 rounded-lg overflow-hidden border-4 border-yellow-600 transition-transform duration-100 w-full max-w-[1280px] mx-4 ${isShaking ? 'translate-x-2 translate-y-2' : ''}`}>
-        <canvas
-          ref={canvasRef}
-          width={CANVAS_WIDTH}
-          height={CANVAS_HEIGHT}
-          className="bg-black block w-full h-auto"
-          style={{ maxHeight: '80vh' }}
-        />
-
-        {/* Overlays */}
-        {gameState === 'start' && (
-          <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center text-white p-8 text-center backdrop-blur-sm">
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-red-500 to-yellow-400 drop-shadow-lg tracking-tighter">
-              VJ'S
-              <br />
-              GALAXY FORCE
-            </h1>
-            <p className="mb-8 text-yellow-100 text-lg max-w-md font-medium">
-              Lead the TVK fleet and defend the galaxy! <br />
-              Use{' '}
-              <span className="text-red-500 font-bold bg-white/10 px-2 rounded">Arrow Keys</span> to
-              move and{' '}
-              <span className="text-red-500 font-bold bg-white/10 px-2 rounded">Space</span> to
-              fire.
-            </p>
-            <button
-              onClick={initGame}
-              className="group relative px-10 py-4 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-lg shadow-red-600/50 border-2 border-yellow-400"
-            >
-              <span className="flex items-center gap-2 text-xl uppercase tracking-wide">
-                <Play className="w-6 h-6 fill-current" />
-                Start Mission
-              </span>
-            </button>
-            <button 
-                onClick={() => { setGameState('intro'); setStoryIndex(0); }}
-                className="mt-6 text-yellow-500 hover:text-yellow-400 underline text-sm"
-            >
-                Replay Intro Story
-            </button>
-          </div>
-        )}
-
-        {gameState === 'paused' && (
-          <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white backdrop-blur-sm">
-            <h2 className="text-5xl font-bold mb-6 text-yellow-400 tracking-widest">PAUSED</h2>
-            <button
-              onClick={() => setGameState('playing')}
-              className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-full font-bold transition-colors flex items-center gap-2 border border-yellow-400"
-            >
-              <Play className="w-5 h-5 fill-current" />
-              RESUME ACTION
-            </button>
-          </div>
-        )}
-
-        {gameState === 'gameover' && (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center text-white backdrop-blur-md"
-            style={{
-              backgroundImage: "url('/img/game-over.webp')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              opacity: 0.9,
-            }}
-          >
-            <div className="absolute inset-0 bg-black/90" />
-            <div className="relative z-10 flex flex-col items-center">
-              <img src="/img/sad.png" alt="Game Over" className="w-64 mb-6" />
-              <h2 className="text-5xl font-bold mb-2 text-red-500 tracking-tighter">
-                I AM WAITING...
-              </h2>
-              <p className="text-xl text-gray-400 mb-6">Mission Failed</p>
-              <div className="flex flex-col gap-4 mb-8">
-                <div className="flex gap-8 justify-center">
-                  <p className="text-3xl font-mono">
-                    Score: <span className="text-yellow-400">{score}</span>
-                  </p>
-                  <p className="text-3xl font-mono">
-                    Coins: <span className="text-yellow-400">{collectedCoins}</span>
-                  </p>
-                </div>
-                <div className="flex justify-center">
-                  <p className="text-2xl font-mono flex items-center gap-2">
-                    Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Trophy Section */}
-              <div className="mb-8">
-                {(() => {
-                  const trophy = getTrophyFromScore('space-invaders', score);
-                  if (trophy !== 'NONE') {
-                    return (
-                      <div className="flex flex-col items-center animate-bounce-slow">
-                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
-                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
-                          {trophy} TROPHY
-                        </span>
-                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
-                      </div>
-                    );
-                  }
-                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
-                })()}
-              </div>
-              
-              {/* 
-                TODO: Send score and trophy to backend
-                POST /api/scores
-                Body: { game: 'space-invaders', score: score, trophy: getTrophyFromScore('space-invaders', score) }
-              */}
-
-              <div className="flex gap-4">
-                <button
-                  onClick={initGame}
-                  className="px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-black rounded-full font-bold transition-colors flex items-center gap-2 shadow-lg shadow-yellow-500/20"
-                >
-                  <RotateCcw className="w-5 h-5" />
-                  ONCE MORE
-                </button>
-                <button
-                  onClick={() => navigate('/game/protect-area')}
-                  className="px-8 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors"
-                >
-                  EXIT
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {gameState === 'victory' && (
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center text-white backdrop-blur-md"
-            style={{
-              backgroundImage: "url('/img/game-won.webp')",
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              opacity: 0.9,
-            }}
-          >
-            <div className="absolute inset-0 bg-black/90" />
-            <div className="relative z-10 flex flex-col items-center">
-              <img src="/img/happy.webp" alt="Victory" className="w-64 mb-6" />
-              <h2 className="text-5xl font-bold mb-2 text-yellow-400 tracking-tighter">
-                VERITHANAM!
-              </h2>
-              <p className="text-xl text-gray-300 mb-6">Mission Accomplished</p>
-              <div className="flex flex-col gap-4 mb-8">
-                <div className="flex gap-8 justify-center">
-                  <p className="text-3xl font-mono">
-                    Score: <span className="text-yellow-400">{score}</span>
-                  </p>
-                  <p className="text-3xl font-mono">
-                    Coins: <span className="text-yellow-400">{collectedCoins}</span>
-                  </p>
-                </div>
-                <div className="flex justify-center">
-                  <p className="text-2xl font-mono flex items-center gap-2">
-                    Total Trophies: <span className="text-yellow-400">{totalTrophies}</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Trophy Section */}
-              <div className="mb-8">
-                {(() => {
-                  const trophy = getTrophyFromScore('space-invaders', score);
-                  if (trophy !== 'NONE') {
-                    return (
-                      <div className="flex flex-col items-center animate-bounce-slow">
-                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
-                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
-                          {trophy} TROPHY
-                        </span>
-                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
-                      </div>
-                    );
-                  }
-                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
-                })()}
-              </div>
-              
-              {/* 
-                TODO: Send score and trophy to backend
-                POST /api/scores
-                Body: { game: 'space-invaders', score: score, trophy: getTrophyFromScore('space-invaders', score) }
-              */}
-
-              <div className="flex gap-4">
-                {isPremium && (
+                <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto px-6">
                   <button
                     onClick={initGame}
-                    className="px-8 py-3 bg-red-600 hover:bg-red-500 rounded-full font-bold transition-colors flex items-center gap-2 border border-yellow-400 shadow-lg shadow-red-600/30"
+                    className="w-full md:w-auto px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-black rounded-full font-bold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/20 text-sm md:text-base"
                   >
-                    <RotateCcw className="w-5 h-5" />
-                    PLAY AGAIN
+                    <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                    ONCE MORE
                   </button>
-                )}
-                <button
-                  onClick={() => navigate('/game/protect-area')}
-                  className="px-8 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors"
-                >
-                  EXIT
-                </button>
+                  <button
+                    onClick={() => navigate('/game/protect-area')}
+                    className="w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors text-sm md:text-base"
+                  >
+                    EXIT
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {gameState === 'victory' && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-center text-white backdrop-blur-md p-4 z-50"
+              style={{
+                backgroundImage: "url('/img/game-won.webp')",
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                opacity: 0.9,
+              }}
+            >
+              <div className="absolute inset-0 bg-black/90" />
+              <div className="relative z-10 flex flex-col items-center w-full max-w-lg">
+                <img src="/img/happy.webp" alt="Victory" className="w-24 md:w-64 mb-4 md:mb-6" />
+                <h2 className="text-3xl md:text-5xl font-bold mb-1 md:mb-2 text-yellow-400 tracking-tighter text-center">
+                  VERITHANAM!
+                </h2>
+                <p className="text-sm md:text-xl text-gray-300 mb-4 md:mb-6">Mission Accomplished</p>
+                
+                <div className="flex flex-col gap-2 md:gap-4 mb-4 md:mb-8 w-full items-center">
+                  <div className="flex gap-4 md:gap-8 justify-center">
+                    <p className="text-xl md:text-3xl font-mono">
+                      Score: <span className="text-yellow-400">{score}</span>
+                    </p>
+                    <p className="text-xl md:text-3xl font-mono">
+                      Coins: <span className="text-yellow-400">{collectedCoins}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-3 md:gap-4 w-full md:w-auto px-6">
+                  {isPremium && (
+                    <button
+                      onClick={initGame}
+                      className="w-full md:w-auto px-6 py-3 bg-red-600 hover:bg-red-500 rounded-full font-bold transition-colors flex items-center justify-center gap-2 border border-yellow-400 shadow-lg shadow-red-600/30 text-sm md:text-base"
+                    >
+                      <RotateCcw className="w-4 h-4 md:w-5 md:h-5" />
+                      PLAY AGAIN
+                    </button>
+                  )}
+                  <button
+                    onClick={() => navigate('/game/protect-area')}
+                    className="w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors text-sm md:text-base"
+                  >
+                    EXIT
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Mobile Controls */}
+      {/* Mobile Controls - Dedicated Bottom Section */}
       {gameState !== 'intro' && (
-      <div className="mt-8 flex gap-4 md:hidden z-10">
-        <div className="flex gap-2">
+      <div className="w-full bg-slate-900/80 backdrop-blur-md border-t border-slate-700 p-4 md:hidden z-30 shrink-0 pb-safe">
+        <div className="flex gap-4 items-center justify-between max-w-sm mx-auto">
+          {/* Movement Controls */}
+          <div className="flex gap-4">
+            <button
+              className="w-16 h-16 bg-slate-800/90 rounded-full flex items-center justify-center active:bg-slate-700 active:scale-95 transition-transform border-2 border-slate-600 shadow-lg"
+              onTouchStart={(e) => { e.preventDefault(); keysRef.current['ArrowLeft'] = true; }}
+              onTouchEnd={(e) => { e.preventDefault(); keysRef.current['ArrowLeft'] = false; }}
+            >
+              <ArrowLeft className="w-8 h-8 text-white" />
+            </button>
+            <button
+              className="w-16 h-16 bg-slate-800/90 rounded-full flex items-center justify-center active:bg-slate-700 active:scale-95 transition-transform border-2 border-slate-600 shadow-lg"
+              onTouchStart={(e) => { e.preventDefault(); keysRef.current['ArrowRight'] = true; }}
+              onTouchEnd={(e) => { e.preventDefault(); keysRef.current['ArrowRight'] = false; }}
+            >
+              <ArrowLeft className="w-8 h-8 text-white rotate-180" />
+            </button>
+          </div>
+          
+          {/* Fire Control */}
           <button
-            className="w-16 h-16 bg-slate-800/80 rounded-full flex items-center justify-center active:bg-slate-700 border border-slate-600"
-            onTouchStart={() => (keysRef.current['ArrowLeft'] = true)}
-            onTouchEnd={() => (keysRef.current['ArrowLeft'] = false)}
+            className="flex-1 h-16 bg-gradient-to-r from-red-600 to-red-700 rounded-full flex items-center justify-center active:from-red-700 active:to-red-800 active:scale-95 transition-transform border-2 border-red-400 shadow-lg shadow-red-900/50"
+            onTouchStart={(e) => { e.preventDefault(); keysRef.current['Space'] = true; }}
+            onTouchEnd={(e) => { e.preventDefault(); keysRef.current['Space'] = false; }}
           >
-            <ArrowLeft className="w-8 h-8 text-white" />
-          </button>
-          <button
-            className="w-16 h-16 bg-slate-800/80 rounded-full flex items-center justify-center active:bg-slate-700 border border-slate-600"
-            onTouchStart={() => (keysRef.current['ArrowRight'] = true)}
-            onTouchEnd={() => (keysRef.current['ArrowRight'] = false)}
-          >
-            <ArrowLeft className="w-8 h-8 text-white rotate-180" />
+            <span className="font-black text-white text-xl tracking-widest italic">FIRE</span>
           </button>
         </div>
-        <button
-          className="w-24 h-16 bg-red-600/80 rounded-full flex items-center justify-center active:bg-red-700 border border-red-500 ml-8"
-          onTouchStart={() => (keysRef.current['Space'] = true)}
-          onTouchEnd={() => (keysRef.current['Space'] = false)}
-        >
-          <span className="font-bold text-white">FIRE</span>
-        </button>
       </div>
       )}
     </div>
