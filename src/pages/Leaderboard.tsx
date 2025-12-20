@@ -153,11 +153,11 @@ const Leaderboard: React.FC = () => {
             nickname: entry.user?.nickname || entry.nickname || null,
             avatar: avatarUrl,
             totalTrophies: entry.total_trophies || 0,
-            trophyBreakdown: entry.trophy_breakdown || {
-              PLATINUM: entry.platinum_count || 0,
-              GOLD: entry.gold_count || 0,
-              SILVER: entry.silver_count || 0,
-              BRONZE: entry.bronze_count || 0
+            trophyBreakdown: {
+              PLATINUM: entry.trophy_breakdown?.PLATINUM ?? entry.platinum_count ?? 0,
+              GOLD: entry.trophy_breakdown?.GOLD ?? entry.gold_count ?? 0,
+              SILVER: entry.trophy_breakdown?.SILVER ?? entry.silver_count ?? 0,
+              BRONZE: entry.trophy_breakdown?.BRONZE ?? entry.bronze_count ?? 0
             },
             rank: entry.rank || index + 1
           };
@@ -364,10 +364,10 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                 relative w-full p-6 rounded-3xl backdrop-blur-2xl border
                 flex flex-col items-center gap-4 group transition-all duration-300
                 ${isFirst 
-                    ? 'bg-gradient-to-b from-yellow-500/10 to-black/80 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)] h-[380px]' 
+                    ? 'bg-gradient-to-b from-yellow-500/10 to-black/80 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)] h-[420px]' 
                     : rank === 2 
-                        ? 'bg-gradient-to-b from-zinc-300/10 to-black/80 border-zinc-400/20 h-[320px]'
-                        : 'bg-gradient-to-b from-amber-700/10 to-black/80 border-amber-700/20 h-[300px]'
+                        ? 'bg-gradient-to-b from-zinc-300/10 to-black/80 border-zinc-400/20 h-[360px]'
+                        : 'bg-gradient-to-b from-amber-700/10 to-black/80 border-amber-700/20 h-[340px]'
                 }
             `}>
                 {/* Avatar */}
@@ -399,6 +399,34 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                     <Trophy className={`w-5 h-5 ${isFirst ? 'text-yellow-400' : 'text-zinc-400'}`} />
                     <span className="text-2xl font-bold font-mono">{user.totalTrophies}</span>
                 </div>
+
+                {/* Trophy Breakdown */}
+                <div className="flex flex-wrap justify-center gap-2 text-xs">
+                    {user.trophyBreakdown.PLATINUM > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 rounded-md border border-cyan-500/20">
+                            <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                            <span className="text-cyan-300 font-bold">{user.trophyBreakdown.PLATINUM}</span>
+                        </div>
+                    )}
+                    {user.trophyBreakdown.GOLD > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-md border border-yellow-500/20">
+                            <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                            <span className="text-yellow-300 font-bold">{user.trophyBreakdown.GOLD}</span>
+                        </div>
+                    )}
+                    {user.trophyBreakdown.SILVER > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-zinc-500/10 rounded-md border border-zinc-400/20">
+                            <div className="w-2 h-2 rounded-full bg-zinc-400" />
+                            <span className="text-zinc-300 font-bold">{user.trophyBreakdown.SILVER}</span>
+                        </div>
+                    )}
+                    {user.trophyBreakdown.BRONZE > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-amber-700/10 rounded-md border border-amber-600/20">
+                            <div className="w-2 h-2 rounded-full bg-amber-600" />
+                            <span className="text-amber-400 font-bold">{user.trophyBreakdown.BRONZE}</span>
+                        </div>
+                    )}
+                </div>
                 
                 {/* Glow Effect on Hover */}
                 <div className={`absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-t ${isFirst ? 'from-yellow-500/20' : 'from-white/10'} to-transparent`} />
@@ -425,7 +453,7 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
                 <img 
                     src={user.avatar} 
                     alt={user.nickname || user.username} 
-                    className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors"
+                    className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors object-cover bg-zinc-800"
                     onError={(e) => {
                       // Fallback to generated avatar if S3 image fails
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nickname || user.username)}&background=E6C65B&color=000&size=200`;
@@ -433,9 +461,31 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
                 />
                 <div>
                     <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.nickname || user.username}</h4>
-                    <div className="flex gap-3 text-xs text-zinc-500">
-                       <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />{user.trophyBreakdown.PLATINUM} Plat</span>
-                       <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />{user.trophyBreakdown.GOLD} Gold</span>
+                    <div className="flex flex-wrap gap-3 text-xs text-zinc-500">
+                       {user.trophyBreakdown.PLATINUM > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                           {user.trophyBreakdown.PLATINUM} Plat
+                         </span>
+                       )}
+                       {user.trophyBreakdown.GOLD > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                           {user.trophyBreakdown.GOLD} Gold
+                         </span>
+                       )}
+                       {user.trophyBreakdown.SILVER > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                           {user.trophyBreakdown.SILVER} Silver
+                         </span>
+                       )}
+                       {user.trophyBreakdown.BRONZE > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                           {user.trophyBreakdown.BRONZE} Bronze
+                         </span>
+                       )}
                     </div>
                 </div>
             </div>
