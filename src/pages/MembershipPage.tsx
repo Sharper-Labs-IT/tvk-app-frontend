@@ -78,11 +78,15 @@ const MembershipPage: React.FC = () => {
       try {
         const response = await axiosClient.get<{ plans: Plan[] }>("/membership/plans");
 
-        const activePlans = (response.data.plans || []).filter(
-          (p) => p.status === 1
-        );
+        let filteredPlans = (response.data.plans || [])
+          .filter((p) => p.status === 1)
+          .filter((p) => [1,2].includes(p.id));
+        
+          filteredPlans = filteredPlans.sort((a, b) => a.id - b.id);
 
-        setPlans(activePlans);
+        
+
+        setPlans(filteredPlans);
       } catch (err) {
         setError("Unable to load membership plans.");
       } finally {
