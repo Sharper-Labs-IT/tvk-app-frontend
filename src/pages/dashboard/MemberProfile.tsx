@@ -108,15 +108,21 @@ const MemberProfile: React.FC = () => {
     if (user.membership_type === 'premium' || user.membership_type === 'vip') return true;
 
     // Check membership_tier (backend field) - only specific premium tiers
+    // Normalize by replacing spaces with underscores and lowercasing
     const premiumTiers = ['super_fan', 'superfan', 'premium', 'vip', 'gold', 'platinum'];
-    if (user.membership_tier && premiumTiers.includes(user.membership_tier.toLowerCase()))
-      return true;
+    if (user.membership_tier) {
+      const normalizedTier = user.membership_tier.toLowerCase().replace(/\s+/g, '_');
+      if (premiumTiers.includes(normalizedTier)) return true;
+    }
+
+    // Check membership object's plan_id (plan_id 1 = Free, plan_id > 1 = Premium)
+    if (user.membership?.plan_id && Number(user.membership.plan_id) > 1) return true;
 
     // Check roles array for premium/super_fan/vip role names (but NOT just 'member')
     if (user.roles && Array.isArray(user.roles)) {
       const premiumRoleNames = ['premium', 'vip', 'super_fan', 'superfan', 'super-fan', 'admin'];
       const hasPremiumRole = user.roles.some((role: any) => {
-        const roleName = (role.name?.toLowerCase() || role.toLowerCase?.() || '').trim();
+        const roleName = (role.name?.toLowerCase() || role.toLowerCase?.() || '').trim().replace(/\s+/g, '_');
         return premiumRoleNames.includes(roleName);
       });
       if (hasPremiumRole) return true;
@@ -163,7 +169,7 @@ const MemberProfile: React.FC = () => {
       // Set success message based on the change
       if (coinsDeducted > 0) {
         setNicknameSuccess(`Nickname updated! ${coinsDeducted} coins deducted.`);
-      } else if (!isPremium && previousChanges === 0) {
+      } else if (!isPremium && (previousChanges || 0) === 0) {
         setNicknameSuccess('Nickname updated! (Free change used)');
       } else {
         setNicknameSuccess('Nickname updated successfully!');
@@ -308,17 +314,17 @@ const MemberProfile: React.FC = () => {
                             setNicknameInput(user?.nickname || '');
                           }}
                           className={`text-gold hover:text-white transition ${
-                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                            !isPremium && (user?.nickname_changes || 0) > 0 && (user?.coins || 0) < 2000
                               ? 'opacity-50 cursor-not-allowed'
                               : ''
                           }`}
                           title={
-                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                            !isPremium && (user?.nickname_changes || 0) > 0 && (user?.coins || 0) < 2000
                               ? 'You need 2000 coins to change your nickname again.'
                               : 'Edit nickname'
                           }
                           disabled={
-                            !isPremium && user?.nickname_changes !== 0 && (user?.coins || 0) < 2000
+                            !isPremium && (user?.nickname_changes || 0) > 0 && (user?.coins || 0) < 2000
                           }
                         >
                           <Edit size={14} />
@@ -326,7 +332,7 @@ const MemberProfile: React.FC = () => {
                         {!isPremium && (
                           <span className="text-xs text-gray-500">
                             (
-                            {user?.nickname_changes === 0
+                            {(user?.nickname_changes || 0) === 0
                               ? '1 free change'
                               : '2000 coins per change'}
                             )
@@ -363,7 +369,7 @@ const MemberProfile: React.FC = () => {
                         >
                           <X size={16} />
                         </button>
-                        {!isPremium && user?.nickname_changes !== 0 && (
+                        {!isPremium && (user?.nickname_changes || 0) > 0 && (
                           <div className="flex items-center gap-1 text-xs text-yellow-500">
                             <Coins size={12} />
                             <span>2000</span>
