@@ -137,7 +137,6 @@ const WhackAMoleGame: React.FC = () => {
   const [isHitStop, setIsHitStop] = useState(false);
   const [glitchActive, setGlitchActive] = useState(false);
 
-  
   // --- Fever Mode State ---
   const [isFever, setIsFever] = useState(false);
   const [isClicking, setIsClicking] = useState(false);
@@ -175,7 +174,6 @@ const WhackAMoleGame: React.FC = () => {
   useEffect(() => { levelRef.current = level; }, [level]);
   useEffect(() => { bossDataRef.current = bossData; }, [bossData]);
 
-  // --- Combo Tiers Effect ---
   useEffect(() => {
     if (combo === 5) {
         setComboTierText("Great!");
@@ -196,21 +194,17 @@ const WhackAMoleGame: React.FC = () => {
     }
   }, [combo]);
   
-  // --- Cursor Motion Values ---
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // --- Refs ---
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const moleTimersRef = useRef<{ [key: number]: ReturnType<typeof setTimeout> }>({});
   const gameLoopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- Audio (Simulated) ---
   const playSound = useCallback((_type: 'hit' | 'bonus' | 'miss' | 'gameover' | 'boss_hit' | 'freeze') => {
     if (isMuted) return;
   }, [isMuted]);
 
-  // --- Preload Images ---
   useEffect(() => {
     const preloadImages = async () => {
       const imageUrls = [
@@ -250,7 +244,6 @@ const WhackAMoleGame: React.FC = () => {
     preloadImages();
   }, []);
 
-  // --- Initialization ---
   useEffect(() => {
     if (!assetsLoaded) return;
 
@@ -283,7 +276,6 @@ const WhackAMoleGame: React.FC = () => {
     moleTimersRef.current = {};
   };
 
-  // --- Game Logic ---
   const startGame = async () => {
     try {
       const response = await gameService.joinGame(GAME_IDS.WHACK_A_MOLE);
@@ -305,9 +297,8 @@ const WhackAMoleGame: React.FC = () => {
     setGameState('playing');
     setActiveHoles({});
     
-    // Start Timer
     timerRef.current = setInterval(() => {
-      if (isFrozenRef.current) return; // Pause timer if frozen
+      if (isFrozenRef.current) return; 
 
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -318,7 +309,6 @@ const WhackAMoleGame: React.FC = () => {
       });
     }, 1000);
 
-    // Start Game Loop
     scheduleNextMole();
   };
 
@@ -333,11 +323,9 @@ const WhackAMoleGame: React.FC = () => {
     }
   };
 
-  // --- Backend Integration ---
   const { refreshUser, user } = useAuth();
   const { isPremium } = useGameAccess();
 
-  // Calculate total trophies from user object
   const calculateTotalTrophies = (userTrophies: any): number => {
     if (!userTrophies) return 0;
     if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
@@ -352,7 +340,6 @@ const WhackAMoleGame: React.FC = () => {
     return 0;
   };
 
-  // Update trophy count when user changes
   useEffect(() => {
     if (user?.trophies) {
       setTotalTrophies(calculateTotalTrophies(user.trophies));
@@ -370,7 +357,6 @@ const WhackAMoleGame: React.FC = () => {
             data: { level: level, highScore: highScore }
           });
           
-          // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
           setScoreSubmitted(false);
@@ -480,11 +466,15 @@ const WhackAMoleGame: React.FC = () => {
       }, 500);
   };
 
-  const handleWhack = (index: number, e: React.MouseEvent | React.TouchEvent) => {
+  // UPDATED: handleWhack modified to accept generic React Events for compatibility
+  const handleWhack = (index: number, e: React.MouseEvent | React.TouchEvent | React.PointerEvent) => {
     if (gameState !== 'playing') return;
     
+    // Safety check: if no mole is here, it might be a miss or a ghost click
     const type = activeHoles[index];
     if (!type) {
+        // Only reset combo if it's a genuine miss, not a double-fire.
+        // For simplicity, we can just return here if using onPointerDown.
         setCombo(0);
         return;
     }
@@ -624,29 +614,28 @@ const WhackAMoleGame: React.FC = () => {
     frame();
   };
 
-  // --- Render Helpers (UPDATED FOR 3D & SIZE) ---
  const getMoleContent = (type: MoleType, _index: number) => {
-    // Common styles for 3D effect
     const popEffect = "filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)] transform transition-transform";
-    
-    // Helper class to align items to the bottom of the hole
     const containerClass = "w-full h-full flex items-end justify-center pb-2 relative"; 
+
+    // UPDATED: Sizes for items are now responsive (smaller on mobile)
+    const itemSizeClass = "w-16 h-16 sm:w-28 sm:h-28"; 
+    const iconSizeClass = "w-8 h-8 sm:w-16 sm:h-16"; 
+    const borderSizeClass = "border-4 sm:border-[6px]";
 
     switch (type) {
       case 'boss':
         return (
             <div className={containerClass}>
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-purple-600/40 blur-2xl rounded-full animate-pulse" />
-                {/* Boss HP Bar - Moved up slightly */}
                 <div className="absolute top-0 w-20 h-3 bg-slate-900 rounded-full overflow-hidden border-2 border-white/20 z-20 shadow-lg">
                     <div 
                         className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-200"
                         style={{ width: `${((bossData?.hp || 0) / BOSS_HP_MAX) * 100}%` }}
                     />
                 </div>
-                {/* Bigger Boss Icon */}
-                <div className={`w-32 h-32 bg-gradient-to-br from-purple-800 to-purple-950 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(147,51,234,0.6)] border-[6px] border-purple-500 animate-bounce relative z-10 ${popEffect}`}>
-                    <Skull className="w-20 h-20 text-white fill-current drop-shadow-md" />
+                <div className={`w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-purple-800 to-purple-950 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(147,51,234,0.6)] ${borderSizeClass} border-purple-500 animate-bounce relative z-10 ${popEffect}`}>
+                    <Skull className="w-12 h-12 sm:w-20 sm:h-20 text-white fill-current drop-shadow-md" />
                 </div>
             </div>
         );
@@ -654,8 +643,8 @@ const WhackAMoleGame: React.FC = () => {
         return (
             <div className={containerClass}>
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-cyan-400/40 blur-xl rounded-full animate-pulse" />
-                <div className={`w-28 h-28 bg-gradient-to-br from-cyan-100 to-cyan-300 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(165,243,252,0.8)] border-[6px] border-white animate-pulse relative z-10 ${popEffect}`}>
-                    <Snowflake className="w-16 h-16 text-cyan-700 fill-current animate-spin-slow" />
+                <div className={`${itemSizeClass} bg-gradient-to-br from-cyan-100 to-cyan-300 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(165,243,252,0.8)] ${borderSizeClass} border-white animate-pulse relative z-10 ${popEffect}`}>
+                    <Snowflake className={`${iconSizeClass} text-cyan-700 fill-current animate-spin-slow`} />
                 </div>
             </div>
         );
@@ -663,8 +652,8 @@ const WhackAMoleGame: React.FC = () => {
         return (
           <div className={containerClass}>
              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-yellow-400/40 blur-xl rounded-full animate-pulse" />
-             <div className={`w-28 h-28 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(250,204,21,0.6)] border-[6px] border-yellow-100 animate-pulse relative z-10 ${popEffect}`}>
-                <Zap className="w-16 h-16 text-black fill-current" />
+             <div className={`${itemSizeClass} bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(250,204,21,0.6)] ${borderSizeClass} border-yellow-100 animate-pulse relative z-10 ${popEffect}`}>
+                <Zap className={`${iconSizeClass} text-black fill-current`} />
              </div>
           </div>
         );
@@ -672,8 +661,8 @@ const WhackAMoleGame: React.FC = () => {
         return (
           <div className={containerClass}>
              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-red-500/50 blur-xl rounded-full animate-pulse" />
-             <div className={`w-28 h-28 bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(220,38,38,0.6)] border-[6px] border-red-300 relative z-10 ${popEffect}`}>
-                <Bomb className="w-16 h-16 text-white fill-current animate-bounce" />
+             <div className={`${itemSizeClass} bg-gradient-to-br from-red-500 to-red-700 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(220,38,38,0.6)] ${borderSizeClass} border-red-300 relative z-10 ${popEffect}`}>
+                <Bomb className={`${iconSizeClass} text-white fill-current animate-bounce`} />
              </div>
           </div>
         );
@@ -684,7 +673,7 @@ const WhackAMoleGame: React.FC = () => {
               <img 
                 src={ASSETS.coin} 
                 alt="Coin" 
-                className={`w-32 h-32 object-contain drop-shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-bounce pointer-events-none select-none relative z-10 ${popEffect}`}
+                className={`${itemSizeClass} object-contain drop-shadow-[0_0_20px_rgba(250,204,21,0.8)] animate-bounce pointer-events-none select-none relative z-10 ${popEffect}`}
               />
            </div>
         );
@@ -692,8 +681,8 @@ const WhackAMoleGame: React.FC = () => {
         return (
           <div className={containerClass}>
              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-blue-500/40 blur-xl rounded-full animate-pulse" />
-             <div className={`w-28 h-28 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.6)] border-[6px] border-blue-200 animate-pulse relative z-10 ${popEffect}`}>
-                <Clock className="w-16 h-16 text-white fill-current" />
+             <div className={`${itemSizeClass} bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(59,130,246,0.6)] ${borderSizeClass} border-blue-200 animate-pulse relative z-10 ${popEffect}`}>
+                <Clock className={`${iconSizeClass} text-white fill-current`} />
              </div>
           </div>
         );
@@ -701,20 +690,19 @@ const WhackAMoleGame: React.FC = () => {
         return (
           <div className={containerClass}>
              <div className="absolute inset-x-0 bottom-0 h-1/2 bg-cyan-500/40 blur-xl rounded-full animate-pulse" />
-             <div className={`w-28 h-28 bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.6)] border-[6px] border-cyan-200 animate-pulse relative z-10 ${popEffect}`}>
-                <Shield className="w-16 h-16 text-white fill-current" />
+             <div className={`${itemSizeClass} bg-gradient-to-br from-cyan-400 to-cyan-600 rounded-full flex items-center justify-center shadow-[0_0_25px_rgba(6,182,212,0.6)] ${borderSizeClass} border-cyan-200 animate-pulse relative z-10 ${popEffect}`}>
+                <Shield className={`${iconSizeClass} text-white fill-current`} />
              </div>
           </div>
         );
       default:
-        // VILLAIN: Use object-bottom to align feet to the hole
+        // VILLAIN (Size adjusted slightly to match new logic)
         return (
            <div className={`${containerClass} overflow-visible`}>
               <img 
                 src={ASSETS.villain[Math.floor(Math.random() * ASSETS.villain.length)]} 
                 alt="Villain" 
-                // UPDATED: Increased height to 180%, added width 140%, and scale-110 for "more bigger" look
-                className={`w-[140%] h-[180%] object-contain object-bottom filter drop-shadow-[0_15px_10px_rgba(0,0,0,0.6)] hover:brightness-110 transition-all duration-75 select-none pointer-events-none relative z-10 origin-bottom transform scale-110`}
+                className={`w-[120%] sm:w-[140%] h-[160%] sm:h-[180%] object-contain object-bottom filter drop-shadow-[0_15px_10px_rgba(0,0,0,0.6)] hover:brightness-110 transition-all duration-75 select-none pointer-events-none relative z-10 origin-bottom transform scale-100 sm:scale-110`}
                 onError={(e) => { e.currentTarget.src = PLACEHOLDER_VILLAIN; }}
               />
            </div>
@@ -722,7 +710,6 @@ const WhackAMoleGame: React.FC = () => {
     }
   };
 
-  // --- Loading Screen ---
   if (!assetsLoaded) {
     return <GamingLoader progress={loadingProgress} />;
   }
@@ -927,7 +914,6 @@ const WhackAMoleGame: React.FC = () => {
 
         <div className="grid grid-cols-3 gap-3 sm:gap-4 h-full relative">
             {Array.from({ length: GRID_SIZE }).map((_, index) => {
-              // Calculate Z-Index for perspective: Lower rows (higher index) must be on top of upper rows
               const rowIndex = Math.floor(index / 3);
               const zIndex = rowIndex * 10 + 10;
 
@@ -935,29 +921,22 @@ const WhackAMoleGame: React.FC = () => {
               <div 
                 key={index}
                 className="relative group"
-                style={{ zIndex }} // Apply perspective Z-Index
-                onMouseDown={(e) => handleWhack(index, e)}
-                onTouchStart={(e) => handleWhack(index, e)}
+                style={{ zIndex }} 
+                // UPDATED: Use onPointerDown for unified mouse/touch handling (prevents ghost clicks)
+                onPointerDown={(e) => handleWhack(index, e)}
               >
-                {/* Hole Graphic (Remains inside the tile) */}
+                {/* Hole Graphic */}
                 <div className="absolute inset-0 bg-black rounded-full transform scale-x-100 scale-y-90 translate-y-2 border-b-[6px] border-white/5 shadow-[inset_0_20px_20px_rgba(0,0,0,1)] ring-4 ring-slate-800" />
                 
-                {/* MOLE CONTAINER:
-                   1. Removed 'overflow-hidden'
-                   2. Height increased to 200% to allow character to stand tall
-                   3. Positioned bottom-0 so it grows upwards
-                   4. Added pointer-events-none to wrapper so it doesn't block clicks on empty space, 
-                      but we'll rely on the parent div click handler anyway.
-                */}
+                {/* Mole Container */}
                 <div className="absolute bottom-4 left-0 right-0 h-[200%] flex items-end justify-center pointer-events-none">
                     <AnimatePresence mode='wait'>
                         {activeHoles[index] && (
                             <motion.div
                                 key={`${index}-${activeHoles[index]}`}
-                                // Animation adjusted for "Pop Out" effect without clipping
-                                initial={{ y: "100%", scale: 0.5, opacity: 0 }} // Start low and invisible
-                                animate={{ y: "5%", scale: 1.1, opacity: 1 }} // Pop up and stand
-                                exit={{ y: "100%", scale: 0.5, opacity: 0 }} // Drop back down
+                                initial={{ y: "100%", scale: 0.5, opacity: 0 }} 
+                                animate={{ y: "5%", scale: 1.1, opacity: 1 }} 
+                                exit={{ y: "100%", scale: 0.5, opacity: 0 }} 
                                 transition={{ 
                                     type: "spring", 
                                     stiffness: 400, 
@@ -1135,78 +1114,81 @@ const WhackAMoleGame: React.FC = () => {
             <motion.div 
               initial={{ scale: 0.5, y: 50 }}
               animate={{ scale: 1, y: 0 }}
-              className="bg-slate-900 border border-slate-700 p-8 rounded-3xl text-center max-w-md w-full shadow-2xl relative overflow-hidden"
+              // UPDATED: Added max-h and overflow for landscape/small screens, reduced padding for mobile
+              className="bg-slate-900 border border-slate-700 p-5 sm:p-8 rounded-3xl text-center max-w-md w-full shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-yellow-400 to-red-600" />
 
-              <div className="flex justify-center mb-6">
-                 <div className="p-4 rounded-full bg-yellow-500/20 text-yellow-400 ring-4 ring-yellow-500/20 animate-bounce">
-                   <Trophy size={48} />
+              <div className="flex justify-center mb-4 sm:mb-6">
+                 <div className="p-3 sm:p-4 rounded-full bg-yellow-500/20 text-yellow-400 ring-4 ring-yellow-500/20 animate-bounce">
+                   <Trophy className="w-8 h-8 sm:w-12 sm:h-12" />
                  </div>
               </div>
               
-              <h2 className="text-3xl font-black uppercase mb-2 text-white">
+              <h2 className="text-2xl sm:text-3xl font-black uppercase mb-2 text-white">
                 Time's Up!
               </h2>
               
-              <div className="grid grid-cols-2 gap-4 mb-8 bg-black/20 p-4 rounded-xl">
+              {/* Stats Grid - Adjusted gaps and padding for mobile */}
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8 bg-black/20 p-3 sm:p-4 rounded-xl">
                  <div className="text-center">
-                    <div className="text-xs text-slate-500 uppercase font-bold">Final Score</div>
-                    <div className="text-4xl font-black text-yellow-400">{score}</div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold">Final Score</div>
+                    <div className="text-2xl sm:text-4xl font-black text-yellow-400">{score}</div>
                  </div>
                  <div className="text-center">
-                    <div className="text-xs text-slate-500 uppercase font-bold">High Score</div>
-                    <div className="text-4xl font-black text-purple-400">{Math.max(score, highScore)}</div>
+                    <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold">High Score</div>
+                    <div className="text-2xl sm:text-4xl font-black text-purple-400">{Math.max(score, highScore)}</div>
                  </div>
                  <div className="text-center col-span-2 mt-2 border-t border-slate-700 pt-2">
-                    <div className="text-xs text-slate-500 uppercase font-bold">Coins Collected</div>
-                    <div className="text-2xl font-black text-yellow-300 flex items-center justify-center gap-2">
-                        <Coins className="w-6 h-6" /> {coins}
+                    <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold">Coins Collected</div>
+                    <div className="text-xl sm:text-2xl font-black text-yellow-300 flex items-center justify-center gap-2">
+                        <Coins className="w-5 h-5 sm:w-6 sm:h-6" /> {coins}
                     </div>
                  </div>
                  <div className="text-center col-span-2 mt-2 border-t border-slate-700 pt-2">
-                    <div className="text-xs text-slate-500 uppercase font-bold">Total Trophies</div>
-                    <div className="text-2xl font-black text-white flex items-center justify-center gap-2">
-                        <Trophy className="w-6 h-6 text-yellow-500" /> 
+                    <div className="text-[10px] sm:text-xs text-slate-500 uppercase font-bold">Total Trophies</div>
+                    <div className="text-xl sm:text-2xl font-black text-white flex items-center justify-center gap-2">
+                        <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" /> 
                         {totalTrophies}
                     </div>
                  </div>
               </div>
 
-              {/* Trophy Section */}
-              <div className="mb-8">
+              {/* Trophy Section - Scale adjustments */}
+              <div className="mb-6 sm:mb-8">
                 {(() => {
                   const trophy = getTrophyFromScore('whack-a-mole', score);
                   if (trophy !== 'NONE') {
                     return (
                       <div className="flex flex-col items-center animate-bounce-slow">
-                        <span className="text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
-                        <span className="text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
+                        <span className="text-5xl sm:text-6xl mb-2 filter drop-shadow-lg">{getTrophyIcon(trophy)}</span>
+                        <span className="text-lg sm:text-xl font-bold" style={{ color: getTrophyColor(trophy) }}>
                           {trophy} TROPHY
                         </span>
-                        <p className="text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
+                        <p className="text-[10px] sm:text-xs text-gray-400 mt-1">New Achievement Unlocked!</p>
                       </div>
                     );
                   }
-                  return <p className="text-gray-500 text-sm">Keep playing to earn trophies!</p>;
+                  return <p className="text-gray-500 text-xs sm:text-sm">Keep playing to earn trophies!</p>;
                 })()}
               </div>
 
-              <div className={`grid ${isPremium ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+              {/* Buttons - Mobile friendly sizing */}
+              <div className={`grid ${isPremium ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 <button
                   onClick={() => navigate('/game/villain-hunt')}
-                  className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center gap-2"
+                  className="w-full py-3 sm:py-4 rounded-xl font-bold text-xs sm:text-sm md:text-base uppercase tracking-wider transition-colors bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center gap-2"
                 >
-                  <Home size={18} />
+                  <Home className="w-4 h-4 sm:w-5 sm:h-5" />
                   Home
                 </button>
                 
                 {isPremium && (
                   <button
                     onClick={startGame}
-                    className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25"
+                    className="w-full py-3 sm:py-4 rounded-xl font-bold text-xs sm:text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/25"
                   >
-                    <RotateCcw size={18} />
+                    <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                     Play Again
                   </button>
                 )}
