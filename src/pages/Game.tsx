@@ -4,11 +4,11 @@ import NavBar from '../components/game/NavBar';
 import Footer from '../components/Footer';
 import Loader from '../components/Loader';
 
-// Lazy load below-the-fold components
-const About = React.lazy(() => import('../components/game/About'));
-const Story = React.lazy(() => import('../components/game/Story'));
-const Contact = React.lazy(() => import('../components/game/Contact'));
-const Features = React.lazy(() => import('../components/game/Features'));
+// Lazy load below-the-fold components with prefetch hints
+const About = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/About'));
+const Story = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/Story'));
+const Contact = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/Contact'));
+const Features = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/Features'));
 
 const Game: React.FC = () => {
   return (
