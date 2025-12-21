@@ -149,6 +149,18 @@ const Hero = () => {
             className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
           />
 
+          {/* Fallback image with same animations and CSS */}
+          <div
+            className={`absolute left-0 top-0 size-full bg-cover bg-center object-cover transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+            style={{
+              backgroundImage: "url('/img/game-1.webp')",
+              pointerEvents: videoLoaded ? 'none' : 'auto',
+            }}
+            aria-hidden={videoLoaded}
+          />
+
           <video
             ref={mainVideoRef}
             src={getVideoSrc(
@@ -160,7 +172,9 @@ const Hero = () => {
             playsInline
             preload="metadata"
             poster="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1920 1080'%3E%3Crect fill='%23000' width='1920' height='1080'/%3E%3C/svg%3E"
-            className="absolute left-0 top-0 size-full object-cover object-center"
+            className={`absolute left-0 top-0 size-full object-cover object-center transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
             onLoadedData={handleMainVideoLoad}
             onCanPlayThrough={() => {
               if (mainVideoRef.current && !videoLoaded) {
