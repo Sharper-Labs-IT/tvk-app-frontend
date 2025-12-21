@@ -29,6 +29,7 @@ export default ({ mode }: ConfigEnv) => {
       },
     },
     build: {
+      chunkSizeWarningLimit: 1000,
       rollupOptions: {
         output: {
           manualChunks: {
@@ -36,8 +37,26 @@ export default ({ mode }: ConfigEnv) => {
             animations: ['gsap', '@gsap/react', 'framer-motion'],
             icons: ['lucide-react', 'react-icons'],
           },
+          // Optimize asset file names for better caching
+          assetFileNames: (assetInfo) => {
+            const info = assetInfo.name?.split('.') || [];
+            const ext = info[info.length - 1];
+            if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext || '')) {
+              return `assets/images/[name]-[hash][extname]`;
+            }
+            if (/mp4|webm|ogg|mp3|wav|flac|aac/i.test(ext || '')) {
+              return `assets/videos/[name]-[hash][extname]`;
+            }
+            return `assets/[name]-[hash][extname]`;
+          },
         },
       },
+      // Optimize asset handling
+      assetsInlineLimit: 4096, // Inline assets smaller than 4kb
+    },
+    // Enable compression and optimization
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-router-dom'],
     },
   });
 };
