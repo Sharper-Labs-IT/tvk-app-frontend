@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const HIGHLIGHTS_DATA = {
   events: [
@@ -52,7 +53,15 @@ const itemVariants: Variants = {
 };
 
 const CommunityHighlights: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'events' | 'content'>('content');
+  // Keeping state for rendering content, defaulting to 'content'
+  const [activeTab] = useState<'events' | 'content'>('content');
+  const navigate = useNavigate();
+
+  // Helper to navigate and scroll to top
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    window.scrollTo(0, 0);
+  };
 
   return (
     <section className="py-20 px-4 bg-white overflow-hidden">
@@ -69,30 +78,26 @@ const CommunityHighlights: React.FC = () => {
           </h2>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-10">
+            {/* UPDATED: Button now navigates to /events */}
             <button
-              onClick={() => setActiveTab('events')}
-              className={`px-8 py-3 rounded-md font-bold transition-colors duration-300 ${
-                activeTab === 'events'
-                  ? 'bg-brand-gold text-brand-dark'
-                  : 'bg-gray-200 text-brand-dark hover:bg-gray-300'
-              }`}
+              onClick={() => handleNavigation('/events')}
+              className="px-8 py-3 rounded-md font-bold transition-colors duration-300 bg-gray-200 text-brand-dark hover:bg-gray-300"
             >
               Global TVK Events
             </button>
 
+            {/* UPDATED: Button now navigates to /dashboard/feed */}
             <button
-              onClick={() => setActiveTab('content')}
-              className={`px-8 py-3 rounded-md font-bold transition-colors duration-300 ${
-                activeTab === 'content'
-                  ? 'bg-brand-gold text-brand-dark'
-                  : 'bg-gray-200 text-brand-dark hover:bg-gray-300'
-              }`}
+              onClick={() => handleNavigation('/dashboard/feed')}
+              className="px-8 py-3 rounded-md font-bold transition-colors duration-300 bg-brand-gold text-brand-dark hover:bg-brand-goldDark"
             >
               Fan Created Content
             </button>
           </div>
         </motion.div>
 
+        {/* Note: The content below displays the default 'content' tab data. 
+            Since buttons navigate away, this serves as a static preview. */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
