@@ -180,7 +180,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
                 Amount
               </span>
               <span className="text-sm font-semibold text-[#f97316]">
-                {formattedPrice}
+                €{formattedPrice}
                 {formattedPrice !== "Free" && (
                   <span className="text-[11px] text-slate-500"> / month</span>
                 )}
