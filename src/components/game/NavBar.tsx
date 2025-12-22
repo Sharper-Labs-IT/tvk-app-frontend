@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { useWindowScroll } from "react-use";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -15,7 +16,13 @@ const navItems = [
 
 const NavBar = () => {
   const location = useLocation();
+  const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
+
+  // Add dashboard link for authenticated users
+  const displayNavItems = user 
+    ? [...navItems.slice(0, 2), { name: "Dashboard", path: "/dashboard" }, ...navItems.slice(2)]
+    : navItems;
 
   // audio + visual indicator toggle
   const [isAudioPlaying] = useState(false);
@@ -93,7 +100,7 @@ const NavBar = () => {
             {/* Desktop Navigation */}
             <div className="flex h-full items-center">
               <div className="hidden md:block">
-                {navItems.map((item) => (
+                {displayNavItems.map((item) => (
                   <Link
                     key={item.name}
                     to={item.path}
@@ -166,7 +173,7 @@ const NavBar = () => {
         )}
       >
         <div className="flex flex-col items-center space-y-8">
-          {navItems.map((item) => (
+          {displayNavItems.map((item) => (
             <Link
               key={item.name}
               to={item.path}
