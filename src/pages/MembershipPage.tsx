@@ -294,12 +294,21 @@ const handleCancelMembership = async () => {
 
             const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
 
-            // Determine button text
             const isUserSuperFan = userMembershipTier === "Super Fan" && userMembershipStatus === "active";
-            const isThisSuperFanCard = plan.name === "Super Fan";
-            const buttonText = isUserSuperFan && isThisSuperFanCard
-              ? "Manage your membership"
-              : "Subscribe Now";
+            const isThisFreeCard = isFree;
+
+            //Determine button state for free tire when user is super fan
+            const isFreeButtonDisabled = isUserSuperFan && isThisFreeCard; 
+
+            const buttonText = (() => {
+    if (isUserSuperFan && plan.name === "Super Fan") {
+      return "Manage your membership";
+    }
+    if (isFreeButtonDisabled) {
+      return "Included with Super Fan"; // or "Already Active", "Free Access", etc.
+    }
+    return "Subscribe Now";
+  })();
 
             return (
               <MembershipTireCard
@@ -313,6 +322,7 @@ const handleCancelMembership = async () => {
                 badgeLabel={isHighlighted ? "Most Popular" : undefined}
                 onSubscribe={() => handleSubscribeClick(plan)}
                 buttonText={buttonText}
+                buttonDisabled={isFreeButtonDisabled}
               />
             );
           })}
