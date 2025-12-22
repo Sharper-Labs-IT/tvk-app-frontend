@@ -91,11 +91,16 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
           type="button"
           onClick={buttonDisabled ? undefined : onSubscribe}
           disabled={buttonDisabled}
-          className={`mt-auto w-full rounded-full px-6 py-3.5 text-sm md:text-base font-semibold transition-all duration-200 ${
-            highlight
-              ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a] hover:shadow-lg"
-              : "bg-[#111827] text-slate-100 hover:bg-[#181e37] border border-slate-700"
-          }`}
+          className={`mt-auto w-full rounded-full px-6 py-3.5 text-sm md:text-base font-semibold transition-all duration-300 relative ${
+           buttonDisabled 
+            ? "bg-[#111827]/40 text-slate-500 border border-slate-700 opacity-60 cursor-not-allowed" 
+                : highlight
+                    ? "bg-[#f7c948] text-[#111827]"
+                    : "bg-[#111827] text-slate-100 border border-slate-700"
+                }
+                ${!buttonDisabled && highlight ? "hover:bg-[#f4b41a] hover:shadow-lg hover:scale-105" : ""}
+                ${!buttonDisabled && !highlight ? "hover:bg-[#181e37] hover:scale-105" : ""}
+                ${!buttonDisabled ? "active:scale-95" : ""}`}
         >
           {buttonText || (highlight ? "Manage your membership" : "Subscribe Now")}
         </button>
