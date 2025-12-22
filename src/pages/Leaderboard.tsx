@@ -4,7 +4,7 @@ import { Trophy, Crown, Target, Search, Users } from 'lucide-react';
 import LogoHeader from '../components/common/LogoHeader';
 import Footer from '../components/Footer';
 import { type TrophyTier } from '../utils/trophySystem';
-import { gameService } from '../services/gameService'; // Import gameService
+import { gameService } from '../services/gameService'; 
 
 // S3 Configuration
 const S3_BASE_URL = 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
@@ -84,23 +84,19 @@ const DUMMY_LEADERBOARD_DATA: UserTrophyData[] = [
   },
 ];
 
-// Helper function to get full avatar URL
-// The backend should return signed S3 URLs, but if it returns relative paths,
-// we request a signed URL from the backend
+
 const getAvatarUrl = (avatar: string | null | undefined): string => {
   if (!avatar) {
     // Return empty string, will use fallback later
     return '';
   }
   
-  // If already a full URL (with S3 signature), return as is
+
   if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
     return avatar;
   }
   
-  // If it's a relative S3 path, we need to get a signed URL from backend
-  // For now, construct the public S3 URL (works if bucket has public read access)
-  // Better solution: backend should return signed URLs in leaderboard API
+
   if (avatar.startsWith('avatars/')) {
     // Construct full S3 URL
     return `${S3_BASE_URL}/${avatar}`;
@@ -114,6 +110,7 @@ const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<UserTrophyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'platinum' | 'gold'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // --- Backend API Integration ---
   const fetchLeaderboard = useCallback(async () => {
@@ -135,8 +132,7 @@ const Leaderboard: React.FC = () => {
         // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, avatar_url, nickname } }
         const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => {
           
-          // Check for both avatar_url (updated avatar) and avatar (old field)
-          // Priority: user.avatar_url > user.avatar > entry.avatar_url > entry.avatar
+ 
           const rawAvatar = entry.user?.avatar_url || entry.user?.avatar || entry.avatar_url || entry.avatar;
           
           // Convert relative path to full URL
@@ -176,7 +172,7 @@ const Leaderboard: React.FC = () => {
     fetchLeaderboard();
   }, [fetchLeaderboard]);
 
-  // Refresh when window gains focus (e.g., after updating avatar)
+
   useEffect(() => {
     const handleFocus = () => {
       fetchLeaderboard();
@@ -186,8 +182,25 @@ const Leaderboard: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchLeaderboard]);
 
-  const topThree = leaderboardData.slice(0, 3);
-  const restOfPlayers = leaderboardData.slice(3);
+  // Filter leaderboard data based on selected filter and search query
+  const filteredData = leaderboardData.filter(user => {
+    // Apply trophy filter
+    if (filter === 'platinum' && user.trophyBreakdown.PLATINUM === 0) return false;
+    if (filter === 'gold' && user.trophyBreakdown.GOLD === 0) return false;
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const username = (user.username || '').toLowerCase();
+      const nickname = (user.nickname || '').toLowerCase();
+      return username.includes(query) || nickname.includes(query);
+    }
+    
+    return true;
+  });
+
+  const topThree = filteredData.slice(0, 3);
+  const restOfPlayers = filteredData.slice(3);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-red-500/30 selection:text-red-200 overflow-x-hidden">
@@ -305,6 +318,8 @@ const Leaderboard: React.FC = () => {
              <input 
                type="text" 
                placeholder="Find player..." 
+               value={searchQuery}
+               onChange={(e) => setSearchQuery(e.target.value)}
                className="bg-black/50 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-red-500/50 w-48 transition-colors"
              />
            </div>
