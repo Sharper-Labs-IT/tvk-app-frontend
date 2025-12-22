@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Crown, Target, Search, Users } from 'lucide-react';
+import { Trophy, Crown, Search } from 'lucide-react';
 import LogoHeader from '../components/common/LogoHeader';
 import Footer from '../components/Footer';
 import { type TrophyTier } from '../utils/trophySystem';
@@ -262,7 +262,7 @@ const Leaderboard: React.FC = () => {
         )}
 
         {/* Stats Grid */}
-        <div className="mb-24 max-w-7xl mx-auto px-4">
+        {/* <div className="mb-24 max-w-7xl mx-auto px-4">
           <motion.h3 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -290,7 +290,7 @@ const Leaderboard: React.FC = () => {
                 </motion.div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Filter Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-2 rounded-2xl">
@@ -523,7 +523,7 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
     );
 };
 
-const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) => {
+/* const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) => {
     return (
         <div className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur-sm hover:bg-zinc-900/50 hover:border-white/10 transition-all duration-300 group flex flex-col items-center text-center justify-center gap-4">
             <div className={`p-4 rounded-2xl bg-${color}-500/10 group-hover:bg-${color}-500/20 transition-colors ring-1 ring-${color}-500/20 group-hover:ring-${color}-500/40`}>
@@ -535,6 +535,6 @@ const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label:
             </div>
         </div>
     );
-}
+} */
 
 export default Leaderboard;
