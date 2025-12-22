@@ -18,6 +18,7 @@ interface MembershipTireCardProps {
   features: TierFeature[];
   onSubscribe?: () => void;
   buttonText?: string;
+  buttonDisabled?: boolean;
 }
 
 const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
@@ -30,6 +31,7 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
   features,
   onSubscribe,
   buttonText = "Subscribe Now",
+  buttonDisabled = false,
 }) => {
   return (
     <div
@@ -87,7 +89,8 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
         {/* Button */}
         <button
           type="button"
-          onClick={onSubscribe}
+          onClick={buttonDisabled ? undefined : onSubscribe}
+          disabled={buttonDisabled}
           className={`mt-auto w-full rounded-full px-6 py-3.5 text-sm md:text-base font-semibold transition-all duration-200 ${
             highlight
               ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a] hover:shadow-lg"
