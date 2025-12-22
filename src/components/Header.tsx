@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
-
 import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const headerContainerVariants: Variants = {
@@ -44,7 +43,7 @@ const Header: React.FC = () => {
 
   // --- DYNAMIC NAVIGATION LOGIC ---
   const dynamicNavItems = useMemo(() => {
-    let dashboardPath = '/login'; 
+    let dashboardPath = '/login';
 
     if (isLoggedIn && user?.roles) {
       const roleNames = user.roles.map((r: any) => {
@@ -61,12 +60,12 @@ const Header: React.FC = () => {
     }
 
     return [
+      { name: 'DASHBOARD', path: dashboardPath },
       { name: 'MEMBERSHIP', path: '/membership' },
-      { name: 'STORE', path: '/store' }, 
+      { name: 'STORE', path: '/store' },
       { name: 'GAME', path: '/game' },
       { name: 'LEADERBOARD', path: '/leaderboard' },
       { name: 'EVENTS', path: '/events' },
-      { name: 'DASHBOARD', path: dashboardPath },
     ];
   }, [isLoggedIn, user]);
 
@@ -74,6 +73,13 @@ const Header: React.FC = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // Triggered by Mobile Menu Logout button
+  const handleMobileLogoutTrigger = () => {
+    setIsMenuOpen(false); // Ensure menu is closed
+    setShowLogoutModal(true); // Show the confirmation modal
+  };
+
+  // Actual Logout Logic (after confirmation)
   const handleLogoutConfirm = () => {
     logout();
     setShowLogoutModal(false);
@@ -82,7 +88,7 @@ const Header: React.FC = () => {
 
   const AuthButton = () => {
     const userName = user?.name?.split(' ')[0] || '';
-    
+
     if (isLoggedIn) {
       return (
         <button
@@ -111,7 +117,6 @@ const Header: React.FC = () => {
         animate="visible"
         variants={headerContainerVariants}
       >
- 
         <motion.div className="flex-shrink-0 relative mr-4" variants={majorItemVariants}>
           <Link to="/" className="block relative">
             <img
@@ -138,28 +143,28 @@ const Header: React.FC = () => {
             )}
           </Link>
         </motion.div>
-        
+
         {/* Navigation Links (Desktop Only) */}
         <motion.nav className="hidden md:block ml-auto mr-4" variants={navStaggerVariants}>
           <motion.ul className="flex space-x-6" variants={navStaggerVariants}>
             {/* Added HOME link explicitly for desktop menu */}
             <motion.li key="HOME" variants={majorItemVariants}>
-                <Link
-                  to="/"
+              <Link
+                to="/"
+                className={`
+                  text-base font-bold transition-colors relative group uppercase tracking-wider
+                  ${isActive('/') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                `}
+              >
+                HOME
+                <span
                   className={`
-                    text-base font-bold transition-colors relative group uppercase tracking-wider
-                    ${isActive('/') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                    absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                    ${isActive('/') ? 'w-full' : 'w-0 group-hover:w-full'}
                   `}
-                >
-                  HOME
-                  <span
-                    className={`
-                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                      ${isActive('/') ? 'w-full' : 'w-0 group-hover:w-full'}
-                    `}
-                  ></span>
-                </Link>
-              </motion.li>
+                ></span>
+              </Link>
+            </motion.li>
 
             {dynamicNavItems.map((item) => (
               <motion.li key={item.name} variants={majorItemVariants}>
@@ -184,13 +189,17 @@ const Header: React.FC = () => {
         </motion.nav>
 
         {/* Login/Logout Button & Mobile Menu Toggle */}
-        <motion.div variants={majorItemVariants} className="flex-shrink-0 flex items-center space-x-4">
+        {/* ADDED ml-auto HERE to force this container to the right on mobile */}
+        <motion.div
+          variants={majorItemVariants}
+          className="flex-shrink-0 flex items-center space-x-4 ml-auto"
+        >
           <div className="hidden md:block">
             <AuthButton />
           </div>
-          
+
           <button
-            className="md:hidden p-2 transition-colors hover:text-brand-gold ml-auto"
+            className="md:hidden p-2 transition-colors hover:text-brand-gold"
             onClick={toggleMenu}
             aria-label="Open menu"
           >
@@ -222,10 +231,13 @@ const Header: React.FC = () => {
         cancelText="Stay Logged In"
       />
 
-      <MobileMenu 
-        isOpen={isMenuOpen} 
-        onClose={() => setIsMenuOpen(false)} 
-        navItems={[{ name: 'HOME', path: '/' }, ...dynamicNavItems]} 
+      <MobileMenu
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        navItems={[{ name: 'HOME', path: '/' }, ...dynamicNavItems]}
+        isLoggedIn={isLoggedIn}
+        user={user}
+        onLogout={handleMobileLogoutTrigger}
       />
     </>
   );
