@@ -27,7 +27,8 @@ const GameSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 px-4"
+      // UPDATED: 'min-h-[1100px]' ensures mobile view is tall enough to separate content from the bottom image
+      className="relative w-full min-h-[1100px] lg:min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 px-4"
     >
       {/* 1. Background Image - z-0 */}
       <div className="absolute inset-0 w-full h-full z-0">
@@ -48,7 +49,8 @@ const GameSection: React.FC = () => {
       />
 
       {/* 3. Main Content Container - z-20 (ABOVE Actor Image) */}
-      <div className="relative z-20 container mx-auto flex flex-col items-center w-full h-full">
+      {/* UPDATED: Added 'pb-80' on mobile to push content up and leave space for the image at the bottom */}
+      <div className="relative z-20 container mx-auto flex flex-col items-center w-full h-full pb-40 lg:pb-0">
         {/* Top Area: Text and Phone Layout */}
         <div className="flex flex-col lg:flex-row items-center justify-center w-full gap-12 lg:gap-20 mb-16">
           {/* Left Side: Text Content */}
@@ -104,7 +106,7 @@ const GameSection: React.FC = () => {
             <span className="text-white font-bold text-lg">Earn Fan Points</span>
           </div>
 
-          {/* Card 3 - Now clearly visible above the image */}
+          {/* Card 3 */}
           <div
             className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-700 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
