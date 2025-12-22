@@ -196,9 +196,9 @@ const EventPage: React.FC = () => {
               </p>
 
               <div className="flex flex-wrap gap-3">
-                <button className="px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-xs md:text-sm font-semibold hover:bg-[#ffd65b] transition">
+                <Link to="/events#all-events" className="px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-xs md:text-sm font-semibold hover:bg-[#ffd65b] transition">
                   Next Upcoming Event
-                </button>
+                </Link>
                 <Link to="/events#all-events" className="px-5 py-2.5 rounded-full border border-yellow-500/40 text-xs md:text-sm font-semibold hover:bg-yellow-500/10 transition">
                   View All Events
                 </Link>
