@@ -206,11 +206,11 @@ const EventPage: React.FC = () => {
             </div>
 
             <div className="flex-1 max-w-md w-full self-stretch">
-              <div className="relative rounded-3xl overflow-hidden border border-yellow-500/20 aspect-[4/3] shadow-[0_18px_60px_rgba(15,23,42,0.9)]">
+              <div className="relative rounded-3xl overflow-hidden border border-yellow-500/20 aspect-[3/4] md:aspect-[4/5] lg:aspect-[5/6] shadow-[0_18px_60px_rgba(15,23,42,0.9)]">
                 <img
                   src="/images/event-hero1.png"
                   alt="Event Hero"
-                  className="w-full h-full object-fill"
+                  className="w-full h-full object-cover object-center"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/40"></div>
               </div>
@@ -233,72 +233,57 @@ const EventPage: React.FC = () => {
             </div>
 
             {featuredEvent ? (
-              <div className="rounded-3xl bg-slate-950/90 border border-slate-800/80 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)] flex flex-col lg:flex-row lg:h-[360px]">
-                {/* Left: image */}
-                <div className="relative w-full lg:w-3/5 h-[220px] sm:h-[260px] lg:h-full overflow-hidden">
-                  {featuredEvent.imageUrl ? (
-                    <img
-                      src={featuredEvent.imageUrl}
-                      alt={featuredEvent.title}
-                      className="w-full h-full object-fill"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900" />
-                  )}
-                  <div className="absolute top-4 left-4">
-                    <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
-                      Featured
-                    </span>
-                  </div>
-                </div>
+              <div className="rounded-3xl bg-slate-950/90 border border-slate-800/80 overflow-hidden shadow-[0_28px_70px_rgba(15,23,42,0.9)] flex flex-col lg:flex-row">
+  {/* Left: image - taller on mobile, balanced on desktop */}
+  <div className="relative w-full lg:w-1/2 h-[300px] sm:h-[350px] md:h-[400px] lg:h-auto overflow-hidden">
+    <img
+      src={featuredEvent.imageUrl}
+      alt={featuredEvent.title}
+      className="w-full h-full object-cover object-center"  // Keep this; add object-top if face is cut slightly
+    />
+    <div className="absolute top-4 left-4">
+      <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#ffbf2b] text-black text-[11px] font-semibold shadow-[0_10px_25px_rgba(15,23,42,0.8)]">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-600" />
+        Featured
+      </span>
+    </div>
+  </div>
 
-                {/* Right: details */}
-                <div className="w-full lg:w-2/5 px-6 md:px-7 py-4 md:py-5 flex overflow-y-auto ">
-                  <div className="w-full flex flex-col gap-3 max-w-md">
-                    {/* TITLE — always at the very top */}
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold leading-snug">
-                      {featuredEvent.title}
-                    </h2>
+  {/* Right: details - more space on desktop */}
+  <div className="w-full lg:w-1/2 px-6 md:px-8 py-6 md:py-8 flex">
+    <div className="w-full flex flex-col gap-4 max-w-md mx-auto lg:mx-0">
+      <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold leading-snug">
+        {featuredEvent.title}
+      </h2>
 
-                    {/* Highlight */}
-                    <p className="text-[11px] sm:text-xs text-yellow-400 font-semibold">
-                      Limited seats available{' '}
-                      <span className="text-yellow-300/90">— Registration required</span>
-                    </p>
+      <p className="text-xs sm:text-sm text-yellow-400 font-semibold">
+        Limited seats available <span className="text-yellow-300/90">— Registration required</span>
+      </p>
 
-                    {/* Date */}
-                    <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
-                      <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
-                        Date &amp; Time
-                      </span>
-                      <span>{featuredEvent.dateTime}</span>
-                    </div>
+      <div className="flex flex-col gap-1 text-xs text-neutral-300">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">Date &amp; Time</span>
+        <span>{featuredEvent.dateTime}</span>
+      </div>
 
-                    {/* Venue */}
-                    <div className="flex flex-col gap-1 text-[11px] sm:text-xs text-neutral-300">
-                      <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">
-                        Venue
-                      </span>
-                      <span>{featuredEvent.venue}</span>
-                    </div>
+      <div className="flex flex-col gap-1 text-xs text-neutral-300">
+        <span className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">Venue</span>
+        <span>{featuredEvent.venue}</span>
+      </div>
 
-                    {/* Description */}
-                    <p className="text-[11px] sm:text-xs text-neutral-400 leading-relaxed mt-1 line-clamp-4">
-                      {featuredEvent.description}
-                    </p>
+      <p className="text-xs text-neutral-400 leading-relaxed mt-2 line-clamp-5">
+        {featuredEvent.description}
+      </p>
 
-                    {/* Full-width button */}
-                    <Link
-                      to={`/events/${featuredEvent.id}`}
-                      state={{ event: featuredEvent }}
-                      className="w-full mt-2 px-5 py-2.5 rounded-full bg-[#ffbf2b] text-black text-[11px] sm:text-xs font-semibold hover:bg-[#ffd65b] transition text-center inline-flex items-center justify-center"
-                    >
-                      View Details
-                    </Link>
-                  </div>
-                </div>
-              </div>
+      <Link
+        to={`/events/${featuredEvent.id}`}
+        state={{ event: featuredEvent }}
+        className="w-full mt-auto px-6 py-3 rounded-full bg-[#ffbf2b] text-black text-sm font-semibold hover:bg-[#ffd65b] transition text-center inline-flex items-center justify-center"
+      >
+        View Details
+      </Link>
+    </div>
+  </div>
+</div>
             ) : loading ? (
               <p className="text-sm text-neutral-400">Loading featured event...</p>
             ) : null}
