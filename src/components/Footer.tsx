@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion'; // explicit type import
 
@@ -125,15 +125,6 @@ const Footer: React.FC = () => {
                 className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
               >
                 <FaInstagram />
-              </a>
-              {/* Twitter */}
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
-              >
-                <FaTwitter />
               </a>
             </div>
           </motion.div>
