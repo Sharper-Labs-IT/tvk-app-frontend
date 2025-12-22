@@ -183,21 +183,23 @@ const Leaderboard: React.FC = () => {
   }, [fetchLeaderboard]);
 
   // Filter leaderboard data based on selected filter and search query
-  const filteredData = leaderboardData.filter(user => {
-    // Apply trophy filter
-    if (filter === 'platinum' && user.trophyBreakdown.PLATINUM === 0) return false;
-    if (filter === 'gold' && user.trophyBreakdown.GOLD === 0) return false;
-    
-    // Apply search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      const username = (user.username || '').toLowerCase();
-      const nickname = (user.nickname || '').toLowerCase();
-      return username.includes(query) || nickname.includes(query);
-    }
-    
-    return true;
-  });
+  const filteredData = leaderboardData
+    .filter(user => {
+      // Apply trophy filter
+      if (filter === 'platinum' && user.trophyBreakdown.PLATINUM === 0) return false;
+      if (filter === 'gold' && user.trophyBreakdown.GOLD === 0) return false;
+      
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const query = searchQuery.toLowerCase();
+        const username = (user.username || '').toLowerCase();
+        const nickname = (user.nickname || '').toLowerCase();
+        return username.includes(query) || nickname.includes(query);
+      }
+      
+      return true;
+    })
+    .sort((a, b) => b.totalTrophies - a.totalTrophies); // Sort by total trophies descending
 
   const topThree = filteredData.slice(0, 3);
   const restOfPlayers = filteredData.slice(3);
