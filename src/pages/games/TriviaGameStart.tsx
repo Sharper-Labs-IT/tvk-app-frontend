@@ -30,12 +30,6 @@ const TriviaGameStart: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
 
-  // Debug logs for user, coins, trophies
-  console.log('[TriviaGameStart] User:', user);
-  if (user) {
-    console.log('[TriviaGameStart] Coins:', user.coins);
-    console.log('[TriviaGameStart] Trophies:', user.trophies);
-  }
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
