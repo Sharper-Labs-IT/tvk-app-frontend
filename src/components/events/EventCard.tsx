@@ -30,7 +30,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       "
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[2/3] overflow-hidden">
         {event.imageUrl ? (
           <img
             src={event.imageUrl}

@@ -16,12 +16,6 @@ const WhackAMoleStart: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
 
-  // Debug logs for user, coins, trophies
-  console.log('[WhackAMoleStart] User:', user);
-  if (user) {
-    console.log('[WhackAMoleStart] Coins:', user.coins);
-    console.log('[WhackAMoleStart] Trophies:', user.trophies);
-  }
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 

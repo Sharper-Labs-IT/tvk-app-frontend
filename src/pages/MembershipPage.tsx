@@ -78,11 +78,15 @@ const MembershipPage: React.FC = () => {
       try {
         const response = await axiosClient.get<{ plans: Plan[] }>("/membership/plans");
 
-        const activePlans = (response.data.plans || []).filter(
-          (p) => p.status === 1
-        );
+        let filteredPlans = (response.data.plans || [])
+          .filter((p) => p.status === 1)
+          .filter((p) => [1,2].includes(p.id));
+        
+          filteredPlans = filteredPlans.sort((a, b) => a.id - b.id);
 
-        setPlans(activePlans);
+        
+
+        setPlans(filteredPlans);
       } catch (err) {
         setError("Unable to load membership plans.");
       } finally {
@@ -267,7 +271,7 @@ const handleCancelMembership = async () => {
           {!loading && !error && plans.map((plan) => {
             const isFree = plan.price === "0.00";
 
-            const priceLabel = isFree ? "Free" : `$${plan.price}`;
+            const priceLabel = isFree ? "Free" : `€${plan.price}`;
 
             // Price suffix logic:
             // - Free Tier: based on duration_days ("Lifetime" for 36500)
@@ -290,12 +294,21 @@ const handleCancelMembership = async () => {
 
             const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
 
-            // Determine button text
             const isUserSuperFan = userMembershipTier === "Super Fan" && userMembershipStatus === "active";
-            const isThisSuperFanCard = plan.name === "Super Fan";
-            const buttonText = isUserSuperFan && isThisSuperFanCard
-              ? "Manage your membership"
-              : "Subscribe Now";
+            const isThisFreeCard = isFree;
+
+            //Determine button state for free tire when user is super fan
+            const isFreeButtonDisabled = isUserSuperFan && isThisFreeCard; 
+
+            const buttonText = (() => {
+    if (isUserSuperFan && plan.name === "Super Fan") {
+      return "Manage your membership";
+    }
+    if (isFreeButtonDisabled) {
+      return "Included with Super Fan"; // or "Already Active", "Free Access", etc.
+    }
+    return "Subscribe Now";
+  })();
 
             return (
               <MembershipTireCard
@@ -309,6 +322,7 @@ const handleCancelMembership = async () => {
                 badgeLabel={isHighlighted ? "Most Popular" : undefined}
                 onSubscribe={() => handleSubscribeClick(plan)}
                 buttonText={buttonText}
+                buttonDisabled={isFreeButtonDisabled}
               />
             );
           })}

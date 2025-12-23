@@ -13,21 +13,29 @@ const Hero = () => {
   const [hasClicked, setHasClicked] = useState<boolean>(false);
 
   const [loading, setLoading] = useState<boolean>(true);
+  const [videoLoaded, setVideoLoaded] = useState<boolean>(false);
 
   const totalVideos = 4;
   const nextVdRef = useRef<HTMLVideoElement | null>(null);
   const currentVdRef = useRef<HTMLVideoElement | null>(null);
+  const mainVideoRef = useRef<HTMLVideoElement | null>(null);
 
-  // We only wait for the main video to load to dismiss the loader
+  // Progressive video loading: show content as soon as video can play
   const handleMainVideoLoad = () => {
+    setVideoLoaded(true);
     setLoading(false);
   };
 
-  // Fallback: Hide loading after 3 seconds regardless
+  // Optimized: Shorter fallback timeout and start video playback immediately
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 3000);
+    }, 2000); // Reduced from 3s to 2s
+
+    // Preload first video on mount
+    if (mainVideoRef.current) {
+      mainVideoRef.current.load();
+    }
 
     return () => clearTimeout(timer);
   }, []);
@@ -118,11 +126,11 @@ const Hero = () => {
               >
                 <video
                   ref={currentVdRef}
-                  src={getVideoSrc((currentIndex % totalVideos) + 1)}
+                  src={videoLoaded ? getVideoSrc((currentIndex % totalVideos) + 1) : undefined}
                   loop
                   muted
                   playsInline
-                  preload="auto"
+                  preload="none"
                   id="current-video"
                   className="size-64 origin-center scale-150 object-cover object-center"
                 />
@@ -132,16 +140,29 @@ const Hero = () => {
 
           <video
             ref={nextVdRef}
-            src={getVideoSrc(currentIndex)}
+            src={hasClicked ? getVideoSrc(currentIndex) : undefined}
             loop
             muted
             playsInline
-            preload="auto"
+            preload="none"
             id="next-video"
             className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
           />
 
+          {/* Fallback image with same animations and CSS */}
+          <div
+            className={`absolute left-0 top-0 size-full bg-cover bg-center object-cover transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-0' : 'opacity-100'
+            }`}
+            style={{
+              backgroundImage: "url('/img/game-1.webp')",
+              pointerEvents: videoLoaded ? 'none' : 'auto',
+            }}
+            aria-hidden={videoLoaded}
+          />
+
           <video
+            ref={mainVideoRef}
             src={getVideoSrc(
               currentIndex === totalVideos - 1 ? 1 : currentIndex
             )}
@@ -149,9 +170,16 @@ const Hero = () => {
             loop
             muted
             playsInline
-            preload="auto"
-            className="absolute left-0 top-0 size-full object-cover object-center"
+            preload="metadata"
+            className={`absolute left-0 top-0 size-full object-cover object-center transition-opacity duration-500 ${
+              videoLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
             onLoadedData={handleMainVideoLoad}
+            onCanPlayThrough={() => {
+              if (mainVideoRef.current && !videoLoaded) {
+                mainVideoRef.current.play().catch(() => {});
+              }
+            }}
           />
         </div>
 
