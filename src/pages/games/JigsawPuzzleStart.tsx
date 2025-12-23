@@ -25,12 +25,6 @@ const JigsawPuzzleStart: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
 
-  // Debug logs for user, coins, trophies
-  console.log('[JigsawPuzzleStart] User:', user);
-  if (user) {
-    console.log('[JigsawPuzzleStart] Coins:', user.coins);
-    console.log('[JigsawPuzzleStart] Trophies:', user.trophies);
-  }
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
