@@ -9,6 +9,7 @@ import {
   Lock,
   Download,
   Video,
+  Edit,
   Image as ImageIcon,
   User,
 } from 'lucide-react';
@@ -178,8 +179,11 @@ const PostDetailsPage: React.FC = () => {
           <div className="bg-tvk-dark-card p-6 rounded-xl border border-white/10">
             <h3 className="text-white font-medium mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
-              <button className="w-full bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg border border-white/10 transition-colors">
-                Edit Post (Coming Soon)
+              <button
+                onClick={() => navigate(`/admin/posts/${post.id}/edit`)}
+                className="w-full bg-gold/10 hover:bg-gold/20 text-gold py-2 rounded-lg border border-gold/20 transition-colors flex items-center justify-center gap-2"
+              >
+                <Edit size={16} /> Edit Post
               </button>
               <button className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg border border-red-500/20 transition-colors">
                 Delete Post

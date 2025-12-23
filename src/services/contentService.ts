@@ -1,11 +1,19 @@
 import api from '../utils/api';
-// Using 'import type' fixes the verbatimModuleSyntax TypeScript error
-import type { IContent, IPaginatedResponse, ICreateContentPayload } from '../types/content';
+import type {
+  IContent,
+  IPaginatedResponse,
+  ICreateContentPayload,
+  IUpdateContentPayload,
+  ICategory, // Ensure ICategory is exported in your types/content.ts
+} from '../types/content';
 
 export const contentService = {
+  // ------------------------------------------------------------------
+  // PUBLIC / SHARED ROUTES
+  // ------------------------------------------------------------------
+
   // GET /api/v1/contents
   getAll: async (page = 1) => {
-    // Returns a paginated response
     const response = await api.get<IPaginatedResponse<IContent>>(`/v1/contents?page=${page}`);
     return response.data.contents;
   },
@@ -16,35 +24,37 @@ export const contentService = {
     return response.data.content;
   },
 
-  // POST /api/v1/contents/upload
+  // GET /api/v1/contents/categories
+  // (Needed for the CreatePostWidget dropdown)
+  getCategories: async () => {
+    const response = await api.get<{ categories: ICategory[] }>('/v1/contents/categories');
+    return response.data.categories;
+  },
+
+  // ------------------------------------------------------------------
+  // ADMIN ROUTES (For Admin Panel)
+  // ------------------------------------------------------------------
+
+  // POST /api/v1/admin/contents/upload
   create: async (payload: ICreateContentPayload) => {
     const formData = new FormData();
 
-    // Append standard text fields
     formData.append('title', payload.title);
     formData.append('category_id', payload.category_id);
     formData.append('type', payload.type);
-
-    // Laravel typically expects '1' or '0' for boolean validation
     formData.append('is_premium', payload.is_premium ? '1' : '0');
 
     if (payload.description) {
       formData.append('description', payload.description);
     }
 
-    // Only append the file if the user selected one
     if (payload.file) {
       formData.append('file', payload.file);
     }
 
     try {
-      // CRITICAL FIX:
-      // 1. We send 'formData' as the body.
-      // 2. We explicitly set 'Content-Type' to undefined.
-      //    This forces Axios to remove the default 'application/json' from api.ts
-      //    and allows the browser to automatically generate the correct
-      //    'multipart/form-data; boundary=----WebKitFormBoundary...' header.
-      const response = await api.post('/v1/contents/upload', formData, {
+      // ✅ Uses ADMIN route to avoid "Method Not Allowed" or "Premium" errors
+      const response = await api.post('/v1/admin/contents/upload', formData, {
         headers: {
           'Content-Type': undefined,
         },
@@ -56,9 +66,78 @@ export const contentService = {
     }
   },
 
-  // DELETE /api/v1/contents/{id}
+  // PUT /api/v1/admin/contents/{id}
+  update: async (payload: IUpdateContentPayload) => {
+    const formData = new FormData();
+    // Laravel requires _method: PUT when sending files in an update
+    formData.append('_method', 'PUT');
+
+    if (payload.title) formData.append('title', payload.title);
+    if (payload.category_id) formData.append('category_id', payload.category_id);
+    if (payload.type) formData.append('type', payload.type);
+
+    if (payload.is_premium !== undefined) {
+      formData.append('is_premium', payload.is_premium ? '1' : '0');
+    }
+
+    if (payload.description) {
+      formData.append('description', payload.description);
+    }
+
+    if (payload.file) {
+      formData.append('file', payload.file);
+    }
+
+    try {
+      // ✅ Uses ADMIN route
+      const response = await api.post(`/v1/admin/contents/${payload.id}`, formData, {
+        headers: {
+          'Content-Type': undefined,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // DELETE /api/v1/admin/contents/{id}
   delete: async (id: number) => {
-    const response = await api.delete(`/v1/contents/${id}`);
+    // ✅ Uses ADMIN route
+    const response = await api.delete(`/v1/admin/contents/${id}`);
+    return response.data;
+  },
+
+  // ------------------------------------------------------------------
+  // MEMBER ROUTES (For Dashboard Widget)
+  // ------------------------------------------------------------------
+
+  // POST /api/v1/member/contents/upload
+  // (Used by CreatePostWidget.tsx)
+  createMemberPost: async (payload: ICreateContentPayload) => {
+    const formData = new FormData();
+
+    formData.append('title', payload.title);
+    formData.append('category_id', payload.category_id);
+    formData.append('type', payload.type);
+    // Members are usually forced to premium/internal visibility
+    formData.append('is_premium', '1');
+
+    if (payload.description) {
+      formData.append('description', payload.description);
+    }
+
+    if (payload.file) {
+      formData.append('file', payload.file);
+    }
+
+    // ✅ Uses MEMBER route
+    const response = await api.post('/v1/member/contents/upload', formData, {
+      headers: {
+        'Content-Type': undefined,
+      },
+    });
+
     return response.data;
   },
 };
