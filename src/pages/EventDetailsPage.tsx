@@ -213,8 +213,8 @@ const EventDetailsPage: React.FC = () => {
             </div>
 
             {/* Right: main info */}
-            <div className="w-full lg:w-1/2 px-4 sm:px-6 md:px-8 py-6 md:py-7 flex">
-              <div className="w-full flex flex-col gap-3 max-w-full md:max-w-md">
+            <div className="w-full lg:w-1/2 px-4 sm:px-6 md:px-8 py-6 md:py-7 flex flex-col justify-between">
+              <div className="space-y-3">
                 <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold leading-snug">
                   {event.title}
                 </h1>
@@ -236,24 +236,27 @@ const EventDetailsPage: React.FC = () => {
                   </span>
                   <span>{event.venue}</span>
                 </div>
+              </div>
 
-            <button
-  className={`mt-3 w-full sm:w-auto px-6 py-2.5 rounded-full ${
-    participationStatus === "pending"
-      ? "bg-green-500 hover:bg-green-600"
-      : "bg-[#ffbf2b] hover:bg-[#ffd65b]"
-  } text-black text-[11px] sm:text-xs font-semibold transition`}
-  onClick={handleParticipate}
-  disabled={participating || participationStatus === "pending"}
->
-  {participating
-    ? "Submitting..."
-    : participationStatus === "pending"
-    ? "Registered"
-    : "Participate"}
-</button>
+              {/* Button section - pushed to bottom and centered */}
+              <div className="mt-6 flex flex-col items-center">
+                <button
+                  className={`w-full max-w-xs px-6 py-2.5 rounded-full ${
+                    participationStatus === "pending"
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-[#ffbf2b] hover:bg-[#ffd65b]"
+                  } text-black text-[11px] sm:text-xs font-semibold transition`}
+                  onClick={handleParticipate}
+                  disabled={participating || participationStatus === "pending"}
+                >
+                  {participating
+                    ? "Submitting..."
+                    : participationStatus === "pending"
+                    ? "Registered"
+                    : "Participate"}
+                </button>
                 {participationError && (
-                  <p className="text-red-400 text-[11px] mt-1">{participationError}</p>
+                  <p className="text-red-400 text-[11px] mt-2 text-center">{participationError}</p>
                 )}
               </div>
             </div>
