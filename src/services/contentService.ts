@@ -4,7 +4,7 @@ import type {
   IPaginatedResponse,
   ICreateContentPayload,
   IUpdateContentPayload,
-  ICategory, // Ensure ICategory is exported in your types/content.ts
+  ICategory,
 } from '../types/content';
 
 export const contentService = {
@@ -25,17 +25,17 @@ export const contentService = {
   },
 
   // GET /api/v1/contents/categories
-  // (Needed for the CreatePostWidget dropdown)
   getCategories: async () => {
     const response = await api.get<{ categories: ICategory[] }>('/v1/contents/categories');
     return response.data.categories;
   },
 
   // ------------------------------------------------------------------
-  // ADMIN ROUTES (For Admin Panel)
+  // ADMIN ROUTES (Corrected to match api.php)
   // ------------------------------------------------------------------
 
-  // POST /api/v1/admin/contents/upload
+  // POST /api/v1/contents/upload
+  // Fixed: Removed '/admin' prefix because it doesn't exist in api.php
   create: async (payload: ICreateContentPayload) => {
     const formData = new FormData();
 
@@ -53,10 +53,9 @@ export const contentService = {
     }
 
     try {
-      // ✅ Uses ADMIN route to avoid "Method Not Allowed" or "Premium" errors
-      const response = await api.post('/v1/admin/contents/upload', formData, {
+      const response = await api.post('/v1/contents/upload', formData, {
         headers: {
-          'Content-Type': undefined,
+          'Content-Type': 'multipart/form-data', // Explicitly set for file uploads
         },
       });
 
@@ -66,10 +65,11 @@ export const contentService = {
     }
   },
 
-  // PUT /api/v1/admin/contents/{id}
+  // PUT /api/v1/contents/{id}
+  // Fixed: Removed '/admin' prefix
   update: async (payload: IUpdateContentPayload) => {
     const formData = new FormData();
-    // Laravel requires _method: PUT when sending files in an update
+    // Laravel requires _method: PUT when sending files in an update via POST
     formData.append('_method', 'PUT');
 
     if (payload.title) formData.append('title', payload.title);
@@ -89,10 +89,9 @@ export const contentService = {
     }
 
     try {
-      // ✅ Uses ADMIN route
-      const response = await api.post(`/v1/admin/contents/${payload.id}`, formData, {
+      const response = await api.post(`/v1/contents/${payload.id}`, formData, {
         headers: {
-          'Content-Type': undefined,
+          'Content-Type': 'multipart/form-data',
         },
       });
       return response.data;
@@ -101,19 +100,20 @@ export const contentService = {
     }
   },
 
-  // DELETE /api/v1/admin/contents/{id}
+  // DELETE /api/v1/contents/{id}
+  // Fixed: Removed '/admin' prefix
   delete: async (id: number) => {
-    // ✅ Uses ADMIN route
-    const response = await api.delete(`/v1/admin/contents/${id}`);
+    const response = await api.delete(`/v1/contents/${id}`);
     return response.data;
   },
 
   // ------------------------------------------------------------------
-  // MEMBER ROUTES (For Dashboard Widget)
+  // MEMBER ROUTES
   // ------------------------------------------------------------------
 
-  // POST /api/v1/member/contents/upload
-  // (Used by CreatePostWidget.tsx)
+  // POST /api/v1/contents/upload
+  // Fixed: Removed '/member' prefix. Both Admins and Members use the same endpoint.
+  // The backend determines who uploaded it via the Auth token.
   createMemberPost: async (payload: ICreateContentPayload) => {
     const formData = new FormData();
 
@@ -131,10 +131,9 @@ export const contentService = {
       formData.append('file', payload.file);
     }
 
-    // ✅ Uses MEMBER route
-    const response = await api.post('/v1/member/contents/upload', formData, {
+    const response = await api.post('/v1/contents/upload', formData, {
       headers: {
-        'Content-Type': undefined,
+        'Content-Type': 'multipart/form-data',
       },
     });
 

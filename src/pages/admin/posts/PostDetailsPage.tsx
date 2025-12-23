@@ -12,6 +12,7 @@ import {
   Edit,
   Image as ImageIcon,
   User,
+  Trash2,
 } from 'lucide-react';
 
 const PostDetailsPage: React.FC = () => {
@@ -20,6 +21,7 @@ const PostDetailsPage: React.FC = () => {
 
   const [post, setPost] = useState<IContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false); // New state for delete action
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -37,6 +39,32 @@ const PostDetailsPage: React.FC = () => {
       setError('Failed to load post details.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // ✅ New Function: Handle Delete Logic
+  const handleDelete = async () => {
+    if (!post) return;
+
+    // 1. Confirm intention
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this post? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+      // 2. Call API
+      await contentService.delete(post.id);
+
+      // 3. Redirect on success
+      navigate('/admin/posts');
+    } catch (err: any) {
+      // 4. Handle Error
+      const msg = err.response?.data?.message || 'Failed to delete post';
+      alert(msg);
+      setDeleting(false);
     }
   };
 
@@ -181,12 +209,25 @@ const PostDetailsPage: React.FC = () => {
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => navigate(`/admin/posts/${post.id}/edit`)}
-                className="w-full bg-gold/10 hover:bg-gold/20 text-gold py-2 rounded-lg border border-gold/20 transition-colors flex items-center justify-center gap-2"
+                disabled={deleting}
+                className="w-full bg-gold/10 hover:bg-gold/20 text-gold py-2 rounded-lg border border-gold/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <Edit size={16} /> Edit Post
               </button>
-              <button className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg border border-red-500/20 transition-colors">
-                Delete Post
+
+              {/* ✅ Fixed Delete Button */}
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg border border-red-500/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deleting ? (
+                  'Deleting...'
+                ) : (
+                  <>
+                    <Trash2 size={16} /> Delete Post
+                  </>
+                )}
               </button>
             </div>
           </div>

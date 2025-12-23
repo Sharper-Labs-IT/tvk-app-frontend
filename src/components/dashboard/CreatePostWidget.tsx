@@ -1,10 +1,17 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Video, Paperclip, Send, X, Loader as LoaderIcon } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Image, Video, Paperclip, Send, X, Loader as LoaderIcon, Lock, Crown } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { contentService } from '../../services/contentService';
 import type { ICategory } from '../../types/content';
 
-const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCreated }) => {
+interface CreatePostWidgetProps {
+  onPostCreated?: () => void;
+  // ✅ New Prop: Controls access just like in PostCard
+  isPremiumUser: boolean;
+}
+
+const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPremiumUser }) => {
   const { user } = useAuth();
 
   // State
@@ -22,8 +29,10 @@ const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCrea
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load categories on mount
+  // Load categories on mount (Only if user is premium to save resources)
   useEffect(() => {
+    if (!isPremiumUser) return; // Don't fetch if they can't post
+
     const loadCats = async () => {
       try {
         const cats = await contentService.getCategories();
@@ -34,7 +43,7 @@ const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCrea
       }
     };
     loadCats();
-  }, []);
+  }, [isPremiumUser]);
 
   // Handle File Selection
   const handleFileSelect = (
@@ -83,7 +92,7 @@ const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCrea
         description: description,
         category_id: categoryId,
         type: postType,
-        is_premium: true, // Assuming member feed posts are premium/internal
+        is_premium: true, // Member feed posts are premium
         file: file,
       });
 
@@ -99,26 +108,50 @@ const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCrea
     }
   };
 
-  // Helper to trigger file input
   const triggerFileInput = (type: 'image' | 'video' | 'file') => {
     if (fileInputRef.current) {
-      // Reset accept attribute based on type
       if (type === 'image') fileInputRef.current.accept = 'image/*';
       else if (type === 'video') fileInputRef.current.accept = 'video/*';
       else fileInputRef.current.accept = '*/*';
 
       fileInputRef.current.click();
-
-      // We store the intended type in a temp way, actual state sets on change
-      // But we need to know what button was clicked inside the change handler
-      // Logic handled by wrapping the input or passing type to handler.
-      // Simplified: We'll set a ref or just strictly set it on change.
-      // Better approach: We need separate handlers or pass type to change.
-      // Correct Fix: We attached `type` to the closure of `handleFileSelect`.
       fileInputRef.current.onchange = (e: any) => handleFileSelect(e, type);
     }
   };
 
+  // 🔒 LOCKED STATE: If user is not premium, show Upgrade Banner
+  if (!isPremiumUser) {
+    return (
+      <div className="bg-[#1E1E1E] rounded-xl border border-gold/30 p-8 mb-6 shadow-lg text-center relative overflow-hidden group">
+        {/* Decorative Background Glow */}
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-gold to-transparent opacity-50"></div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center gap-3">
+          <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-gold mb-1 border border-white/10 group-hover:scale-110 transition-transform duration-300">
+            <Lock size={24} />
+          </div>
+
+          <h3 className="text-white font-bold text-lg flex items-center gap-2">
+            Share Your Thoughts <Crown size={16} className="text-gold" />
+          </h3>
+
+          <p className="text-gray-400 text-sm max-w-md mx-auto mb-4">
+            Posting content is exclusive to our Premium Members. Upgrade your plan to join the
+            conversation and share with the community!
+          </p>
+
+          <Link
+            to="/membership"
+            className="bg-gold hover:bg-goldDark text-black font-bold py-2.5 px-8 rounded-lg transition-all hover:scale-105 shadow-lg shadow-gold/10 flex items-center gap-2"
+          >
+            <Crown size={18} /> Upgrade to Post
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ ACTIVE STATE: If user is premium, show Form
   return (
     <div className="bg-[#1E1E1E] rounded-xl border border-gold/20 p-4 mb-6 shadow-lg">
       <div className="flex gap-4">
@@ -134,7 +167,7 @@ const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCrea
 
         {/* Input Area */}
         <div className="flex-1 space-y-3">
-          {/* Title Input (Backend requires it) */}
+          {/* Title Input */}
           <input
             type="text"
             value={title}
@@ -214,7 +247,7 @@ const CreatePostWidget: React.FC<{ onPostCreated?: () => void }> = ({ onPostCrea
             <span className="hidden sm:inline">File</span>
           </button>
 
-          {/* Category Selector (Small) */}
+          {/* Category Selector */}
           <div className="h-6 w-[1px] bg-white/10 mx-1"></div>
           <select
             value={categoryId}

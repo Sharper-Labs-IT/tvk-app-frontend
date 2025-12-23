@@ -118,7 +118,7 @@ const MembershipPlan: React.FC = () => {
           >
             <h3 className="text-2xl font-bold text-center mb-4 lg:mb-6">
               <span className="text-brand-gold">Super Fan</span>
-              <span className="text-brand-goldDark"> – €9.99/month</span>
+              <span className="text-brand-goldDark"> – $9.99/month</span>
             </h3>
 
             {/* Card */}

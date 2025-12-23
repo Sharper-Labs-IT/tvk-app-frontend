@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../utils/api'; // Ensure we can make API calls
 import type { IContent, ReactionType } from '../../types/content';
 import { interactionService } from '../../services/interactionService';
-import CommentSection from './CommentSection'; // Import the new component
+import CommentSection from './CommentSection';
 
 import {
   MessageCircle,
@@ -17,9 +18,10 @@ import {
   Heart,
   Flame,
   Star,
+  User as UserIcon,
 } from 'lucide-react';
 
-// Custom Clap Icon (Lucide doesn't have a perfect one, using simple SVG or alternative)
+// Custom Clap Icon
 const ClapIcon = ({ size = 20, className = '' }) => (
   <svg
     width={size}
@@ -41,52 +43,119 @@ interface PostCardProps {
   isPremiumUser: boolean;
 }
 
+interface AuthorProfile {
+  id: number;
+  name: string;
+  avatar_url?: string;
+  role?: string;
+}
+
 const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
-  // State
+  // --- STATE ---
+  const [author, setAuthor] = useState<AuthorProfile | null>(null);
   const [userReaction, setUserReaction] = useState<ReactionType | null>(post.user_reaction || null);
   const [reactionCount, setReactionCount] = useState(post.reactions_count || 0);
   const [commentCount, setCommentCount] = useState(post.comments_count || 0);
   const [showComments, setShowComments] = useState(false);
 
+  // Reaction Dock State
+  const [showReactionDock, setShowReactionDock] = useState(false);
+  const longPressTimer = useRef<any>(null);
+  const isLongPress = useRef(false);
+
   const isLocked = Boolean(post.is_premium) && !isPremiumUser;
 
-  // --- REACTION LOGIC ---
-  const handleReaction = async (type: ReactionType) => {
+  // --- 1. FETCH AUTHOR DATA ---
+  useEffect(() => {
+    const fetchAuthor = async () => {
+      // If the backend already provided user object, use it (future proofing)
+      if ((post as any).user) {
+        setAuthor((post as any).user);
+        return;
+      }
+
+      // Otherwise, fetch user details by ID
+      if (post.created_by) {
+        try {
+          // Using the route: Route::get('auth/user/{id}', ...)
+          const response = await api.get(`/v1/auth/user/${post.created_by}`);
+          if (response.data) {
+            // Adapt response based on your API structure (assuming response.data or response.data.user)
+            const userData = response.data.user || response.data;
+            setAuthor(userData);
+          }
+        } catch (error) {
+          console.error('Failed to fetch author info', error);
+          setAuthor({ id: post.created_by, name: 'Unknown Member' });
+        }
+      }
+    };
+
+    fetchAuthor();
+  }, [post.created_by, post]);
+
+  // --- 2. REACTION LOGIC (Click vs Long Press) ---
+
+  const handleReactionClick = () => {
     if (isLocked) return;
 
-    // 1. Optimistic Update
+    // If it was a long press, do nothing (dock is already open)
+    if (isLongPress.current) {
+      isLongPress.current = false;
+      return;
+    }
+
+    // Standard Click: Toggle Like
+    executeReaction(userReaction ? userReaction : 'like');
+  };
+
+  const startPress = () => {
+    if (isLocked) return;
+    isLongPress.current = false;
+    longPressTimer.current = setTimeout(() => {
+      isLongPress.current = true;
+      setShowReactionDock(true); // Open Dock
+    }, 500); // 500ms hold to open dock
+  };
+
+  const endPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+  };
+
+  const executeReaction = async (type: ReactionType) => {
+    setShowReactionDock(false); // Close dock if open
+
+    // Optimistic Update
     const oldReaction = userReaction;
     const oldCount = reactionCount;
 
-    // If clicking same reaction, remove it (toggle off)
-    // If clicking different, switch it
-    // If no reaction, add it
     let newReaction: ReactionType | null = type;
     let newCount = oldCount;
 
+    // Logic: If clicking the SAME reaction, remove it. If different, switch it.
     if (oldReaction === type) {
       newReaction = null; // Toggle off
       newCount = Math.max(0, oldCount - 1);
     } else if (oldReaction === null) {
       newCount = oldCount + 1;
     }
-    // If switching from Like to Heart, count stays same, just type changes
+    // (If switching from 'like' to 'heart', count remains same)
 
     setUserReaction(newReaction);
     setReactionCount(newCount);
 
-    // 2. API Call
     try {
       await interactionService.toggleReaction(post.id, type);
     } catch (error) {
-      // Revert if failed
+      // Revert on failure
       setUserReaction(oldReaction);
       setReactionCount(oldCount);
-      console.error('Reaction failed');
     }
   };
 
-  // Helper to get Icon based on reaction
+  // --- HELPER: Icons ---
   const getReactionIcon = (type: ReactionType | null) => {
     switch (type) {
       case 'heart':
@@ -120,19 +189,32 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
 
   return (
     <div
-      className={`bg-[#1E1E1E] rounded-xl border mb-6 overflow-hidden shadow-md transition-colors ${
+      className={`bg-[#1E1E1E] rounded-xl border mb-6 overflow-visible shadow-md transition-colors relative ${
         isLocked ? 'border-gold/30' : 'border-white/5 hover:border-gold/20'
       }`}
     >
-      {/* 1. Header (Unchanged) */}
+      {/* 1. Header with Real User Data */}
       <div className="p-4 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-goldDark to-gold flex items-center justify-center text-black font-bold border-2 border-white/10 shadow-lg">
-            TVK
+          {/* Avatar */}
+          <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10">
+            {author?.avatar_url ? (
+              <img
+                src={author.avatar_url}
+                alt={author.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400">
+                <UserIcon size={20} />
+              </div>
+            )}
           </div>
+
           <div>
             <h4 className="text-white font-bold text-sm flex items-center gap-1">
-              TVK Admin <ShieldCheck size={14} className="text-gold" />
+              {author ? author.name : 'Loading...'}
+              {author?.role === 'admin' && <ShieldCheck size={14} className="text-gold" />}
             </h4>
             <div className="flex items-center gap-2 text-xs text-gray-400">
               <span>{formatDate(post.created_at)}</span>
@@ -155,7 +237,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
         </button>
       </div>
 
-      {/* 2. Body (Unchanged logic, just keeping it clean) */}
+      {/* 2. Body */}
       <div className="px-4 pb-3 relative">
         {post.title && (
           <h3 className="text-white font-bold mb-2 text-lg leading-tight">{post.title}</h3>
@@ -218,7 +300,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
         )}
       </div>
 
-      {/* 4. Counts Row (Like Facebook) */}
+      {/* 4. Counts Row */}
       {!isLocked && (
         <div className="px-4 py-2 flex justify-between text-xs text-gray-400 border-b border-white/5">
           <div className="flex items-center gap-1">
@@ -237,19 +319,21 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
 
       {/* 5. Action Buttons */}
       <div className="px-2 py-1 flex items-center justify-between text-gray-400 relative">
-        {/* REACTION GROUP (Hover for Emojis) */}
-        <div className="relative group flex-1">
-          {/* The Floating Emoji Dock (Visible on Group Hover) */}
-          {!isLocked && (
-            <div className="absolute bottom-full left-0 mb-2 hidden group-hover:flex bg-[#2A2A2A] border border-white/10 rounded-full p-1 gap-1 shadow-xl animate-in fade-in zoom-in duration-200 z-20">
+        {/* REACTION BUTTON CONTAINER */}
+        <div className="flex-1 relative">
+          {/* The Floating Emoji Dock (Appears on Long Press or Manual State) */}
+          {showReactionDock && !isLocked && (
+            <div className="absolute bottom-full left-0 mb-2 flex bg-[#2A2A2A] border border-white/10 rounded-full p-1 gap-1 shadow-xl animate-in fade-in zoom-in duration-200 z-50">
               {(['like', 'heart', 'fire', 'clap', 'star'] as ReactionType[]).map((type) => (
                 <button
                   key={type}
-                  onClick={() => handleReaction(type)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    executeReaction(type);
+                  }}
                   className="p-2 hover:bg-white/10 rounded-full transition transform hover:scale-125 focus:outline-none"
                   title={type}
                 >
-                  {/* Render static icons for the dock */}
                   {type === 'like' && (
                     <ThumbsUp className="text-blue-500 fill-blue-500" size={24} />
                   )}
@@ -268,18 +352,21 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
             </div>
           )}
 
-          {/* The Main Like Button */}
+          {/* Main Like Button (Touch & Click Handlers) */}
           <button
-            onClick={() => handleReaction(userReaction || 'like')}
+            onMouseDown={startPress}
+            onMouseUp={endPress}
+            onMouseLeave={endPress}
+            onTouchStart={startPress}
+            onTouchEnd={endPress}
+            onClick={handleReactionClick}
             disabled={isLocked}
             className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-white/5 transition active:scale-95 ${
-              userReaction ? 'text-blue-400 font-medium' : ''
+              userReaction ? getColorForReaction(userReaction) + ' font-medium' : ''
             } ${isLocked ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {getReactionIcon(userReaction)}
-            <span className={userReaction ? getColorForReaction(userReaction) : ''}>
-              {getReactionLabel(userReaction)}
-            </span>
+            <span>{getReactionLabel(userReaction)}</span>
           </button>
         </div>
 
@@ -305,7 +392,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser }) => {
         </button>
       </div>
 
-      {/* 6. Comment Section (Toggleable) */}
+      {/* 6. Comment Section */}
       {showComments && !isLocked && (
         <CommentSection
           contentId={post.id}
