@@ -1,4 +1,4 @@
-// src/types/content.ts
+import type { IUser } from './auth';
 
 // 1. Category Interface
 export interface ICategory {
@@ -6,7 +6,34 @@ export interface ICategory {
   name: string;
 }
 
-// 2. Main Content Interface
+// 2. Reaction Types (From PDF Page 22)
+export type ReactionType = 'like' | 'heart' | 'fire' | 'clap' | 'star';
+export type CommentReactionType = 'like' | 'heart';
+
+// 3. Reaction Summary Interface
+export interface IReactionSummary {
+  [key: string]: number;
+}
+
+// 4. Comment Interface
+export interface IComment {
+  id: number;
+  content_id: number;
+  user_id: number;
+  parent_id: number | null;
+  comment: string;
+  is_edited: boolean;
+  created_at: string;
+  updated_at: string;
+  user: IUser;
+  replies?: IComment[];
+  // Backend sends an array of reactions for comments (Page 10), but we often map this to a count or boolean in UI
+  reactions?: any[];
+  reactions_count?: number;
+  user_reaction?: CommentReactionType | null;
+}
+
+// 5. Main Content Interface
 export interface IContent {
   id: number;
   category_id: number;
@@ -20,9 +47,19 @@ export interface IContent {
   created_at: string;
   updated_at: string;
   category?: ICategory;
+
+  // --- NEW INTERACTION FIELDS ---
+  // These match the optional fields returned by the Updated Content Endpoints (Page 21 & 24)
+  comments_enabled?: boolean;
+  reactions_enabled?: boolean;
+  reactions_count?: number;
+  comments_count?: number;
+  user_reaction?: ReactionType | null;
+  reactions_summary?: IReactionSummary;
+  comments?: IComment[];
 }
 
-// 3. Pagination Response Wrapper (Fixed missing export)
+// 6. Pagination Response Wrapper
 export interface IContentResponse {
   contents: {
     current_page: number;
@@ -40,7 +77,7 @@ export interface IContentResponse {
   };
 }
 
-// 4. Create Payload
+// 7. Create Payload
 export interface ICreateContentPayload {
   category_id: string;
   title: string;
@@ -50,7 +87,7 @@ export interface ICreateContentPayload {
   file: File | null;
 }
 
-// 5. Generic Paginated Response (Keeping this for Admin backward compatibility)
+// 8. Generic Paginated Response
 export interface IPaginatedResponse<T> {
   contents: {
     current_page: number;
@@ -66,4 +103,15 @@ export interface IPaginatedResponse<T> {
     to: number;
     total: number;
   };
+}
+
+// 9. Update Payload
+export interface IUpdateContentPayload {
+  id: number;
+  category_id?: string;
+  title?: string;
+  description?: string;
+  type?: string;
+  is_premium?: boolean;
+  file?: File | null;
 }
