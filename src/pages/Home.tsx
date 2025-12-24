@@ -8,10 +8,12 @@ import FanOfMonth from '../components/FanOfMonth';
 import MembersExclusiveBlog from '../components/MembersExclusiveBlog';
 import GameSection from '../components/GameSection';
 import CommunityHighlights from '../components/CommunityHighlights';
+import Snowfall from '../components/Snowfall';
 
 const Home: React.FC = () => {
   return (
     <main className="min-h-screen bg-brand-dark text-white">
+      <Snowfall />
       <Header />
       <HomeHero />
       <MembershipPlan />
