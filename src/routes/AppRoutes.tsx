@@ -25,7 +25,7 @@ const CreateAdminPage = React.lazy(() => import('../pages/admin/member/CreateAdm
 const EditAdminPage = React.lazy(() => import('../pages/admin/member/EditAdminPage'));
 
 // Lazy Loaded Pages
-const Countdown = React.lazy(() => import('../pages/Countdown'));
+// const Countdown = React.lazy(() => import('../pages/Countdown')); // Countdown is over
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
@@ -164,8 +164,8 @@ const AppRoutes: React.FC = () => {
       <Suspense fallback={<Loader />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<Countdown />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/" element={<Home />} />
+          {/* <Route path="/home" element={<Home />} /> */} {/* Countdown is over, home is now at / */}
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
