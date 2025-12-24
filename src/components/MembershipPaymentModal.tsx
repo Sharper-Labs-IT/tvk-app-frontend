@@ -1,7 +1,13 @@
-import React, { useState } from "react";
-import { useStripe, useElements, CardNumberElement,CardExpiryElement, CardCvcElement } from "@stripe/react-stripe-js";
-import axiosClient from "../api/axiosClient";
-import type { Plan } from "../types/plan";
+import React, { useState } from 'react';
+import {
+  useStripe,
+  useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from '@stripe/react-stripe-js';
+import axiosClient from '../api/axiosClient';
+import type { Plan } from '../types/plan';
 
 interface MembershipPaymentModalProps {
   isOpen: boolean;
@@ -21,7 +27,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cardholderName, setCardholderName] = useState("");
+  const [cardholderName, setCardholderName] = useState('');
   const [saveCard, setSaveCard] = useState(true);
 
   if (!isOpen || !plan) return null;
@@ -31,13 +37,13 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     setError(null);
 
     if (!stripe || !elements) {
-      setError("Payment system is not ready yet. Please try again.");
+      setError('Payment system is not ready yet. Please try again.');
       return;
     }
 
     const cardNumberElement = elements.getElement(CardNumberElement);
     if (!cardNumberElement) {
-      setError("Unable to find card input field.");
+      setError('Unable to find card input field.');
       return;
     }
 
@@ -45,34 +51,32 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
     try {
       // 1) Create PaymentMethod on Stripe
-      const { paymentMethod, error: pmError } = await stripe.createPaymentMethod(
-        {
-          type: "card",
-          card: cardNumberElement,
-          billing_details: {
-            name: cardholderName || undefined,
-          },
-        }
-      );
+      const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardNumberElement,
+        billing_details: {
+          name: cardholderName || undefined,
+        },
+      });
 
       if (pmError || !paymentMethod) {
-        setError(pmError?.message || "Unable to create payment method.");
+        setError(pmError?.message || 'Unable to create payment method.');
         setLoading(false);
         return;
       }
 
       // 2) Call backend
-      const res = await axiosClient.post("/payments/subscribe", {
+      const res = await axiosClient.post('/payments/subscribe', {
         plan_id: plan.id,
         payment_method_id: paymentMethod.id,
         save_card: saveCard, // backend can ignore/handle this
       });
 
-      console.log("payments/subscribe response:", res.data);
+      console.log('payments/subscribe response:', res.data);
       // const data = res.data;
 
       // if (data.requires_action && data.client_secret) {
-      
+
       //   const { error: confirmationError } = await stripe.confirmCardPayment(
       //     data.client_secret
       //   );
@@ -82,12 +86,12 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       //     setLoading(false);
       //     return;
       //   }
-        
+
       //   console.log("Stripe confirmation successful. Webhook pending.");
-        
+
       // } else if (data.status === 'active' || data.status === 'trialing') {
       //   console.log("Subscription activated immediately.");
-        
+
       // } else {
       //   setError(`Subscription created with status: ${data.status}. No action taken.`);
       //   setLoading(false);
@@ -95,25 +99,23 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       // }
 
       const data = res.data;
-      if(data.requires_action && data.client_secret){
-        const {error: confirmationError} = await stripe.confirmCardPayment(
-          data.client_secret
-        );
-        if(confirmationError){
-          setError(confirmationError.message || "Payment confirmation failed.");
+      if (data.requires_action && data.client_secret) {
+        const { error: confirmationError } = await stripe.confirmCardPayment(data.client_secret);
+        if (confirmationError) {
+          setError(confirmationError.message || 'Payment confirmation failed.');
           setLoading(false);
           return;
         }
-        console.log("Stripe confirmation successful. Webhook Pending");
-      }else if(data.status === "active" || data.status === "trailing"){
-        console.log("Subscription activated immediately");
-      }else{
+        console.log('Stripe confirmation successful. Webhook Pending');
+      } else if (data.status === 'active' || data.status === 'trailing') {
+        console.log('Subscription activated immediately');
+      } else {
         setError(`Subscription created with status: ${data.status}. No action taken.`);
         setLoading(false);
         return;
       }
 
-      if(onSuccess){
+      if (onSuccess) {
         onSuccess();
       }
 
@@ -122,26 +124,20 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       const msg =
         err?.response?.data?.message ||
         (err?.response?.data?.errors
-          ? (Object.values(err.response.data.errors) as string[][])
-              .flat()
-              .join(" ")
-          : "Unable to start subscription. Please try again.");
+          ? (Object.values(err.response.data.errors) as string[][]).flat().join(' ')
+          : 'Unable to start subscription. Please try again.');
       setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const formattedPrice =
-    plan.price && plan.price !== "0.00" ? `${plan.price}` : "Free";
+  const formattedPrice = plan.price && plan.price !== '0.00' ? `${plan.price}` : 'Free';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       {/* background click close */}
-      <div
-        className="absolute inset-0"
-        onClick={() => !loading && onClose()}
-      />
+      <div className="absolute inset-0" onClick={() => !loading && onClose()} />
 
       <div className="relative z-10 w-full max-w-2xl max-h-[90vh] rounded-3xl bg-[#f9fafb] text-slate-900 shadow-2xl overflow-hidden flex flex-col">
         {/* Close button */}
@@ -167,21 +163,15 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
           {/* Plan summary pill */}
           <div className="mt-4 inline-flex items-center gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2">
             <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wide text-slate-400">
-                Plan
-              </span>
-              <span className="text-sm font-semibold text-slate-900">
-                {plan.name}
-              </span>
+              <span className="text-[11px] uppercase tracking-wide text-slate-400">Plan</span>
+              <span className="text-sm font-semibold text-slate-900">{plan.name}</span>
             </div>
             <div className="h-6 w-px bg-slate-200" />
             <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wide text-slate-400">
-                Amount
-              </span>
+              <span className="text-[11px] uppercase tracking-wide text-slate-400">Amount</span>
               <span className="text-sm font-semibold text-[#f97316]">
-                €{formattedPrice}
-                {formattedPrice !== "Free" && (
+                ${formattedPrice}
+                {formattedPrice !== 'Free' && (
                   <span className="text-[11px] text-slate-500"> / month</span>
                 )}
               </span>
@@ -209,54 +199,44 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
           {/* Card + name fields (2-column feel like screenshot) */}
           {/* Card details block */}
-<div className="rounded-2xl bg-white border border-slate-300 px-4 py-4 space-y-4 shadow-sm">
+          <div className="rounded-2xl bg-white border border-slate-300 px-4 py-4 space-y-4 shadow-sm">
+            {/* Card number */}
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700">Card number</label>
+              <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
+                <CardNumberElement />
+              </div>
+            </div>
 
-  {/* Card number */}
-  <div className="space-y-1">
-    <label className="text-xs font-medium text-slate-700">
-      Card number
-    </label>
-    <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
-      <CardNumberElement />
-    </div>
-  </div>
+            {/* Cardholder name */}
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-700">Cardholder name</label>
+              <input
+                type="text"
+                className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] outline-none transition-all"
+                placeholder="Name on card"
+                value={cardholderName}
+                onChange={(e) => setCardholderName(e.target.value)}
+              />
+            </div>
 
-  {/* Cardholder name */}
-  <div className="space-y-1">
-    <label className="text-xs font-medium text-slate-700">
-      Cardholder name
-    </label>
-    <input
-      type="text"
-      className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm text-slate-900 focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] outline-none transition-all"
-      placeholder="Name on card"
-      value={cardholderName}
-      onChange={(e) => setCardholderName(e.target.value)}
-    />
-  </div>
+            {/* Expiry + CVC */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700">Expiry date</label>
+                <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
+                  <CardExpiryElement />
+                </div>
+              </div>
 
-  {/* Expiry + CVC */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div className="space-y-1">
-      <label className="text-xs font-medium text-slate-700">
-        Expiry date
-      </label>
-      <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
-        <CardExpiryElement />
-      </div>
-    </div>
-
-    <div className="space-y-1">
-      <label className="text-xs font-medium text-slate-700">
-        CVC
-      </label>
-      <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
-        <CardCvcElement />
-      </div>
-    </div>
-  </div>
-</div>
-
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-slate-700">CVC</label>
+                <div className="rounded-xl border border-slate-300 px-3 py-2.5 focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
+                  <CardCvcElement />
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Save card toggle */}
           <label className="mt-1 flex items-center gap-2 text-xs md:text-sm text-slate-700 cursor-pointer">
@@ -310,7 +290,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
             disabled={loading || !stripe}
             className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#f97316] via-[#f59e0b] to-[#facc15] text-white font-semibold text-sm md:text-base px-6 py-3 shadow-md hover:shadow-lg hover:brightness-105 transition-all disabled:opacity-70"
           >
-            {loading ? "Processing..." : "Save & confirm subscription"}
+            {loading ? 'Processing...' : 'Save & confirm subscription'}
           </button>
         </div>
       </div>
