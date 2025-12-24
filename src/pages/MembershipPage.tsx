@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {useAuth} from '../context/AuthContext';
-import {useNavigate} from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
-import { Star, Users, Video, Bell, AlertCircle } from "lucide-react";
+import { Star, Users, Video, Bell, AlertCircle } from 'lucide-react';
 import Footer from '../components/Footer';
 
 import MembershipTireCard, {
@@ -11,16 +11,14 @@ import MembershipTireCard, {
 } from '../components/MembershipTireCard';
 
 import BenefitCard from '../components/BenefitCard';
-import { motion, type Variants } from "framer-motion";
-import type {Plan} from '../types/plan';
-import axiosClient from "../api/axiosClient";
-import MembershipPaymentModal from "../components/MembershipPaymentModal";
+import { motion, type Variants } from 'framer-motion';
+import type { Plan } from '../types/plan';
+import axiosClient from '../api/axiosClient';
+import MembershipPaymentModal from '../components/MembershipPaymentModal';
 import MembershipCancelModal from '../components/MembershipCancelModal';
 import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
 import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
 import { toast } from 'react-hot-toast';
-
-
 
 // ---------- Framer Motion variants ----------
 const benefitsContainerVariants: Variants = {
@@ -32,7 +30,7 @@ const benefitsContainerVariants: Variants = {
       staggerChildren: 0.12,
       delayChildren: 0.1,
       duration: 0.4,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
 };
@@ -45,13 +43,13 @@ const benefitItemVariants: Variants = {
     scale: 1,
     transition: {
       duration: 0.35,
-      ease: "easeOut",
+      ease: 'easeOut',
     },
   },
 };
 
 const MembershipPage: React.FC = () => {
-  const [billing, setBilling] = useState<BillingPeriod>("monthly");
+  const [billing, setBilling] = useState<BillingPeriod>('monthly');
 
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,26 +67,24 @@ const MembershipPage: React.FC = () => {
 
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
 
-   const { isLoggedIn } = useAuth();
+  const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
   // ---------- Fetch membership plans via Axios ----------
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await axiosClient.get<{ plans: Plan[] }>("/membership/plans");
+        const response = await axiosClient.get<{ plans: Plan[] }>('/membership/plans');
 
         let filteredPlans = (response.data.plans || [])
           .filter((p) => p.status === 1)
-          .filter((p) => [1,2].includes(p.id));
-        
-          filteredPlans = filteredPlans.sort((a, b) => a.id - b.id);
+          .filter((p) => [1, 2].includes(p.id));
 
-        
+        filteredPlans = filteredPlans.sort((a, b) => a.id - b.id);
 
         setPlans(filteredPlans);
       } catch (err) {
-        setError("Unable to load membership plans.");
+        setError('Unable to load membership plans.');
       } finally {
         setLoading(false);
       }
@@ -114,7 +110,7 @@ const MembershipPage: React.FC = () => {
         setUserMembershipTier(membership_tier || null);
         setUserMembershipStatus(membership?.status || null);
       } catch (err) {
-        console.error("Failed to fetch user membership", err);
+        console.error('Failed to fetch user membership', err);
         // Optionally show toast
       } finally {
         setMembershipLoading(false);
@@ -124,49 +120,47 @@ const MembershipPage: React.FC = () => {
     fetchUserMembership();
   }, [isLoggedIn]);
 
-   const handleSubscribeClick = (plan: Plan) => {
-  const isFree = plan.price === "0.00";
+  const handleSubscribeClick = (plan: Plan) => {
+    const isFree = plan.price === '0.00';
 
-  if (isFree) {
-    // FREE PLAN
-    if (!isLoggedIn) {
-      navigate("/login");
-    } else {
-      navigate("/");
+    if (isFree) {
+      // FREE PLAN
+      if (!isLoggedIn) {
+        navigate('/login');
+      } else {
+        navigate('/');
+      }
+      return;
     }
-    return;
-  }
 
-  // SUPER FAN (PAID)
-  if (!isLoggedIn) {
-    navigate("/login", {
-      state: {from: "/membership"}
-    });
-    return;
-  }
+    // SUPER FAN (PAID)
+    if (!isLoggedIn) {
+      navigate('/login', {
+        state: { from: '/membership' },
+      });
+      return;
+    }
 
-  // If user already has this plan and it's active → show manage
+    // If user already has this plan and it's active → show manage
     if (userMembershipTier === plan.name && userMembershipStatus === 'active') {
-      toast("Manage your membership", { icon: <AlertCircle className="text-yellow-500" /> });
+      toast('Manage your membership', { icon: <AlertCircle className="text-yellow-500" /> });
 
       // For now, we'll just show a simple confirm to cancel
       setIsCancelModalOpen(true);
       return;
     }
 
-  // logged in + paid -> open payment modal
-  setSelectedPlan(plan);
-  setIsPaymentOpen(true);
-};
+    // logged in + paid -> open payment modal
+    setSelectedPlan(plan);
+    setIsPaymentOpen(true);
+  };
 
-const handleCancelMembership = async () => {
-
-
+  const handleCancelMembership = async () => {
     try {
       // Replace with your actual cancel endpoint
       await axiosClient.post('/membership/cancel');
 
-      toast.success("Membership cancelled successfully.");
+      toast.success('Membership cancelled successfully.');
       // Update state
       setUserMembershipTier(null);
       setUserMembershipStatus(null);
@@ -176,27 +170,24 @@ const handleCancelMembership = async () => {
 
       //Show success modal
       setIsSuccessModalOpen(true);
-      toast.success("Membership Cancelled Successfully");
+      toast.success('Membership Cancelled Successfully');
     } catch (err) {
-
-      toast.error("Failed to cancel membership.");
+      toast.error('Failed to cancel membership.');
       console.log(err);
     }
   };
 
-
-
   const handlePaymentSuccess = () => {
     // Here you can re-fetch membership status or show a toast
-    setUserMembershipTier("Super Fan");
-    setUserMembershipStatus("active");
+    setUserMembershipTier('Super Fan');
+    setUserMembershipStatus('active');
 
     // Close the payment modal
     setIsPaymentOpen(false);
 
     // Show the dedicated payment success modal
     setIsPaymentSuccessOpen(true);
-    toast.success("Welcome to Super Fan!");
+    toast.success('Welcome to Super Fan!');
   };
 
   return (
@@ -204,24 +195,24 @@ const handleCancelMembership = async () => {
       <Header />
 
       {/* Main Section */}
-      <section className='mx-auto max-w-6xl px-4 py-16'>
+      <section className="mx-auto max-w-6xl px-4 py-16">
         {/* Heading */}
-        <div className='text-center'>
-          <h1 className="text-4xl font-bold md:text-5xl">
-            Choose Your Membership Plan
-          </h1>
-          <p className='mt-4 text-base text-slate-300 md:text-lg'>
+        <div className="text-center">
+          <h1 className="text-4xl font-bold md:text-5xl">Choose Your Membership Plan</h1>
+          <p className="mt-4 text-base text-slate-300 md:text-lg">
             Unlock exclusive TVK experiences, events, and Super Fan-only benefits.
           </p>
         </div>
 
         {/* Billing Toggle (UI-only; affects suffix for paid plans) */}
-        <div className='mt-10 flex justify-center'>
-          <div className='inline-flex rounded-full bg-[#07091a] p-1'>
-            {([
-              { id: "monthly", label: "Monthly" },
-             // { id: "yearly", label: "Yearly" },
-            ] as { id: BillingPeriod; label: string }[]).map((opt) => {
+        <div className="mt-10 flex justify-center">
+          <div className="inline-flex rounded-full bg-[#07091a] p-1">
+            {(
+              [
+                { id: 'monthly', label: 'Monthly' },
+                // { id: "yearly", label: "Yearly" },
+              ] as { id: BillingPeriod; label: string }[]
+            ).map((opt) => {
               const active = billing === opt.id;
               return (
                 <button
@@ -229,11 +220,9 @@ const handleCancelMembership = async () => {
                   type="button"
                   onClick={() => setBilling(opt.id)}
                   className={[
-                    "rounded-full px-5 py-2 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-[#f7c948] text-[#111827]"
-                      : "text-slate-200 hover:bg-[#181e37]",
-                  ].join(" ")}
+                    'rounded-full px-5 py-2 text-sm font-medium transition-colors',
+                    active ? 'bg-[#f7c948] text-[#111827]' : 'text-slate-200 hover:bg-[#181e37]',
+                  ].join(' ')}
                 >
                   {opt.label}
                 </button>
@@ -243,98 +232,90 @@ const handleCancelMembership = async () => {
         </div>
 
         {/* Membership Tier Cards (API-driven) */}
-        <div className='mt-10 grid gap-6 md:grid-cols-2'>
-
-        {isLoggedIn && membershipLoading && (
-    <p className="col-span-2 text-center text-slate-400">
-      Checking your membership status...
-    </p>
-  )}
+        <div className="mt-10 grid gap-6 md:grid-cols-2">
+          {isLoggedIn && membershipLoading && (
+            <p className="col-span-2 text-center text-slate-400">
+              Checking your membership status...
+            </p>
+          )}
           {loading && (
-            <p className="col-span-2 text-center text-slate-300">
-              Loading membership plans...
-            </p>
+            <p className="col-span-2 text-center text-slate-300">Loading membership plans...</p>
           )}
 
-          {error && !loading && (
-            <p className="col-span-2 text-center text-red-400">
-              {error}
-            </p>
-          )}
+          {error && !loading && <p className="col-span-2 text-center text-red-400">{error}</p>}
 
           {!loading && !error && plans.length === 0 && (
-            <p className="col-span-2 text-center text-slate-400">
-              No membership plans available.
-            </p>
+            <p className="col-span-2 text-center text-slate-400">No membership plans available.</p>
           )}
 
-          {!loading && !error && plans.map((plan) => {
-            const isFree = plan.price === "0.00";
+          {!loading &&
+            !error &&
+            plans.map((plan) => {
+              const isFree = plan.price === '0.00';
 
-            const priceLabel = isFree ? "Free" : `€${plan.price}`;
+              const priceLabel = isFree ? 'Free' : `$${plan.price}`;
 
-            // Price suffix logic:
-            // - Free Tier: based on duration_days ("Lifetime" for 36500)
-            // - Paid tiers (e.g. Super Fan): suffix changes with billing toggle
-            let priceSuffix: string;
-            if (isFree) {
-              if (plan.duration_days >= 36500) {
-                priceSuffix = "/ Lifetime";
+              // Price suffix logic:
+              // - Free Tier: based on duration_days ("Lifetime" for 36500)
+              // - Paid tiers (e.g. Super Fan): suffix changes with billing toggle
+              let priceSuffix: string;
+              if (isFree) {
+                if (plan.duration_days >= 36500) {
+                  priceSuffix = '/ Lifetime';
+                } else {
+                  priceSuffix = `/ ${plan.duration_days}-Days`;
+                }
               } else {
-                priceSuffix = `/ ${plan.duration_days}-Days`;
+                priceSuffix = billing === 'monthly' ? '/ Monthly' : '/ Yearly';
               }
-            } else {
-              priceSuffix = billing === "monthly" ? "/ Monthly" : "/ Yearly";
-            }
 
-            const features: TierFeature[] = (plan.benefits || []).map((b) => ({
-              label: b,
-              available: true,
-            }));
+              const features: TierFeature[] = (plan.benefits || []).map((b) => ({
+                label: b,
+                available: true,
+              }));
 
-            const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
+              const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
 
-            const isUserSuperFan = userMembershipTier === "Super Fan" && userMembershipStatus === "active";
-            const isThisFreeCard = isFree;
+              const isUserSuperFan =
+                userMembershipTier === 'Super Fan' && userMembershipStatus === 'active';
+              const isThisFreeCard = isFree;
 
-            //Determine button state for free tire when user is super fan
-            const isFreeButtonDisabled = isUserSuperFan && isThisFreeCard; 
+              //Determine button state for free tire when user is super fan
+              const isFreeButtonDisabled = isUserSuperFan && isThisFreeCard;
 
-            const buttonText = (() => {
-    if (isUserSuperFan && plan.name === "Super Fan") {
-      return "Manage your membership";
-    }
-    if (isFreeButtonDisabled) {
-      return "Included with Super Fan"; // or "Already Active", "Free Access", etc.
-    }
-    return "Subscribe Now";
-  })();
+              const buttonText = (() => {
+                if (isUserSuperFan && plan.name === 'Super Fan') {
+                  return 'Manage your membership';
+                }
+                if (isFreeButtonDisabled) {
+                  return 'Included with Super Fan'; // or "Already Active", "Free Access", etc.
+                }
+                return 'Subscribe Now';
+              })();
 
-            return (
-              <MembershipTireCard
-                key={plan.id}
-                name={plan.name}
-                tagline={plan.description}
-                priceLabel={priceLabel}
-                priceSuffix={priceSuffix}
-                features={features}
-                highlight={isHighlighted}
-                badgeLabel={isHighlighted ? "Most Popular" : undefined}
-                onSubscribe={() => handleSubscribeClick(plan)}
-                buttonText={buttonText}
-                buttonDisabled={isFreeButtonDisabled}
-              />
-            );
-          })}
+              return (
+                <MembershipTireCard
+                  key={plan.id}
+                  name={plan.name}
+                  tagline={plan.description}
+                  priceLabel={priceLabel}
+                  priceSuffix={priceSuffix}
+                  features={features}
+                  highlight={isHighlighted}
+                  badgeLabel={isHighlighted ? 'Most Popular' : undefined}
+                  onSubscribe={() => handleSubscribeClick(plan)}
+                  buttonText={buttonText}
+                  buttonDisabled={isFreeButtonDisabled}
+                />
+              );
+            })}
         </div>
       </section>
 
       {/* Why choose section */}
       <section className="mx-auto max-w-6xl px-4 pb-20">
-        <div className='mt-10 text-center md:mt-16'>
-          <h2 className='text-3xl font-bold md:text-4xl'>
-            Why Choose TVK Membership?
-          </h2>
+        <div className="mt-10 text-center md:mt-16">
+          <h2 className="text-3xl font-bold md:text-4xl">Why Choose TVK Membership?</h2>
           <p className="mt-3 text-base text-slate-300">
             Explore the exclusive benefits that come with every membership tier.
           </p>
@@ -353,7 +334,7 @@ const handleCancelMembership = async () => {
               icon={<Star />}
               title="Exclusive Contents"
               description="Join live streams and special TVK events from wherever you are"
-              tags={["Free", "Super Fan"]}
+              tags={['Free', 'Super Fan']}
             />
           </motion.div>
 
@@ -362,7 +343,7 @@ const handleCancelMembership = async () => {
               icon={<Users />}
               title="Priority Fan Meetups"
               description="Super Fans get priority entry and access to special sessions"
-              tags={["Super Fan"]}
+              tags={['Super Fan']}
             />
           </motion.div>
 
@@ -371,7 +352,7 @@ const handleCancelMembership = async () => {
               icon={<Bell />}
               title="Early Announcements"
               description="Be the first to know about drops, events, and releases."
-              tags={["Super Fan"]}
+              tags={['Super Fan']}
             />
           </motion.div>
 
@@ -380,30 +361,30 @@ const handleCancelMembership = async () => {
               icon={<Video />}
               title="Premium Video Content"
               description="Unlock HD/4K documentaries, behind-the-scenes content."
-              tags={["Super Fan"]}
+              tags={['Super Fan']}
             />
           </motion.div>
         </motion.div>
       </section>
 
       {/* Cancellation Modal */}
-    <MembershipCancelModal
-      isOpen={isCancelModalOpen}
-      onClose={() => setIsCancelModalOpen(false)}
-      onConfirm={handleCancelMembership}
-    />
+      <MembershipCancelModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelMembership}
+      />
 
-    {/* Success Modal - Shown after cancellation */}
-    <MembershipCancelledSuccessModal
-      isOpen={isSuccessModalOpen}
-      onClose={() => setIsSuccessModalOpen(false)}
-    />
+      {/* Success Modal - Shown after cancellation */}
+      <MembershipCancelledSuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+      />
 
-    {/* Payment Success Modal */}
-    <MembershipPaymentSuccessModal
-      isOpen={isPaymentSuccessOpen}
-      onClose={() => setIsPaymentSuccessOpen(false)}
-    />
+      {/* Payment Success Modal */}
+      <MembershipPaymentSuccessModal
+        isOpen={isPaymentSuccessOpen}
+        onClose={() => setIsPaymentSuccessOpen(false)}
+      />
 
       {/* Payment modal (Stripe Elements) */}
       <MembershipPaymentModal
