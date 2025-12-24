@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 
@@ -10,6 +10,7 @@ interface MobileMenuProps {
   isLoggedIn: boolean;
   user: any;
   onLogout: () => void;
+  dashboardPath?: string;
 }
 
 const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -19,8 +20,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
   isLoggedIn,
   user,
   onLogout,
+  dashboardPath = '/dashboard',
 }) => {
   const location = useLocation();
+  const [playExpanded, setPlayExpanded] = useState(false);
+  const [profileExpanded, setProfileExpanded] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -85,10 +89,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 + index * 0.05 }}
-              onClick={onClose}
             >
               <Link
                 to={item.path}
+                onClick={onClose}
                 className={`
                   block text-lg font-medium p-2 transition-colors uppercase tracking-wide
                   ${isActive(item.path) ? 'text-brand-gold' : 'hover:text-brand-gold'}
@@ -99,11 +103,65 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             </motion.li>
           ))}
 
+          {/* Play Expandable Menu */}
+          <motion.li
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + navItems.length * 0.05 }}
+          >
+            <button
+              onClick={() => setPlayExpanded(!playExpanded)}
+              className={`
+                w-full flex items-center justify-between text-lg font-medium p-2 transition-colors uppercase tracking-wide
+                ${isActive('/game') || isActive('/leaderboard') ? 'text-brand-gold' : 'hover:text-brand-gold'}
+              `}
+            >
+              PLAY
+              <svg
+                className={`w-5 h-5 transition-transform ${playExpanded ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            
+            {playExpanded && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="ml-4 mt-2 space-y-2"
+              >
+                <Link
+                  to="/game"
+                  onClick={onClose}
+                  className={`
+                    block text-base font-medium p-2 transition-colors
+                    ${isActive('/game') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                  `}
+                >
+                  Games
+                </Link>
+                <Link
+                  to="/leaderboard"
+                  onClick={onClose}
+                  className={`
+                    block text-base font-medium p-2 transition-colors
+                    ${isActive('/leaderboard') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                  `}
+                >
+                  Leaderboard
+                </Link>
+              </motion.div>
+            )}
+          </motion.li>
+
           {/* Divider */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.1 + navItems.length * 0.05 }}
+            transition={{ delay: 0.1 + (navItems.length + 1) * 0.05 }}
             className="h-px bg-gray-700 my-6"
           />
 
@@ -111,19 +169,67 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
           <motion.li
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 + navItems.length * 0.05 }}
+            transition={{ delay: 0.2 + (navItems.length + 1) * 0.05 }}
             className="pt-2"
           >
             {isLoggedIn ? (
-              <button
-                onClick={() => {
-                  onClose(); // Close menu
-                  onLogout(); // Trigger logout modal in parent
-                }}
-                className="w-full bg-red-600/10 border border-red-600 text-red-500 font-bold px-8 py-3 rounded hover:bg-red-600 hover:text-white transition-all text-base shadow-lg"
-              >
-                Logout ({userName})
-              </button>
+              <>
+                {/* Profile Expandable Menu */}
+                <button
+                  onClick={() => setProfileExpanded(!profileExpanded)}
+                  className="w-full flex items-center justify-between bg-brand-goldDark text-white font-bold px-4 py-3 rounded hover:opacity-90 transition-all text-base shadow-lg"
+                >
+                  <span className="flex items-center gap-2">
+                    <svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" 
+                      />
+                    </svg>
+                    Profile ({userName})
+                  </span>
+                  <svg
+                    className={`w-5 h-5 transition-transform ${profileExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {profileExpanded && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-2 space-y-2 bg-brand-dark/50 rounded p-2"
+                  >
+                    <Link
+                      to={dashboardPath}
+                      onClick={onClose}
+                      className="block text-base font-medium p-2 text-gray-300 hover:text-brand-gold transition-colors rounded hover:bg-brand-gold/10"
+                    >
+                      Dashboard
+                    </Link>
+                    <button
+                      onClick={() => {
+                        onClose();
+                        onLogout();
+                      }}
+                      className="w-full text-left block text-base font-medium p-2 text-red-400 hover:text-red-300 transition-colors rounded hover:bg-red-600/10"
+                    >
+                      Sign Out
+                    </button>
+                  </motion.div>
+                )}
+              </>
             ) : (
               <Link to="/login" onClick={onClose}>
                 <button className="w-full bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-3 rounded hover:opacity-90 transition-opacity text-base shadow-lg">
