@@ -3,9 +3,6 @@ import { dashboardService } from '../../services/dashboardService';
 import { type DashboardData } from '../../types/dashboard';
 import { Loader2, AlertCircle, Users, FileText, Gamepad2, Clock } from 'lucide-react';
 
-// If you don't have date-fns, run: npm install date-fns
-// OR use a simple helper function (included below)
-
 const DashboardPage: React.FC = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);

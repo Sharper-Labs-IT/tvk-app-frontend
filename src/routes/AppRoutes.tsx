@@ -17,6 +17,7 @@ import PostCreatePage from '../pages/admin/posts/PostCreatePage';
 import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
 import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
+import PostEditPage from '../pages/admin/posts/PostEditPage';
 // --- NEW IMPORTS FOR MEMBER MANAGEMENT ---
 const MemberListPage = React.lazy(() => import('../pages/admin/member/MemberListPage'));
 const AdminListPage = React.lazy(() => import('../pages/admin/member/AdminListPage'));
@@ -217,6 +218,7 @@ const AppRoutes: React.FC = () => {
             <Route path="posts" element={<PostListPage />} />
             <Route path="posts/create" element={<PostCreatePage />} />
             <Route path="posts/:id" element={<PostDetailsPage />} />
+            <Route path="posts/:id/edit" element={<PostEditPage />} />
             <Route path="membership" element={<MembershipPlanList />} />
             <Route path="membership/create" element={<MembershipPlanCreate />} />
 

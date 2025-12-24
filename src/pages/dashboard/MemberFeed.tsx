@@ -20,24 +20,20 @@ const MemberFeed: React.FC = () => {
 
   const checkUserStatus = async () => {
     try {
-      // 👇 FIXED: Added '/v1' because your routes are prefixed with v1
       const response = await api.get('/v1/auth/me');
-
-      // 1. Get the user object (it wraps user in 'user' key)
       const userData = response.data.user;
 
       console.log('User Data from /v1/auth/me:', userData);
 
-      // 2. Check Membership
       if (userData && userData.membership) {
-        // 3. Check Plan ID (1 is Free)
+        // Check Plan ID (Assuming 1 is Free, anything else is Premium)
         if (Number(userData.membership.plan_id) !== 1) {
-          setIsPremiumUser(true); // Paid Plan
+          setIsPremiumUser(true);
         } else {
-          setIsPremiumUser(false); // Free Plan (ID 1)
+          setIsPremiumUser(false);
         }
       } else {
-        setIsPremiumUser(false); // No membership = Free
+        setIsPremiumUser(false);
       }
     } catch (err) {
       console.error('Failed to check user status', err);
@@ -82,7 +78,8 @@ const MemberFeed: React.FC = () => {
         </button>
       </div>
 
-      <CreatePostWidget />
+      {/* ✅ FIXED: Pass the state variable 'isPremiumUser', NOT 'false' */}
+      <CreatePostWidget onPostCreated={fetchFeed} isPremiumUser={isPremiumUser} />
 
       {/* Error State */}
       {error && (
