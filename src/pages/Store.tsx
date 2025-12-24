@@ -241,7 +241,7 @@ const DEFAULT_MERCH_ITEMS = [
   },
   {
     id: 2,
-    name: 'Mug with TVL Design',
+    name: 'Mug with TVK Design',
     price: '£24.99',
     image: '/img/mug.png',
     category: 'Accessories',
