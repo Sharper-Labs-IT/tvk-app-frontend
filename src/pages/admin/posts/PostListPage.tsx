@@ -3,11 +3,17 @@ import { Link } from 'react-router-dom';
 import { contentService } from '../../../services/contentService';
 import type { IContent } from '../../../types/content';
 import { Plus, Trash2, Eye, FileVideo, Image as ImageIcon, FileText, Lock } from 'lucide-react';
+import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
 const PostListPage: React.FC = () => {
   const [contents, setContents] = useState<IContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // State for delete confirmation modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Initial Fetch
   useEffect(() => {
@@ -27,17 +33,33 @@ const PostListPage: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this post? This cannot be undone.'))
-      return;
+  // Triggered when the user clicks the delete trash icon
+  const initiateDelete = (id: number) => {
+    setPostToDelete(id);
+    setIsDeleteModalOpen(true);
+  };
+
+  // Triggered when user clicks "Confirm" in the modal
+  const handleConfirmDelete = async () => {
+    if (!postToDelete) return;
 
     try {
-      await contentService.delete(id);
+      setIsDeleting(true);
+      await contentService.delete(postToDelete);
       // Remove from UI immediately to avoid reload
-      setContents(contents.filter((item) => item.id !== id));
+      setContents(contents.filter((item) => item.id !== postToDelete));
+      setIsDeleteModalOpen(false);
+      setPostToDelete(null);
     } catch (err) {
       alert('Failed to delete post');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setPostToDelete(null);
   };
 
   // Helper to get icon based on type
@@ -131,24 +153,27 @@ const PostListPage: React.FC = () => {
                     </span>
                   )}
                 </td>
-                <td className="px-6 py-4 text-right space-x-2">
-                  {/* View Details Link */}
-                  <Link
-                    to={`/admin/posts/${post.id}`}
-                    className="inline-block p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
-                    title="View Details"
-                  >
-                    <Eye size={18} />
-                  </Link>
+                <td className="px-6 py-4">
+                  {/* Alignment Fix: Wrapped in flex container */}
+                  <div className="flex items-center justify-end gap-2">
+                    {/* View Details Link */}
+                    <Link
+                      to={`/admin/posts/${post.id}`}
+                      className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      title="View Details"
+                    >
+                      <Eye size={18} />
+                    </Link>
 
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
-                    title="Delete"
-                  >
-                    <Trash2 size={18} />
-                  </button>
+                    {/* Delete Button */}
+                    <button
+                      onClick={() => initiateDelete(post.id)}
+                      className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -165,6 +190,18 @@ const PostListPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This cannot be undone."
+        confirmText="Delete Post"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        isConfirming={isDeleting}
+      />
     </div>
   );
 };
