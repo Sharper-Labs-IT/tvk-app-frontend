@@ -44,34 +44,34 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#f7c948] to-[#e6b800] opacity-50 blur-lg -z-10" />
       )}
 
-      <div className="rounded-3xl bg-[#07091a] p-6 md:p-8 flex flex-col h-full">
+      <div className="rounded-3xl bg-[#07091a] p-6 md:p-8 2xl:p-12 flex flex-col h-full">
         {/* Most Popular Badge */}
         {highlight && badgeLabel && (
-          <div className="absolute -top-3 right-6 rounded-full bg-[#f7c948] px-4 py-1.5 text-xs font-bold text-[#111827] shadow-lg">
+          <div className="absolute -top-3 right-6 rounded-full bg-[#f7c948] px-4 py-1.5 text-xs md:text-sm 2xl:text-base font-bold text-[#111827] shadow-lg">
             {badgeLabel}
           </div>
         )}
 
-        <div className="mb-6">
-          <h3 className="text-2xl md:text-3xl font-semibold text-white">{name}</h3>
-          <p className="mt-2 text-sm md:text-base text-slate-300">{tagline}</p>
+        <div className="mb-6 2xl:mb-10">
+          <h3 className="text-2xl md:text-3xl 2xl:text-5xl font-semibold text-white">{name}</h3>
+          <p className="mt-2 text-sm md:text-base 2xl:text-xl text-slate-300">{tagline}</p>
         </div>
 
-        <div className="mb-8">
+        <div className="mb-8 2xl:mb-12">
           <div className="flex items-baseline gap-2">
-            <span className="text-4xl md:text-5xl font-bold text-[#f7c948]">{priceLabel}</span>
-            <span className="text-sm md:text-base text-slate-300">{priceSuffix}</span>
+            <span className="text-4xl md:text-5xl 2xl:text-7xl font-bold text-[#f7c948]">{priceLabel}</span>
+            <span className="text-sm md:text-base 2xl:text-xl text-slate-300">{priceSuffix}</span>
           </div>
         </div>
 
         {/* Features List - Inline Check/X with Text */}
-        <ul className="mb-10 flex-1 space-y-3 text-sm md:text-base">
+        <ul className="mb-10 2xl:mb-14 flex-1 space-y-3 2xl:space-y-5 text-sm md:text-base 2xl:text-xl">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start gap-3">
               {feature.available ? (
-                <Check className="mt-0.5 h-5 w-5 flex-shrink-0 text-[#f7c948]" />
+                <Check className="mt-0.5 h-5 w-5 2xl:h-7 2xl:w-7 flex-shrink-0 text-[#f7c948]" />
               ) : (
-                <X className="mt-0.5 h-5 w-5 flex-shrink-0 text-slate-500" />
+                <X className="mt-0.5 h-5 w-5 2xl:h-7 2xl:w-7 flex-shrink-0 text-slate-500" />
               )}
               <span
                 className={
@@ -91,7 +91,7 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
           type="button"
           onClick={buttonDisabled ? undefined : onSubscribe}
           disabled={buttonDisabled}
-          className={`mt-auto w-full rounded-full px-6 py-3.5 text-sm md:text-base font-semibold transition-all duration-300 relative ${
+          className={`mt-auto w-full rounded-full px-6 py-3.5 2xl:py-5 text-sm md:text-base 2xl:text-xl font-semibold transition-all duration-300 relative ${
            buttonDisabled 
             ? "bg-[#111827]/40 text-slate-500 border border-slate-700 opacity-60 cursor-not-allowed" 
                 : highlight
