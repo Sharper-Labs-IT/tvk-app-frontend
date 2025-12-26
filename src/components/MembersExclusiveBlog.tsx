@@ -123,28 +123,28 @@ const MembersExclusiveBlog: React.FC = () => {
       }}
     >
       {/* Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl 2xl:max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section - Animated */}
         <div
-          className={`text-center mb-12 relative transition-all duration-1000 ease-out transform ${
+          className={`text-center mb-12 xl:mb-20 relative transition-all duration-1000 ease-out transform ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <div className="h-[1px] w-12 sm:w-24 bg-gradient-to-r from-transparent to-yellow-500"></div>
-            <h2 className="text-2xl sm:text-4xl font-serif text-yellow-500 tracking-widest uppercase drop-shadow-md">
+          <div className="flex items-center justify-center gap-4 mb-2 xl:mb-4">
+            <div className="h-[1px] w-12 sm:w-24 xl:w-32 bg-gradient-to-r from-transparent to-yellow-500"></div>
+            <h2 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-serif text-yellow-500 tracking-widest uppercase drop-shadow-md">
               Members Exclusive Blog
             </h2>
-            <div className="h-[1px] w-12 sm:w-24 bg-gradient-to-l from-transparent to-yellow-500"></div>
+            <div className="h-[1px] w-12 sm:w-24 xl:w-32 bg-gradient-to-l from-transparent to-yellow-500"></div>
           </div>
-          <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
+          <p className="text-gray-400 text-sm sm:text-base lg:text-lg xl:text-xl max-w-2xl xl:max-w-4xl mx-auto">
             Unlock premium content, global updates, and behind-the-scenes access. For TVK Members
             Only.
           </p>
         </div>
 
         {/* Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8 2xl:gap-12">
           {blogPosts.map((post, index) => (
             <BlogCard key={post.id} post={post} index={index} isVisible={isVisible} />
           ))}
@@ -162,7 +162,7 @@ const BlogCard: React.FC<{ post: BlogPost; index: number; isVisible: boolean }> 
 }) => {
   return (
     <div
-      className={`group relative flex items-center p-3 rounded-xl border border-yellow-600/40 
+      className={`group relative flex items-center p-3 xl:p-5 rounded-xl border border-yellow-600/40 
         bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-black 
         shadow-lg hover:shadow-[0_0_20px_rgba(234,179,8,0.2)] hover:border-yellow-500 
         transition-all duration-700 ease-out transform
@@ -183,36 +183,36 @@ const BlogCard: React.FC<{ post: BlogPost; index: number; isVisible: boolean }> 
 
         {/* Category Tag - Absolute on Image */}
         <div className="absolute top-0 left-0 w-full p-1">
-          <div className="bg-yellow-600/90 text-black text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider text-center shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
+          <div className="bg-yellow-600/90 text-black text-[9px] xl:text-xs font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider text-center shadow-md whitespace-nowrap overflow-hidden text-ellipsis">
             {post.category}
           </div>
         </div>
       </div>
 
       {/* Content Side */}
-      <div className="w-2/3 pl-4 flex flex-col justify-between h-full py-1">
+      <div className="w-2/3 pl-4 xl:pl-6 flex flex-col justify-between h-full py-1">
         {/* Top: Members Only Badge */}
         <div className="flex justify-end mb-1">
-          <div className="flex items-center gap-1 text-[10px] text-yellow-500/80 font-medium">
-            <Lock size={10} />
+          <div className="flex items-center gap-1 text-[10px] xl:text-xs text-yellow-500/80 font-medium">
+            <Lock className="w-3 h-3 xl:w-4 xl:h-4" />
             <span>Members Only</span>
           </div>
         </div>
 
         {/* Middle: Title & Desc */}
         <div className="flex-grow flex flex-col justify-center">
-          <h3 className="text-yellow-500 font-serif text-sm font-bold leading-tight mb-1.5 line-clamp-2 group-hover:text-white transition-colors">
+          <h3 className="text-yellow-500 font-serif text-sm xl:text-xl font-bold leading-tight mb-1.5 xl:mb-3 line-clamp-2 group-hover:text-white transition-colors">
             {post.title}
           </h3>
-          <p className="text-gray-400 text-[11px] leading-relaxed line-clamp-2">
+          <p className="text-gray-400 text-[11px] xl:text-sm leading-relaxed line-clamp-2">
             {post.description}
           </p>
         </div>
 
         {/* Bottom: Read More */}
         <div className="flex justify-end mt-2 pt-2 border-t border-white/5">
-          <button className="flex items-center gap-1 text-[10px] text-yellow-500 font-bold uppercase tracking-wide hover:text-white transition-colors">
-            Read More <ArrowRight size={10} />
+          <button className="flex items-center gap-1 text-[10px] xl:text-xs text-yellow-500 font-bold uppercase tracking-wide hover:text-white transition-colors">
+            Read More <ArrowRight className="w-3 h-3 xl:w-4 xl:h-4" />
           </button>
         </div>
       </div>
