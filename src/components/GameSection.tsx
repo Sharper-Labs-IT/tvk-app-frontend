@@ -8,17 +8,11 @@ const GameSection: React.FC = () => {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
+        if (entry.isIntersecting) setIsVisible(true);
       },
       { threshold: 0.1 }
     );
-
-    if (sectionRef.current) {
-      observer.observe(sectionRef.current);
-    }
-
+    if (sectionRef.current) observer.observe(sectionRef.current);
     return () => {
       if (sectionRef.current) observer.unobserve(sectionRef.current);
     };
@@ -27,10 +21,9 @@ const GameSection: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      // UPDATED: 'min-h-[1100px]' ensures mobile view is tall enough to separate content from the bottom image
-      className="relative w-full min-h-[1100px] lg:min-h-screen flex flex-col items-center justify-center overflow-hidden py-20 px-4"
+      className="relative w-full min-h-[1100px] lg:min-h-screen flex flex-col items-center justify-center overflow-visible py-20 px-4"
     >
-      {/* 1. Background Image - z-0 */}
+      {/* Background */}
       <div className="absolute inset-0 w-full h-full z-0">
         <img
           src="/images/GamebackImg.png"
@@ -39,21 +32,10 @@ const GameSection: React.FC = () => {
         />
       </div>
 
-      {/* 2. Actor Image - z-10 (Behind content, but above background) */}
-      <img
-        src="/images/VijayImg3.png"
-        alt="Thalapathi Vijay"
-        className={`absolute bottom-0 right-0 w-[250px] md:w-[350px] lg:w-[500px] object-contain z-10 opacity-90 transition-all duration-1000 ease-out ${
-          isVisible ? 'translate-x-0 opacity-90' : 'translate-x-20 opacity-0'
-        }`}
-      />
-
-      {/* 3. Main Content Container - z-20 (ABOVE Actor Image) */}
-      {/* UPDATED: Added 'pb-80' on mobile to push content up and leave space for the image at the bottom */}
+      {/* Main Content */}
       <div className="relative z-20 container mx-auto flex flex-col items-center w-full h-full pb-40 lg:pb-0">
-        {/* Top Area: Text and Phone Layout */}
         <div className="flex flex-col lg:flex-row items-center justify-center w-full gap-12 lg:gap-20 mb-16">
-          {/* Left Side: Text Content */}
+          {/* Text */}
           <div
             className={`text-center lg:text-left flex flex-col gap-4 max-w-xl transition-all duration-1000 ease-out transform ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
@@ -68,12 +50,10 @@ const GameSection: React.FC = () => {
             </p>
           </div>
 
-          {/* Center/Right: Phone Image */}
+          {/* Phone */}
           <div
             className={`relative w-64 md:w-80 lg:w-[400px] flex-shrink-0 transition-all duration-1000 delay-200 ease-out transform ${
-              isVisible
-                ? 'opacity-100 translate-y-0 rotate-[-5deg]'
-                : 'opacity-0 translate-y-20 rotate-0'
+              isVisible ? 'opacity-100 translate-y-0 rotate-[-5deg]' : 'opacity-0 translate-y-20 rotate-0'
             }`}
           >
             <img
@@ -84,9 +64,20 @@ const GameSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Area: Feature Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl px-4">
-          {/* Card 1 */}
+        {/* Actor Image - single image, responsive */}
+        <img
+          src="/images/VijayImg3.png"
+          alt="Thalapathi Vijay"
+          className={`transition-all duration-1000 ease-out object-contain
+            w-48 md:w-64 lg:w-[500px]
+            ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
+            relative lg:absolute lg:bottom-0 lg:right-0 lg:translate-y-0
+            mx-auto mb-10 lg:mx-0
+          `}
+        />
+
+        {/* Feature Cards */}
+        <div className="relative z-20 w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-6 px-4 mt-12">
           <div
             className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-300 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
@@ -96,7 +87,6 @@ const GameSection: React.FC = () => {
             <span className="text-white font-bold text-lg">Play the Game</span>
           </div>
 
-          {/* Card 2 */}
           <div
             className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-500 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
@@ -106,7 +96,6 @@ const GameSection: React.FC = () => {
             <span className="text-white font-bold text-lg">Earn Fan Points</span>
           </div>
 
-          {/* Card 3 */}
           <div
             className={`group backdrop-blur-md border-2 border-yellow-500/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center gap-3 transition-all duration-700 delay-700 hover:scale-105 hover:border-yellow-500 cursor-pointer shadow-lg transform ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
