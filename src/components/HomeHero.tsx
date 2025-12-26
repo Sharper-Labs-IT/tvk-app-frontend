@@ -6,14 +6,12 @@ const HomeHero: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 0.5 second delay to account for global loading screen
     const timer = setTimeout(() => {
       setIsVisible(true);
     }, 500);
     return () => clearTimeout(timer);
   }, []);
 
-  // Helper string for common transition styles
   const transitionBase = 'transition-all duration-1000 ease-out transform';
   const getAnimClass = (delayClass: string) =>
     `${transitionBase} ${delayClass} ${
@@ -21,88 +19,148 @@ const HomeHero: React.FC = () => {
     }`;
 
   return (
-    // UPDATED: Increased min-h for mobile to 1000px to prevent overlap
-    <section className="relative w-full bg-brand-dark overflow-hidden min-h-[1000px] lg:min-h-[650px] flex items-start lg:items-center">
-      {/* --- LAYER 1: Yellow Line --- */}
+    <section className="relative w-full bg-brand-dark overflow-hidden">
+      {/* Yellow Line */}
       <div className="absolute bottom-2 left-0 w-full h-3 bg-brand-gold z-0" />
 
-      {/* --- LAYER 2: Hero Image --- */}
-      <img
-        src="/images/HeroBackImg.png"
-        alt="Thalapathy Vijay"
-        // UPDATED: Changed mobile height to h-[45%] to keep it lower down, preventing button overlap
-        className={`absolute bottom-0 left-1/2 -translate-x-1/2 lg:left-auto lg:translate-x-0 lg:right-0 z-10 w-auto h-[45%] md:h-[75%] lg:h-[95%] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
-          isVisible ? 'opacity-100' : 'opacity-0'
-        }`}
-      />
-
-      {/* --- LAYER 3: Red Line --- */}
+      {/* Red Line */}
       <div className="absolute bottom-0 left-0 w-full h-2 bg-red-600 z-20" />
 
-      {/* --- LAYER 4: Main Content --- */}
-      <div className="relative z-30 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full h-full">
-        {/* UPDATED: Adjusted padding to ensure content sits nicely at the top on mobile */}
-        <div className="flex flex-col justify-start lg:justify-center items-center lg:items-start text-center lg:text-left h-full w-full lg:w-2/3 pt-24 lg:pt-0 lg:py-20">
-          {/* Headline */}
-          <h1
-            className={`text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight uppercase whitespace-normal md:whitespace-nowrap ${getAnimClass(
-              'delay-0'
-            )}`}
-          >
-            <span className="bg-[linear-gradient(to_bottom,theme('colors.brand.goldDark'),#e8d479ff,#a06800ff,#e8d479ff)] bg-clip-text text-transparent drop-shadow-sm leading-tight">
-              TVK Members
-            </span>
-          </h1>
+      {/* Desktop Layout (lg+) - Grid with image on right */}
+      <div className="hidden lg:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-screen flex items-center">
+          <div className="grid grid-cols-2 gap-8 items-center w-full">
+            {/* Left: Text Content */}
+            <div className="flex flex-col justify-center text-left">
+              <h1
+  className={`
+    ${getAnimClass('delay-0')}
+    font-extrabold tracking-tight uppercase
+    whitespace-nowrap
+    max-w-none
+    text-[clamp(3.5rem,6vw,6rem)]
+  `}
+>
+  <span className="
+    bg-[linear-gradient(to_bottom,theme('colors.brand.goldDark'),#e8d479ff,#a06800ff,#e8d479ff)]
+    bg-clip-text text-transparent
+    drop-shadow-sm
+  ">
+    TVK Members
+  </span>
+</h1>
 
-          {/* Spacer */}
-          <div className="h-6 md:h-8" />
+              <div className="h-8" />
 
-          {/* Sub-headline */}
-          <h2
-            className={`text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight ${getAnimClass(
-              'delay-[200ms]'
-            )}`}
-          >
-            The Ultimate Global Fan Hub
-          </h2>
+              <h2 className={`text-4xl lg:text-5xl font-bold text-white leading-tight ${getAnimClass('delay-[200ms]')}`}>
+                The Ultimate Global Fan Hub
+              </h2>
 
-          {/* Spacer */}
-          <div className="h-6 md:h-8" />
+              <div className="h-8" />
 
-          {/* Tagline */}
-          <p
-            className={`text-lg md:text-xl text-gray-300 font-medium ${getAnimClass(
-              'delay-[400ms]'
-            )}`}
-          >
-            One World. One Thalapathy Family.
-          </p>
+              <p className={`text-xl text-gray-300 font-medium ${getAnimClass('delay-[400ms]')}`}>
+                One World. One Thalapathy Family.
+              </p>
 
-          {/* Spacer */}
-          <div className="h-10 md:h-12" />
+              <div className="h-12" />
 
-          {/* Buttons Group */}
-          <div
-            className={`w-full flex flex-col sm:flex-row justify-center lg:justify-start gap-5 ${getAnimClass(
-              'delay-[600ms]'
-            )}`}
-          >
-            <button
-              onClick={() => navigate('/signup')}
-              className="px-10 py-4 bg-white text-brand-dark font-bold rounded shadow hover:bg-gray-100 transition-colors duration-200 uppercase tracking-wide text-sm md:text-base"
-            >
-              Join Free
-            </button>
+              <div className={`flex flex-row justify-start gap-5 ${getAnimClass('delay-[600ms]')}`}>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="px-10 py-4 bg-white text-brand-dark font-bold rounded shadow hover:bg-gray-100 transition-colors duration-200 uppercase tracking-wide text-base"
+                >
+                  Join Free
+                </button>
 
-            <button
-              onClick={() => navigate('/membership')}
-              className="px-10 py-4 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark transition-colors duration-200 uppercase tracking-wide text-sm md:text-base"
-            >
-              Become a Super Fan $9.99
-            </button>
+                <button
+                  onClick={() => navigate('/membership')}
+                  className="px-10 py-4 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark transition-colors duration-200 uppercase tracking-wide text-base"
+                >
+                  Become a Super Fan $9.99
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Hero Image - Normal flow, no absolute overflow */}
+            <div className="flex justify-end items-end h-full pb-8">
+              <img
+                src="/images/HeroBackImg.png"
+                alt="Thalapathy Vijay"
+                className={`w-auto h-[95%] max-h-screen object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
+                  isVisible ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+            </div>
           </div>
         </div>
       </div>
+
+     {/* Mobile & Tablet Layout */}
+<div className="lg:hidden">
+  <div className="relative min-h-screen flex flex-col justify-start pt-24 px-4 sm:px-6">
+    {/* Text Content - Centered */}
+    <div className="flex flex-col items-center text-center z-30">
+      <h1
+        className={`
+          ${getAnimClass('delay-0')}
+          font-extrabold tracking-tight uppercase
+          whitespace-nowrap
+          text-[clamp(2.5rem,8vw,4.5rem)]
+        `}
+      >
+        <span className="
+          bg-[linear-gradient(to_bottom,theme('colors.brand.goldDark'),#e8d479ff,#a06800ff,#e8d479ff)]
+          bg-clip-text text-transparent
+          drop-shadow-sm
+        ">
+          TVK Members
+        </span>
+      </h1>
+
+      <div className="h-6 md:h-8" />
+
+      <h2 className={`text-3xl md:text-4xl font-bold text-white leading-tight ${getAnimClass('delay-[200ms]')}`}>
+        The Ultimate Global Fan Hub
+      </h2>
+
+      <div className="h-6 md:h-8" />
+
+      <p className={`text-lg md:text-xl text-gray-300 font-medium ${getAnimClass('delay-[400ms]')}`}>
+        One World. One Thalapathy Family.
+      </p>
+
+      <div className="h-10 md:h-12" />
+
+      <div className={`flex flex-col sm:flex-row justify-center gap-5 ${getAnimClass('delay-[600ms]')}`}>
+        <button
+          onClick={() => navigate('/signup')}
+          className="px-10 py-4 bg-white text-brand-dark font-bold rounded shadow hover:bg-gray-100 transition-colors duration-200 uppercase tracking-wide text-sm md:text-base"
+        >
+          Join Free
+        </button>
+
+        <button
+          onClick={() => navigate('/membership')}
+          className="px-10 py-4 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark transition-colors duration-200 uppercase tracking-wide text-sm md:text-base"
+        >
+          Become a Super Fan $9.99
+        </button>
+      </div>
+    </div>
+
+    {/* Mobile Hero Image - Flow below buttons */}
+    <div className="mt-8 md:mt-12 flex justify-center">
+      <img
+        src="/images/HeroBackImg.png"
+        alt="Thalapathy Vijay"
+        className={`w-auto h-[35%] md:h-[55%] object-contain pointer-events-none transition-opacity duration-1000 ${
+          isVisible ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
+    </div>
+  </div>
+</div>
+
     </section>
   );
 };

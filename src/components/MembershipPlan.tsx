@@ -33,8 +33,8 @@ const MembershipPlan: React.FC = () => {
   };
 
   return (
-    // UPDATED: 'pb-0' on mobile ensures the image at the bottom sits flush at the end
-    <section className="relative w-full min-h-[600px] pt-10 pb-0 lg:py-20 overflow-hidden bg-brand-dark flex items-center justify-center">
+    // UPDATED: 'lg:pb-0' ensures the desktop image touches the very bottom edge
+    <section className="relative w-full min-h-[600px] pt-10 pb-0 lg:pt-20 lg:pb-0 overflow-hidden bg-brand-dark flex items-center justify-center">
       {/* Background Image */}
       <div
         className="absolute inset-0 z-0"
@@ -54,20 +54,23 @@ const MembershipPlan: React.FC = () => {
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
       >
-        {/* Main Layout: Image Left | Free Center | Paid Right */}
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8">
+        {/* Main Layout: Desktop = One Line (Image | Free | Paid), Aligned to Bottom */}
+        {/* 'items-end' pushes the image to the bottom line */}
+        <div className="flex flex-col lg:flex-row items-center lg:items-end justify-center gap-6 lg:gap-8">
           {/* 1. Vijay Image (Left Side - Desktop Only) */}
+          {/* RESTORED: Shows in the same line on desktop */}
           <motion.div className="hidden lg:block w-1/3 max-w-[350px]" variants={itemVariants}>
             <img
               src="/images/VijayImg1.png"
               alt="Thalapathy Vijay"
-              className="w-full h-auto object-contain drop-shadow-2xl"
+              className="w-full h-auto object-contain drop-shadow-2xl block"
             />
           </motion.div>
 
           {/* 2. Free Membership Column */}
+          {/* Added 'lg:mb-20' so the card floats up, while image stays at bottom */}
           <motion.div
-            className="w-full max-w-md lg:w-1/3 flex flex-col items-center"
+            className="w-full max-w-md lg:w-1/3 flex flex-col items-center lg:mb-20"
             variants={itemVariants}
           >
             {/* Title Outside Card */}
@@ -77,7 +80,6 @@ const MembershipPlan: React.FC = () => {
 
             {/* Card - Fixed Height */}
             <div className="w-full lg:h-[380px] bg-gray-200/90 rounded-3xl p-6 lg:p-8 shadow-lg backdrop-blur-sm flex flex-col justify-center items-center text-center">
-              {/* Content Container */}
               <div className="w-full">
                 {/* Top Icons */}
                 <div className="flex justify-center gap-6 mb-6 lg:mb-8 text-white">
@@ -112,8 +114,9 @@ const MembershipPlan: React.FC = () => {
           </motion.div>
 
           {/* 3. Super Fan Column */}
+          {/* Added 'lg:mb-20' so the card floats up */}
           <motion.div
-            className="w-full max-w-md lg:w-1/3 flex flex-col items-center"
+            className="w-full max-w-md lg:w-1/3 flex flex-col items-center lg:mb-20"
             variants={itemVariants}
           >
             <h3 className="text-2xl font-bold text-center mb-4 lg:mb-6">
@@ -124,36 +127,38 @@ const MembershipPlan: React.FC = () => {
             {/* Card */}
             <div className="w-full lg:h-[380px] bg-black border-2 border-brand-gold rounded-3xl p-1 relative shadow-[0_0_30px_rgba(182,141,64,0.3)] flex flex-col">
               <div className="bg-black rounded-[20px] p-6 lg:p-8 pt-8 lg:pt-10 w-full h-full flex flex-col justify-center">
-                {/* Content */}
-                <div className="w-full text-center space-y-1 mb-6 lg:mb-8">
-                  <div className="flex items-center justify-center gap-3 text-white">
-                    <Infinity className="text-brand-gold" size={32} />
-                    <span className="text-sm font-medium">Unlimited game plays</span>
-                  </div>
+                {/* UPDATED: Content is Centered in Card, but Items are Left Aligned */}
+                <div className="w-full flex justify-center mb-6 lg:mb-8">
+                  <div className="flex flex-col gap-3 text-white items-start">
+                    <div className="flex items-center gap-3">
+                      <Infinity className="text-brand-gold shrink-0" size={32} />
+                      <span className="text-sm font-medium">Unlimited game plays</span>
+                    </div>
 
-                  <div className="flex items-center justify-center gap-3 text-white">
-                    <Zap className="text-brand-gold" size={32} />
-                    <span className="text-sm font-medium">Double reward points</span>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <Zap className="text-brand-gold shrink-0" size={32} />
+                      <span className="text-sm font-medium">Double reward points</span>
+                    </div>
 
-                  <div className="flex items-center justify-center gap-3 text-white">
-                    <PlayCircle className="text-brand-gold" size={32} />
-                    <span className="text-sm font-medium">Exclusive content</span>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <PlayCircle className="text-brand-gold shrink-0" size={32} />
+                      <span className="text-sm font-medium">Exclusive content</span>
+                    </div>
 
-                  <div className="flex items-center justify-center gap-3 text-white">
-                    <Radio className="text-brand-gold" size={32} />
-                    <span className="text-sm font-medium">Livestream access</span>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <Radio className="text-brand-gold shrink-0" size={32} />
+                      <span className="text-sm font-medium">Livestream access</span>
+                    </div>
 
-                  <div className="flex items-center justify-center gap-3 text-white">
-                    <Award className="text-brand-gold" size={32} />
-                    <span className="text-sm font-medium">Premium digital badges</span>
-                  </div>
+                    <div className="flex items-center gap-3">
+                      <Award className="text-brand-gold shrink-0" size={32} />
+                      <span className="text-sm font-medium">Premium digital badges</span>
+                    </div>
 
-                  <div className="flex items-center justify-center gap-3 text-white">
-                    <Clock className="text-brand-gold" size={32} />
-                    <span className="text-sm font-medium">Early access to events</span>
+                    <div className="flex items-center gap-3">
+                      <Clock className="text-brand-gold shrink-0" size={32} />
+                      <span className="text-sm font-medium">Early access to events</span>
+                    </div>
                   </div>
                 </div>
 
@@ -169,6 +174,7 @@ const MembershipPlan: React.FC = () => {
         </div>
 
         {/* Mobile Only Image - Positioned at very END of component */}
+        {/* This handles the mobile view requirement separately */}
         <motion.div
           className="block lg:hidden w-full max-w-[280px] mx-auto mt-10"
           variants={itemVariants}

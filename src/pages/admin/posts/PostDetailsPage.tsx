@@ -14,6 +14,7 @@ import {
   User,
   Trash2,
 } from 'lucide-react';
+import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
 const PostDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -21,8 +22,11 @@ const PostDetailsPage: React.FC = () => {
 
   const [post, setPost] = useState<IContent | null>(null);
   const [loading, setLoading] = useState(true);
-  const [deleting, setDeleting] = useState(false); // New state for delete action
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // State for delete confirmation modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -42,30 +46,33 @@ const PostDetailsPage: React.FC = () => {
     }
   };
 
-  // ✅ New Function: Handle Delete Logic
-  const handleDelete = async () => {
+  // Triggered when user clicks the delete button
+  const initiateDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  // Triggered when user clicks "Confirm" in the modal
+  const handleConfirmDelete = async () => {
     if (!post) return;
-
-    // 1. Confirm intention
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this post? This action cannot be undone.'
-    );
-
-    if (!confirmed) return;
 
     try {
       setDeleting(true);
-      // 2. Call API
+      // Call API
       await contentService.delete(post.id);
 
-      // 3. Redirect on success
+      // Redirect on success
       navigate('/admin/posts');
     } catch (err: any) {
-      // 4. Handle Error
+      // Handle Error
       const msg = err.response?.data?.message || 'Failed to delete post';
       alert(msg);
       setDeleting(false);
+      setIsDeleteModalOpen(false); // Close modal on error so user can try again
     }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
   };
 
   if (loading)
@@ -215,9 +222,9 @@ const PostDetailsPage: React.FC = () => {
                 <Edit size={16} /> Edit Post
               </button>
 
-              {/* ✅ Fixed Delete Button */}
+              {/* Delete Button */}
               <button
-                onClick={handleDelete}
+                onClick={initiateDelete}
                 disabled={deleting}
                 className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg border border-red-500/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
               >
@@ -233,6 +240,18 @@ const PostDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This action cannot be undone."
+        confirmText="Delete Post"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        isConfirming={deleting}
+      />
     </div>
   );
 };
