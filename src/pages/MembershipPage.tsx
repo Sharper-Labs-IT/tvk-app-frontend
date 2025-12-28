@@ -19,6 +19,8 @@ import MembershipCancelModal from '../components/MembershipCancelModal';
 import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
 import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
 import { toast } from 'react-hot-toast';
+import { getCountryFromMobile } from '../utils/countryHelper';
+import { useGeoLocation } from '../hooks/useGeoLocation';
 
 // ---------- Framer Motion variants ----------
 const benefitsContainerVariants: Variants = {
@@ -67,8 +69,9 @@ const MembershipPage: React.FC = () => {
 
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
 
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
+  const { countryCode: detectedCountryCode } = useGeoLocation();
 
   // ---------- Fetch membership plans via Axios ----------
   useEffect(() => {
@@ -138,6 +141,12 @@ const MembershipPage: React.FC = () => {
       navigate('/login', {
         state: { from: '/membership' },
       });
+      return;
+    }
+
+    // Check for India users
+    if (user?.mobile && getCountryFromMobile(user.mobile) === 'India') {
+      toast.error('Membership purchase is not available for users in India.');
       return;
     }
 
@@ -280,8 +289,10 @@ const MembershipPage: React.FC = () => {
                 (userMembershipTier === 'Super Fan' || userMembershipTier === 'super_fan') && userMembershipStatus === 'active';
               
               const isUserFree = isLoggedIn && !isUserSuperFan;
+              const isIndia = detectedCountryCode === 'IN';
 
               const buttonText = (() => {
+                if (isIndia) return 'Not Available';
                 if (isUserSuperFan && (plan.name === 'Super Fan' || plan.name === 'super_fan')) {
                   return 'Manage Membership';
                 }
@@ -295,6 +306,7 @@ const MembershipPage: React.FC = () => {
               })();
 
               const buttonDisabled = (() => {
+                  if (isIndia) return true;
                   if (isUserSuperFan && (plan.name === 'Super Fan' || plan.name === 'super_fan')) return false;
                   if (isFree && isLoggedIn) return true;
                   return false;

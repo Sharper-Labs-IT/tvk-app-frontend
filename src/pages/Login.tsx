@@ -209,14 +209,23 @@ const Login: React.FC = () => {
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[100px] animate-pulse-slow"></div>
         </div>
 
-        <LogoHeader isVisible={isVisible} delayClass="delay-0" />
+        <LogoHeader
+          isVisible={isVisible}
+          delayClass="delay-0"
+          text={
+            <>
+              THALAPAHTY <span className="text-tvk-accent-gold">VJ</span> {' '}
+              <span className="text-tvk-accent-gold">KUDUMBAM MEMBERSHIP</span> – SIGN IN
+            </>
+          }
+        />
 
-        <div className="flex-grow flex items-center justify-center px-4 sm:px-6 z-10">
-          <div className={`max-w-md w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
-            <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl">
-              <div className={`text-center mb-10 ${getAnimationClass('delay-[200ms]')}`}>
-                <h2 className="text-3xl font-bold text-tvk-accent-gold mb-2">Welcome Back</h2>
-                <p className="text-gray-400 text-sm">Sign in to your TVK Membership Dashboard</p>
+        <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 z-10 py-10 lg:py-16">
+          <div className={`max-w-md lg:max-w-xl w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
+            <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 lg:p-12 rounded-2xl shadow-2xl">
+              <div className={`text-center mb-10 lg:mb-12 ${getAnimationClass('delay-[200ms]')}`}>
+                <h2 className="text-3xl lg:text-4xl font-bold text-tvk-accent-gold mb-2 lg:mb-4">Welcome Back</h2>
+                <p className="text-gray-400 text-sm lg:text-base">Sign in to your TVK Membership Dashboard</p>
               </div>
 
               {error && (
@@ -280,7 +289,7 @@ const Login: React.FC = () => {
                     type="submit"
                     variant="gold"
                     isLoading={loading}
-                    className="flex justify-center items-center gap-2 group"
+                    className="flex justify-center items-center gap-2 group w-full py-3 lg:py-4 text-base lg:text-lg font-bold"
                   >
                     <span>Sign In</span>
                     {!loading && (

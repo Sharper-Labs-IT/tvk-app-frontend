@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const HomeHero: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
+  const { countryCode: detectedCountryCode } = useGeoLocation();
   const isSuperFan = user?.membership_tier === 'super_fan' || user?.membership_tier === 'Super Fan';
+  const isIndia = detectedCountryCode === 'IN';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -81,7 +84,14 @@ const HomeHero: React.FC = () => {
                       'delay-[600ms]'
                     )}`}
                   >
-                    {isLoggedIn && isSuperFan ? (
+                    {isIndia ? (
+                      <button
+                        disabled
+                        className="px-8 py-3 xl:px-10 xl:py-4 2xl:px-16 2xl:py-6 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-sm xl:text-base 2xl:text-2xl whitespace-nowrap border border-gray-700"
+                      >
+                        Not Available in India
+                      </button>
+                    ) : isLoggedIn && isSuperFan ? (
                       <button
                         onClick={() => navigate('/membership')}
                         className="px-8 py-3 xl:px-10 xl:py-4 2xl:px-16 2xl:py-6 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm xl:text-base 2xl:text-2xl whitespace-nowrap"
@@ -188,7 +198,14 @@ const HomeHero: React.FC = () => {
               <div
                 className={`flex flex-row justify-center gap-4 ${getAnimClass('delay-[600ms]')}`}
               >
-                {isLoggedIn && isSuperFan ? (
+                {isIndia ? (
+                  <button
+                    disabled
+                    className="px-7 py-3.5 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-sm whitespace-nowrap border border-gray-700"
+                  >
+                    Not Available in India
+                  </button>
+                ) : isLoggedIn && isSuperFan ? (
                   <button
                     onClick={() => navigate('/membership')}
                     className="px-7 py-3.5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
@@ -290,7 +307,14 @@ const HomeHero: React.FC = () => {
             <div className="h-8" />
 
             <div className={`flex flex-col w-full max-w-sm gap-3 ${getAnimClass('delay-[600ms]')}`}>
-              {isLoggedIn && isSuperFan ? (
+              {isIndia ? (
+                <button
+                  disabled
+                  className="w-full px-8 py-3.5 bg-gray-800 text-gray-500 font-bold rounded shadow cursor-not-allowed uppercase tracking-wide text-sm border border-gray-700"
+                >
+                  Not Available in India
+                </button>
+              ) : isLoggedIn && isSuperFan ? (
                 <button
                   onClick={() => navigate('/membership')}
                   className="w-full px-8 py-3.5 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark active:bg-yellow-600 transition-colors duration-200 uppercase tracking-wide text-sm"
