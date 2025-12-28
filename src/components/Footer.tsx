@@ -73,6 +73,11 @@ const Footer: React.FC = () => {
                   Community
                 </Link>
               </li>
+              <li>
+                <Link to="/cookie-policy" className="hover:text-brand-gold transition-colors">
+                  Cookie Policy
+                </Link>
+              </li>
             </ul>
           </motion.div>
 

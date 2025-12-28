@@ -39,6 +39,7 @@ const Signup = React.lazy(() => import('../pages/Signup'));
 const VerifyOtp = React.lazy(() => import('../pages/VerifyOtp'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+const CookiePolicy = React.lazy(() => import('../pages/CookiePolicy'));
 
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
@@ -169,6 +170,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
 
           {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
