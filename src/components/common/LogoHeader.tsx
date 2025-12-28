@@ -9,9 +9,10 @@ import { Link } from 'react-router-dom';
 interface LogoHeaderProps {
   isVisible?: boolean; // Controls the fade-in animation state
   delayClass?: string; // Controls the staggered delay
+  text?: React.ReactNode; // Optional custom text to replace "TVK MEMBERSHIP"
 }
 
-const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 'delay-0' }) => {
+const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 'delay-0', text }) => {
   // Base animation logic
   const animationClass = `transform transition-all duration-700 ease-out ${
     isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
@@ -20,10 +21,16 @@ const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 
   return (
     <div className={`flex justify-between items-center p-6 sm:p-8 z-10 w-full ${animationClass}`}>
       {/* Left Side: Logo */}
-      <div className="flex items-center gap-3 select-none">
-        <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-10 w-auto object-contain" />
-        <span className="text-white font-bold text-lg tracking-wider hidden sm:block">
-          TVK <span className="text-tvk-accent-gold">MEMBERSHIP</span>
+      <div className="flex items-center gap-2 sm:gap-3 select-none">
+        <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-8 sm:h-10 w-auto object-contain" />
+        <span className="text-white font-bold tracking-wider uppercase text-[10px] sm:text-sm md:text-base lg:text-lg xl:text-xl leading-tight">
+          {text ? (
+            text
+          ) : (
+            <>
+              TVK <span className="text-tvk-accent-gold">MEMBERSHIP</span>
+            </>
+          )}
         </span>
       </div>
 
@@ -32,7 +39,7 @@ const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 
         to="/"
         className="
           group flex items-center gap-2 
-          px-5 py-2.5 
+          px-3 py-1.5 sm:px-5 sm:py-2.5 
           rounded-full 
           bg-white/5 border border-white/10 backdrop-blur-sm
           hover:bg-white/10 hover:border-tvk-accent-gold/50 
@@ -43,7 +50,7 @@ const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 
         {/* Left Arrow Icon (Animate slide left on hover) */}
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4 text-gray-400 group-hover:text-tvk-accent-gold transition-colors duration-300 group-hover:-translate-x-1 transform"
+          className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 group-hover:text-tvk-accent-gold transition-colors duration-300 group-hover:-translate-x-1 transform"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -56,8 +63,8 @@ const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 
           />
         </svg>
 
-        <span className="text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-300">
-          Back to Home
+        <span className="text-xs sm:text-sm font-medium text-gray-300 group-hover:text-white transition-colors duration-300 whitespace-nowrap">
+          Back
         </span>
       </Link>
     </div>
