@@ -6,11 +6,14 @@ export interface ILoginPayload {
   password: string;
 }
 
-// 2. Signup Request Payload
+// 2. Signup Request Payload - UPDATED
+// Matches the new form fields and backend validation
 export interface ISignupPayload {
-  name: string;
+  first_name: string;
+  surname: string;
   email: string;
   mobile: string;
+  country: string;
   password: string;
   password_confirmation: string;
 }
@@ -81,13 +84,13 @@ export interface IRole {
 
 export interface IUser {
   id: number;
-  name: string;
-  
-  // MERGE FIX: Kept 'development' version because 'nickname_changes' is required 
+  name: string; // Backend still returns combined 'name' for display
+
+  // MERGE FIX: Kept 'development' version because 'nickname_changes' is required
   // for the Profile page logic (free nickname change calculation).
   nickname?: string; // Display name (shown instead of username)
   nickname_changes?: number; // Track how many times nickname has been changed
-  
+
   email: string;
   mobile?: string;
   is_verified: boolean;
@@ -95,6 +98,9 @@ export interface IUser {
   coins?: number;
   membership_type?: 'free' | 'premium' | 'vip';
   membership_tier?: 'free' | 'super_fan' | string;
+
+  // Added country here as optional, so if you need to display it later, it's available in the type
+  country?: string;
 
   // Roles can now be objects (Old) OR strings (New Backend)
   roles?: (IRole | string)[];
