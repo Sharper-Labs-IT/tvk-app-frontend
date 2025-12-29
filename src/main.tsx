@@ -1,23 +1,20 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import {Elements} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import App from './App.tsx'
-import './styles/global.css' // <--- MAKE SURE THIS LINE EXISTS!
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import App from './App.tsx';
+import './styles/global.css';
 
+// 1. Get the key (No console.log here anymore)
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string;
-console.log("VITE_STRIPE_PUBLISHABLE_KEY =", stripeKey);
 
+// 2. Load Stripe
 const stripePromise = loadStripe(stripeKey);
-
-//const stripePromise = loadStripe(
-  //import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string
-//);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Elements stripe={stripePromise}>
       <App />
     </Elements>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

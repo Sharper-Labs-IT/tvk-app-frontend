@@ -444,7 +444,7 @@ const Signup: React.FC = () => {
                         required
                         value={formData.first_name}
                         onChange={handleInputChange}
-                        placeholder="Vijay"
+                        placeholder="Enter First Name"
                         icon={UserIcon}
                       />
                       {fieldErrors.first_name && (
@@ -460,7 +460,7 @@ const Signup: React.FC = () => {
                         required
                         value={formData.surname}
                         onChange={handleInputChange}
-                        placeholder="Kumar"
+                        placeholder="Enter Surname"
                         icon={UserIcon}
                       />
                       {fieldErrors.surname && (
@@ -832,7 +832,7 @@ const Signup: React.FC = () => {
             'delay-[500ms]'
           )}`}
         >
-          &copy; 2025 TVK Membership Program. All rights reserved.
+          &copy; 2025 TVK Membership Programme. All rights reserved.
         </div>
       </div>
 
@@ -848,7 +848,7 @@ const Signup: React.FC = () => {
       <MessageModal
         isOpen={showRestrictedModal}
         title="Service Not Available"
-        message="We are sorry, but the TVK Membership Program is currently not available for users in India."
+        message="We are sorry, but the TVK Membership Programme is currently not available for users inside India."
         type="error"
         onClose={() => setShowRestrictedModal(false)}
         autoCloseDelay={null}
