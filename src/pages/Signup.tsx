@@ -9,58 +9,10 @@ import TermsModal from '../components/common/TermsModal';
 import PrivacyPolicyModal from '../components/common/PrivacyPolicyModal';
 import type { ISignupPayload, ISignupResponse } from '../types/auth';
 import { useGeoLocation } from '../hooks/useGeoLocation';
-import { COUNTRIES } from '../constants/countries'; // Import the country list
 
-// --- Phone Country Codes (Keep this for the mobile input prefix) ---
-const PHONE_CODES = [
-  { code: '+1', country: 'USA/Canada' },
-  { code: '+44', country: 'UK' },
-  { code: '+94', country: 'Sri Lanka' },
-  { code: '+61', country: 'Australia' },
-  { code: '+81', country: 'Japan' },
-  { code: '+49', country: 'Germany' },
-  { code: '+33', country: 'France' },
-  { code: '+86', country: 'China' },
-  { code: '+971', country: 'UAE' },
-  { code: '+966', country: 'Saudi Arabia' },
-  { code: '+65', country: 'Singapore' },
-  { code: '+60', country: 'Malaysia' },
-  { code: '+7', country: 'Russia' },
-  { code: '+55', country: 'Brazil' },
-  { code: '+52', country: 'Mexico' },
-  { code: '+39', country: 'Italy' },
-  { code: '+34', country: 'Spain' },
-  { code: '+82', country: 'South Korea' },
-  { code: '+31', country: 'Netherlands' },
-  { code: '+46', country: 'Sweden' },
-  { code: '+41', country: 'Switzerland' },
-  { code: '+27', country: 'South Africa' },
-  { code: '+20', country: 'Egypt' },
-  { code: '+92', country: 'Pakistan' },
-  { code: '+880', country: 'Bangladesh' },
-  { code: '+62', country: 'Indonesia' },
-  { code: '+63', country: 'Philippines' },
-  { code: '+84', country: 'Vietnam' },
-  { code: '+66', country: 'Thailand' },
-  { code: '+90', country: 'Turkey' },
-  { code: '+98', country: 'Iran' },
-  { code: '+234', country: 'Nigeria' },
-  { code: '+254', country: 'Kenya' },
-  { code: '+351', country: 'Portugal' },
-  { code: '+30', country: 'Greece' },
-  { code: '+48', country: 'Poland' },
-  { code: '+43', country: 'Austria' },
-  { code: '+32', country: 'Belgium' },
-  { code: '+45', country: 'Denmark' },
-  { code: '+358', country: 'Finland' },
-  { code: '+47', country: 'Norway' },
-  { code: '+353', country: 'Ireland' },
-  { code: '+64', country: 'New Zealand' },
-  { code: '+974', country: 'Qatar' },
-  { code: '+973', country: 'Bahrain' },
-  { code: '+968', country: 'Oman' },
-  { code: '+965', country: 'Kuwait' },
-].sort((a, b) => a.country.localeCompare(b.country));
+// --- Imported Constants to keep file clean ---
+import { COUNTRIES } from '../constants/countries';
+import { PHONE_CODES } from '../constants/phoneCodes';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
@@ -155,8 +107,7 @@ const Signup: React.FC = () => {
       // Logic for restricted countries (India)
       if (value === 'India') {
         setShowRestrictedModal(true);
-        // We still set it to allow the user to change it, or we can block it.
-        // Let's set it but show the modal.
+        // We still set it to allow the user to change it, but warn them
       }
       setFormData((prev) => ({ ...prev, [name]: value }));
     } else {
@@ -551,6 +502,7 @@ const Signup: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Mobile Number with Prefixes */}
                   <div>
                     <label
                       htmlFor="mobile"
