@@ -1,4 +1,4 @@
-import { BrowserRouter as Router } from 'react-router-dom';
+//import { BrowserRouter as Router } from 'react-router-dom';
 import AppRoutes from './routes/AppRoutes';
 import CookieBanner from './components/CookieBanner';
 import IdleTimeout from './components/IdleTimeOut';
