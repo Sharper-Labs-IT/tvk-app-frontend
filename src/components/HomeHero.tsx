@@ -38,13 +38,13 @@ const HomeHero: React.FC = () => {
           <div className="max-w-7xl 2xl:max-w-[90vw] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
             <div className="grid grid-cols-2 gap-8 xl:gap-12 2xl:gap-24 items-center w-full">
               {/* Left: Text Content */}
-              <div className="flex flex-col justify-center text-left space-y-6 2xl:space-y-12">
+              <div className="flex flex-col justify-center text-left space-y-3 2xl:space-y-6">
                 <h1
                   className={`
                     ${getAnimClass('delay-0')}
                     font-extrabold tracking-tight uppercase
-                    text-[clamp(3rem,4.5vw,5.5rem)] 
-                    2xl:text-[clamp(5rem,7vw,9rem)]
+                    text-[clamp(1.8rem,2.5vw,3rem)] 
+                    2xl:text-[clamp(3rem,4vw,5rem)]
                     leading-none
                   `}
                 >
@@ -60,7 +60,7 @@ const HomeHero: React.FC = () => {
                 </h1>
 
                 <h2
-                  className={`text-3xl xl:text-4xl 2xl:text-7xl font-bold text-white leading-tight ${getAnimClass(
+                  className={`text-lg xl:text-xl 2xl:text-4xl font-bold text-white leading-tight ${getAnimClass(
                     'delay-[200ms]'
                   )}`}
                 >
@@ -68,33 +68,33 @@ const HomeHero: React.FC = () => {
                 </h2>
 
                 <div
-                  className={`text-lg xl:text-xl 2xl:text-4xl text-gray-300 font-medium ${getAnimClass(
+                  className={`text-xs xl:text-sm 2xl:text-xl text-gray-300 font-medium ${getAnimClass(
                     'delay-[400ms]'
                   )}`}
                 >
                   <p>One World. One Thalapathy Family.</p>
-                  <p className="relative z-10 block mt-3 text-left text-sm font-medium text-gray-400 md:text-base xl:text-lg animate-fade-in-up">
+                  <p className="relative z-10 block mt-2 text-left text-[10px] font-medium text-gray-400 md:text-xs xl:text-xs animate-fade-in-up">
                     Membership is currently available to fans outside India only
                   </p>
                 </div>
 
-                <div className="flex flex-col items-start gap-4">
+                <div className="flex flex-col items-start gap-3">
                   <div
-                    className={`flex flex-row justify-start gap-4 pt-2 2xl:gap-8 2xl:pt-8 ${getAnimClass(
+                    className={`flex flex-row justify-start gap-3 pt-2 2xl:gap-6 2xl:pt-6 ${getAnimClass(
                       'delay-[600ms]'
                     )}`}
                   >
                     {isIndia ? (
                       <button
                         disabled
-                        className="px-8 py-3 xl:px-10 xl:py-4 2xl:px-16 2xl:py-6 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-sm xl:text-base 2xl:text-2xl whitespace-nowrap border border-gray-700"
+                        className="px-4 py-1.5 xl:px-6 xl:py-2.5 2xl:px-12 2xl:py-5 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl whitespace-nowrap border border-gray-700"
                       >
                         Not Available in India
                       </button>
                     ) : isLoggedIn && isSuperFan ? (
                       <button
                         onClick={() => navigate('/membership')}
-                        className="px-8 py-3 xl:px-10 xl:py-4 2xl:px-16 2xl:py-6 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm xl:text-base 2xl:text-2xl whitespace-nowrap"
+                        className="px-4 py-1.5 xl:px-6 xl:py-2.5 2xl:px-12 2xl:py-5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl whitespace-nowrap"
                       >
                         Manage Membership
                       </button>
@@ -103,7 +103,7 @@ const HomeHero: React.FC = () => {
                         <button
                           onClick={() => !isLoggedIn && navigate('/signup')}
                           disabled={isLoggedIn}
-                          className={`px-8 py-3 xl:px-10 xl:py-4 2xl:px-16 2xl:py-6 font-bold rounded-md shadow-lg transition-all duration-200 uppercase tracking-wide text-sm xl:text-base 2xl:text-2xl ${
+                          className={`px-4 py-1.5 xl:px-6 xl:py-2.5 2xl:px-12 2xl:py-5 font-bold rounded-md shadow-lg transition-all duration-200 uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl ${
                             isLoggedIn
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : 'bg-white text-brand-dark hover:bg-gray-100 hover:shadow-xl hover:scale-105'
@@ -114,7 +114,7 @@ const HomeHero: React.FC = () => {
 
                         <button
                           onClick={() => navigate('/membership')}
-                          className="px-7 py-3 xl:px-8 xl:py-4 2xl:px-14 2xl:py-6 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm xl:text-base 2xl:text-2xl whitespace-nowrap"
+                          className="px-4 py-1.5 xl:px-5 xl:py-2.5 2xl:px-10 2xl:py-5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl whitespace-nowrap"
                         >
                           Become a Super Fan £9.99
                         </button>
@@ -134,7 +134,7 @@ const HomeHero: React.FC = () => {
                 <img
                   src="/images/HeroBackImg.png"
                   alt="Thalapathy Vijay"
-                  className={`w-auto h-[85%] xl:h-[90%] max-h-[calc(100vh-6rem)] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
+                  className={`w-auto h-[75%] xl:h-[90%] 2xl:h-[100%] max-h-[calc(100vh-6rem)] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
                     isVisible ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
