@@ -15,6 +15,7 @@ import { motion, type Variants } from 'framer-motion';
 import type { Plan } from '../types/plan';
 import axiosClient from '../api/axiosClient';
 import MembershipPaymentModal from '../components/MembershipPaymentModal';
+import MembershipTermsModal from '../components/MembershipTermsModal';
 import MembershipCancelModal from '../components/MembershipCancelModal';
 import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
 import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
@@ -58,6 +59,7 @@ const MembershipPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   const [userMembershipTier, setUserMembershipTier] = useState<string | null>(null);
@@ -159,8 +161,13 @@ const MembershipPage: React.FC = () => {
       return;
     }
 
-    // logged in + paid -> open payment modal
+    // logged in + paid -> open terms modal first
     setSelectedPlan(plan);
+    setIsTermsModalOpen(true);
+  };
+
+  const handleTermsConfirm = () => {
+    setIsTermsModalOpen(false);
     setIsPaymentOpen(true);
   };
 
@@ -403,6 +410,13 @@ const MembershipPage: React.FC = () => {
       <MembershipPaymentSuccessModal
         isOpen={isPaymentSuccessOpen}
         onClose={() => setIsPaymentSuccessOpen(false)}
+      />
+
+      {/* Terms Modal */}
+      <MembershipTermsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+        onConfirm={handleTermsConfirm}
       />
 
       {/* Payment modal (Stripe Elements) */}
