@@ -9,12 +9,12 @@ import TermsModal from '../components/common/TermsModal';
 import PrivacyPolicyModal from '../components/common/PrivacyPolicyModal';
 import type { ISignupPayload, ISignupResponse } from '../types/auth';
 import { useGeoLocation } from '../hooks/useGeoLocation';
+import { COUNTRIES } from '../constants/countries'; // Import the country list
 
-// --- Country Data ---
-const COUNTRY_CODES = [
+// --- Phone Country Codes (Keep this for the mobile input prefix) ---
+const PHONE_CODES = [
   { code: '+1', country: 'USA/Canada' },
   { code: '+44', country: 'UK' },
-  // { code: '+91', country: 'India' }, // Removed India
   { code: '+94', country: 'Sri Lanka' },
   { code: '+61', country: 'Australia' },
   { code: '+81', country: 'Japan' },
@@ -65,27 +65,38 @@ const COUNTRY_CODES = [
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
+  // Updated state to match backend requirements
   const [formData, setFormData] = useState<ISignupPayload>({
-    name: '',
+    first_name: '',
+    surname: '',
     email: '',
     mobile: '',
+    country: '', // Selected Country Name
     password: '',
     password_confirmation: '',
   });
 
-  const [countryCode, setCountryCode] = useState('+44');
+  const [mobileCountryCode, setMobileCountryCode] = useState('+44');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
+  // Success Modal State
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // Warning Modal State (for India)
+  const [showRestrictedModal, setShowRestrictedModal] = useState(false);
+
   const [isVisible, setIsVisible] = useState(false);
 
-  // New State for Checkboxes and Modals
+  // Checkboxes
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [participationAgreed, setParticipationAgreed] = useState(false);
+
+  // Modals
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
@@ -95,14 +106,14 @@ const Signup: React.FC = () => {
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     number: false,
-    match: false
+    match: false,
   });
 
   useEffect(() => {
     setPasswordCriteria({
       length: formData.password.length >= 8,
       number: /\d/.test(formData.password),
-      match: formData.password === formData.password_confirmation && formData.password !== ''
+      match: formData.password === formData.password_confirmation && formData.password !== '',
     });
   }, [formData.password, formData.password_confirmation]);
 
@@ -115,19 +126,21 @@ const Signup: React.FC = () => {
 
   useEffect(() => {
     if (successData) {
-      // We still save email/name to session for convenience on the next page
       sessionStorage.setItem('temp_signup_email', formData.email);
-      sessionStorage.setItem('temp_signup_name', formData.name);
+      // Combine names for session storage display if needed
+      sessionStorage.setItem('temp_signup_name', `${formData.first_name} ${formData.surname}`);
 
       setSuccessMessage(
         `${successData.message} Click 'Close' below to go to the OTP verification screen.`
       );
       setShowSuccessModal(true);
     }
-  }, [successData, formData.email, formData.name]);
+  }, [successData, formData.email, formData.first_name, formData.surname]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+
+    // Clear field error when user types
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const newErrors = { ...prev };
@@ -136,8 +149,16 @@ const Signup: React.FC = () => {
       });
     }
 
-    if (name === 'countryCode') {
-      setCountryCode(value);
+    if (name === 'mobileCountryCode') {
+      setMobileCountryCode(value);
+    } else if (name === 'country') {
+      // Logic for restricted countries (India)
+      if (value === 'India') {
+        setShowRestrictedModal(true);
+        // We still set it to allow the user to change it, or we can block it.
+        // Let's set it but show the modal.
+      }
+      setFormData((prev) => ({ ...prev, [name]: value }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -147,7 +168,6 @@ const Signup: React.FC = () => {
     if (successData) {
       setSuccessData(null);
       setShowSuccessModal(false);
-      // Pass the ID normally
       navigate('/verify-otp', { state: { user_id: successData.user_id } });
     }
   };
@@ -156,8 +176,24 @@ const Signup: React.FC = () => {
     const newErrors: { [key: string]: string } = {};
     let isValid = true;
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.first_name.trim()) {
+      newErrors.first_name = 'First name is required';
+      isValid = false;
+    }
+
+    if (!formData.surname.trim()) {
+      newErrors.surname = 'Surname is required';
+      isValid = false;
+    }
+
+    if (!formData.country) {
+      newErrors.country = 'Please select your country';
+      isValid = false;
+    }
+
+    // Backend specifically blocks India, double check here
+    if (formData.country === 'India') {
+      setShowRestrictedModal(true);
       isValid = false;
     }
 
@@ -216,8 +252,9 @@ const Signup: React.FC = () => {
     setError(null);
     setSuccessData(null);
 
-    if (countryCode === '+91') {
-      setError('Registration is not available for users in India.');
+    // Initial check for India (GeoLocation or Manual Selection)
+    if (detectedCountryCode === 'IN' || formData.country === 'India') {
+      setShowRestrictedModal(true);
       setLoading(false);
       return;
     }
@@ -227,7 +264,7 @@ const Signup: React.FC = () => {
       return;
     }
 
-    const finalMobile = `${countryCode}${formData.mobile}`;
+    const finalMobile = `${mobileCountryCode}${formData.mobile}`;
 
     const payload = {
       ...formData,
@@ -258,6 +295,7 @@ const Signup: React.FC = () => {
     } ${delayClass}`;
   };
 
+  // --- ICONS ---
   const UserIcon = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -271,6 +309,23 @@ const Signup: React.FC = () => {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+      />
+    </svg>
+  );
+
+  const GlobeIcon = (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
       />
     </svg>
   );
@@ -339,19 +394,29 @@ const Signup: React.FC = () => {
           delayClass="delay-0"
           text={
             <>
-              THALAPAHTY <span className="text-tvk-accent-gold">VJ</span> {' '}
+              THALAPAHTY <span className="text-tvk-accent-gold">VJ</span>{' '}
               <span className="text-tvk-accent-gold">KUDUMBAM MEMBERSHIP</span> – SIGN UP
             </>
           }
         />
 
         <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 z-10 py-10 lg:py-16">
-          <div className={`max-w-md lg:max-w-xl w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
+          <div
+            className={`max-w-md lg:max-w-xl w-full space-y-8 ${getAnimationClass(
+              'delay-[100ms]'
+            )}`}
+          >
             <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 lg:p-12 rounded-2xl shadow-2xl">
               <div className={`text-center mb-8 lg:mb-10 ${getAnimationClass('delay-[200ms]')}`}>
-                <h2 className="text-3xl lg:text-4xl font-bold text-tvk-accent-gold mb-2 lg:mb-4">Create an Account</h2>
-                <p className="text-gray-400 text-sm lg:text-base">Join the Free TVK Membership Program today</p>
-                <p className="text-gray-400 text-xs lg:text-sm mt-1">Membership is currently available to fans outside India only</p>
+                <h2 className="text-3xl lg:text-4xl font-bold text-tvk-accent-gold mb-2 lg:mb-4">
+                  Create an Account
+                </h2>
+                <p className="text-gray-400 text-sm lg:text-base">
+                  Join the Free TVK Membership Program today
+                </p>
+                <p className="text-gray-400 text-xs lg:text-sm mt-1">
+                  Membership is currently available to fans outside India only
+                </p>
               </div>
 
               {error && (
@@ -382,20 +447,90 @@ const Signup: React.FC = () => {
                   className={`space-y-5 ${getAnimationClass('delay-[300ms]')}`}
                   onSubmit={handleSubmit}
                 >
+                  {/* First Name & Surname Split */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <InputField
+                        label="First Name"
+                        id="first_name"
+                        name="first_name"
+                        type="text"
+                        required
+                        value={formData.first_name}
+                        onChange={handleChange}
+                        placeholder="Vijay"
+                        icon={UserIcon}
+                      />
+                      {fieldErrors.first_name && (
+                        <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.first_name}</p>
+                      )}
+                    </div>
+                    <div>
+                      <InputField
+                        label="Surname"
+                        id="surname"
+                        name="surname"
+                        type="text"
+                        required
+                        value={formData.surname}
+                        onChange={handleChange}
+                        placeholder="Kumar"
+                        icon={UserIcon}
+                      />
+                      {fieldErrors.surname && (
+                        <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.surname}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Country Selection Dropdown */}
                   <div>
-                    <InputField
-                      label="Full Name"
-                      id="name"
-                      name="name"
-                      type="text"
-                      required
-                      value={formData.name}
-                      onChange={handleChange}
-                      placeholder="Your Name"
-                      icon={UserIcon}
-                    />
-                    {fieldErrors.name && (
-                      <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.name}</p>
+                    <label
+                      htmlFor="country"
+                      className="block text-sm font-medium text-gray-300 mb-1"
+                    >
+                      Country
+                    </label>
+                    <div className="relative flex rounded-lg shadow-sm">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                        {GlobeIcon}
+                      </div>
+                      <select
+                        name="country"
+                        id="country"
+                        required
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-[#2C2C2C] text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>
+                          Select your country
+                        </option>
+                        {COUNTRIES.map((countryName) => (
+                          <option key={countryName} value={countryName}>
+                            {countryName}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Arrow Icon for Select */}
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg
+                          className="h-4 w-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          ></path>
+                        </svg>
+                      </div>
+                    </div>
+                    {fieldErrors.country && (
+                      <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.country}</p>
                     )}
                   </div>
 
@@ -417,19 +552,22 @@ const Signup: React.FC = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="mobile" className="block text-sm font-medium text-gray-300 mb-1">
+                    <label
+                      htmlFor="mobile"
+                      className="block text-sm font-medium text-gray-300 mb-1"
+                    >
                       Mobile Number
                     </label>
                     <div className="relative flex rounded-lg shadow-sm">
                       <div className="relative">
                         <select
-                          name="countryCode"
-                          value={countryCode}
+                          name="mobileCountryCode"
+                          value={mobileCountryCode}
                           onChange={handleChange}
                           className="h-full rounded-l-lg border-r-0 border border-gray-600 bg-[#2C2C2C] text-gray-200 sm:text-sm focus:ring-tvk-accent-gold focus:border-tvk-accent-gold py-3 pl-3 pr-7 appearance-none cursor-pointer outline-none"
                           style={{ minWidth: '80px' }}
                         >
-                          {COUNTRY_CODES.map((country) => (
+                          {PHONE_CODES.map((country) => (
                             <option key={country.code} value={country.code}>
                               {country.code} ({country.country})
                             </option>
@@ -470,15 +608,31 @@ const Signup: React.FC = () => {
                       icon={LockIcon}
                       className="lg:py-4 lg:text-base"
                     />
-                    
+
                     {/* Password Validation UI */}
                     <div className="mt-2 space-y-1 pl-1">
-                      <div className={`flex items-center text-xs lg:text-sm transition-colors duration-300 ${passwordCriteria.length ? 'text-green-500' : 'text-gray-500'}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full mr-2 ${passwordCriteria.length ? 'bg-green-500' : 'bg-gray-500'}`} />
+                      <div
+                        className={`flex items-center text-xs lg:text-sm transition-colors duration-300 ${
+                          passwordCriteria.length ? 'text-green-500' : 'text-gray-500'
+                        }`}
+                      >
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                            passwordCriteria.length ? 'bg-green-500' : 'bg-gray-500'
+                          }`}
+                        />
                         Minimum 8 characters
                       </div>
-                      <div className={`flex items-center text-xs lg:text-sm transition-colors duration-300 ${passwordCriteria.number ? 'text-green-500' : 'text-gray-500'}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full mr-2 ${passwordCriteria.number ? 'bg-green-500' : 'bg-gray-500'}`} />
+                      <div
+                        className={`flex items-center text-xs lg:text-sm transition-colors duration-300 ${
+                          passwordCriteria.number ? 'text-green-500' : 'text-gray-500'
+                        }`}
+                      >
+                        <div
+                          className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                            passwordCriteria.number ? 'bg-green-500' : 'bg-gray-500'
+                          }`}
+                        />
                         At least one number
                       </div>
                     </div>
@@ -501,10 +655,18 @@ const Signup: React.FC = () => {
                       icon={LockIcon}
                       className="lg:py-4 lg:text-base"
                     />
-                     <div className={`mt-2 flex items-center text-xs lg:text-sm transition-colors duration-300 pl-1 ${passwordCriteria.match ? 'text-green-500' : 'text-gray-500'}`}>
-                        <div className={`w-1.5 h-1.5 rounded-full mr-2 ${passwordCriteria.match ? 'bg-green-500' : 'bg-gray-500'}`} />
-                        Passwords match
-                      </div>
+                    <div
+                      className={`mt-2 flex items-center text-xs lg:text-sm transition-colors duration-300 pl-1 ${
+                        passwordCriteria.match ? 'text-green-500' : 'text-gray-500'
+                      }`}
+                    >
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full mr-2 ${
+                          passwordCriteria.match ? 'bg-green-500' : 'bg-gray-500'
+                        }`}
+                      />
+                      Passwords match
+                    </div>
                     {fieldErrors.password_confirmation && (
                       <p className="text-red-400 text-xs mt-1 ml-1">
                         {fieldErrors.password_confirmation}
@@ -514,10 +676,6 @@ const Signup: React.FC = () => {
 
                   {/* Mandatory Declarations */}
                   <div className="space-y-4 pt-2">
-                    {/* <h3 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-                      Mandatory Declarations / Legal
-                    </h3> */}
-                    
                     <div className="space-y-3">
                       <label className="flex items-start gap-3 cursor-pointer group">
                         <div className="relative flex items-center mt-1">
@@ -561,7 +719,9 @@ const Signup: React.FC = () => {
                           >
                             Privacy Policy
                           </button>
-                          , and I consent to the collection, storage and processing of my personal data in accordance with UK GDPR and applicable laws in my country of residence.
+                          , and I consent to the collection, storage and processing of my personal
+                          data in accordance with UK GDPR and applicable laws in my country of
+                          residence.
                         </span>
                       </label>
                       {fieldErrors.terms && (
@@ -627,7 +787,9 @@ const Signup: React.FC = () => {
                           </svg>
                         </div>
                         <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">
-                          I understand that participation in any games, contests, rewards, or events is voluntary and may be subject to separate rules and eligibility requirements.
+                          I understand that participation in any games, contests, rewards, or events
+                          is voluntary and may be subject to separate rules and eligibility
+                          requirements.
                         </span>
                       </label>
                       {fieldErrors.participation && (
@@ -650,7 +812,9 @@ const Signup: React.FC = () => {
                   {/* Disclaimer */}
                   <div className="pt-4 border-t border-gray-800">
                     <p className="text-[10px] text-gray-500 text-center leading-relaxed">
-                      <span className="font-bold text-gray-400">Disclaimer:</span> Independent fan platform — not officially associated with or endorsed by actor Vijay or his representatives.
+                      <span className="font-bold text-gray-400">Disclaimer:</span> Independent fan
+                      platform — not officially associated with or endorsed by actor Vijay or his
+                      representatives.
                     </p>
                   </div>
                 </form>
@@ -688,10 +852,17 @@ const Signup: React.FC = () => {
         autoCloseDelay={null}
       />
 
-      <TermsModal
-        isOpen={isTermsModalOpen}
-        onClose={() => setIsTermsModalOpen(false)}
+      {/* Restricted Country Modal (India) */}
+      <MessageModal
+        isOpen={showRestrictedModal}
+        title="Service Not Available"
+        message="We are sorry, but the TVK Membership Program is currently not available for users in India."
+        type="error"
+        onClose={() => setShowRestrictedModal(false)}
+        autoCloseDelay={null}
       />
+
+      <TermsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} />
 
       <PrivacyPolicyModal
         isOpen={isPrivacyModalOpen}
