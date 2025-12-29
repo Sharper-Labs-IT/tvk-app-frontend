@@ -106,7 +106,7 @@ const Header: React.FC = () => {
                 relative h-16 md:h-20 w-auto
                 ${
                   isHome
-                    ? 'xl:absolute xl:top-0 xl:h-48 xl:max-w-none xl:drop-shadow-xl'
+                    ? 'xl:absolute xl:top-0 xl:h-36 xl:max-w-none xl:drop-shadow-xl'
                     : 'xl:relative xl:h-20'
                 }
               `}
