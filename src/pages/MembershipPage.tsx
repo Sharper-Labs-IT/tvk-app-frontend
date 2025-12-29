@@ -68,6 +68,8 @@ const hardCodedPlans: Plan[] = [
       '10% Off Merchandise',
       'Introductory Gaming Experience',
     ],
+  created_at: "2025-01-01T00:00:00Z",  // or new Date().toISOString()
+  updated_at: "2025-01-01T00:00:00Z",
   },
   {
     id: 2,
@@ -88,6 +90,8 @@ const hardCodedPlans: Plan[] = [
       'Future Super Fan Chapters (suspense!)',
       'Gaming experiences feature artificial-intelligence–generated visuals and simulated environments',
     ],
+    created_at: "2025-01-01T00:00:00Z",  // or new Date().toISOString()
+    updated_at: "2025-01-01T00:00:00Z",
   },
 ];
 
