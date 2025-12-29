@@ -19,7 +19,7 @@ const NavBar = () => {
 
   // audio + visual indicator toggle
   const [isAudioPlaying] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Mobile menu state
+  const [isMenuOpen, setIsMenuOpen] = useState(false); 
 
   // refs
   const audioElementRef = useRef<HTMLAudioElement | null>(null);

@@ -19,6 +19,8 @@ import MembershipCancelModal from '../components/MembershipCancelModal';
 import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
 import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
 import { toast } from 'react-hot-toast';
+import { getCountryFromMobile } from '../utils/countryHelper';
+import { useGeoLocation } from '../hooks/useGeoLocation';
 
 // ---------- Framer Motion variants ----------
 const benefitsContainerVariants: Variants = {
@@ -67,8 +69,9 @@ const MembershipPage: React.FC = () => {
 
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
 
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const navigate = useNavigate();
+  const { countryCode: detectedCountryCode } = useGeoLocation();
 
   // ---------- Fetch membership plans via Axios ----------
   useEffect(() => {
@@ -141,6 +144,12 @@ const MembershipPage: React.FC = () => {
       return;
     }
 
+    // Check for India users
+    if (user?.mobile && getCountryFromMobile(user.mobile) === 'India') {
+      toast.error('Membership purchase is not available for users in India.');
+      return;
+    }
+
     // If user already has this plan and it's active → show manage
     if (userMembershipTier === plan.name && userMembershipStatus === 'active') {
       toast('Manage your membership', { icon: <AlertCircle className="text-yellow-500" /> });
@@ -195,18 +204,18 @@ const MembershipPage: React.FC = () => {
       <Header />
 
       {/* Main Section */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
+      <section className="mx-auto max-w-6xl xl:max-w-7xl 2xl:max-w-[90vw] px-4 py-16 2xl:py-24">
         {/* Heading */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold md:text-5xl">Choose Your Membership Plan</h1>
-          <p className="mt-4 text-base text-slate-300 md:text-lg">
+          <h1 className="text-4xl font-bold md:text-5xl 2xl:text-7xl">Choose Your Membership Plan</h1>
+          <p className="mt-4 text-base text-slate-300 md:text-lg 2xl:text-2xl">
             Unlock exclusive TVK experiences, events, and Super Fan-only benefits.
           </p>
         </div>
 
         {/* Billing Toggle (UI-only; affects suffix for paid plans) */}
-        <div className="mt-10 flex justify-center">
-          <div className="inline-flex rounded-full bg-[#07091a] p-1">
+        <div className="mt-10 2xl:mt-16 flex justify-center">
+          <div className="inline-flex rounded-full bg-[#07091a] p-1 2xl:p-2">
             {(
               [
                 { id: 'monthly', label: 'Monthly' },
@@ -220,7 +229,7 @@ const MembershipPage: React.FC = () => {
                   type="button"
                   onClick={() => setBilling(opt.id)}
                   className={[
-                    'rounded-full px-5 py-2 text-sm font-medium transition-colors',
+                    'rounded-full px-5 py-2 2xl:px-8 2xl:py-4 text-sm 2xl:text-xl font-medium transition-colors',
                     active ? 'bg-[#f7c948] text-[#111827]' : 'text-slate-200 hover:bg-[#181e37]',
                   ].join(' ')}
                 >
@@ -232,7 +241,7 @@ const MembershipPage: React.FC = () => {
         </div>
 
         {/* Membership Tier Cards (API-driven) */}
-        <div className="mt-10 grid gap-6 md:grid-cols-2">
+        <div className="mt-10 2xl:mt-20 grid gap-6 md:grid-cols-2 xl:gap-10 2xl:gap-16">
           {isLoggedIn && membershipLoading && (
             <p className="col-span-2 text-center text-slate-400">
               Checking your membership status...
@@ -253,7 +262,7 @@ const MembershipPage: React.FC = () => {
             plans.map((plan) => {
               const isFree = plan.price === '0.00';
 
-              const priceLabel = isFree ? 'Free' : `$${plan.price}`;
+              const priceLabel = isFree ? 'Free' : `£${plan.price}`;
 
               // Price suffix logic:
               // - Free Tier: based on duration_days ("Lifetime" for 36500)
@@ -277,20 +286,30 @@ const MembershipPage: React.FC = () => {
               const isHighlighted = !isFree; // all paid plans (Super Fan) get highlight
 
               const isUserSuperFan =
-                userMembershipTier === 'Super Fan' && userMembershipStatus === 'active';
-              const isThisFreeCard = isFree;
-
-              //Determine button state for free tire when user is super fan
-              const isFreeButtonDisabled = isUserSuperFan && isThisFreeCard;
+                (userMembershipTier === 'Super Fan' || userMembershipTier === 'super_fan') && userMembershipStatus === 'active';
+              
+              const isUserFree = isLoggedIn && !isUserSuperFan;
+              const isIndia = detectedCountryCode === 'IN';
 
               const buttonText = (() => {
-                if (isUserSuperFan && plan.name === 'Super Fan') {
-                  return 'Manage your membership';
+                if (isIndia) return 'Not Available';
+                if (isUserSuperFan && (plan.name === 'Super Fan' || plan.name === 'super_fan')) {
+                  return 'Manage Membership';
                 }
-                if (isFreeButtonDisabled) {
-                  return 'Included with Super Fan'; // or "Already Active", "Free Access", etc.
+                if (isFree) {
+                    if (isUserSuperFan) return 'Included';
+                    if (isUserFree) return 'Current Plan';
+                    return 'Join Free';
                 }
-                return 'Subscribe Now';
+                // Paid plan
+                return 'Become a Super Fan';
+              })();
+
+              const buttonDisabled = (() => {
+                  if (isIndia) return true;
+                  if (isUserSuperFan && (plan.name === 'Super Fan' || plan.name === 'super_fan')) return false;
+                  if (isFree && isLoggedIn) return true;
+                  return false;
               })();
 
               return (
@@ -305,7 +324,7 @@ const MembershipPage: React.FC = () => {
                   badgeLabel={isHighlighted ? 'Most Popular' : undefined}
                   onSubscribe={() => handleSubscribeClick(plan)}
                   buttonText={buttonText}
-                  buttonDisabled={isFreeButtonDisabled}
+                  buttonDisabled={buttonDisabled}
                 />
               );
             })}
@@ -313,17 +332,17 @@ const MembershipPage: React.FC = () => {
       </section>
 
       {/* Why choose section */}
-      <section className="mx-auto max-w-6xl px-4 pb-20">
-        <div className="mt-10 text-center md:mt-16">
-          <h2 className="text-3xl font-bold md:text-4xl">Why Choose TVK Membership?</h2>
-          <p className="mt-3 text-base text-slate-300">
+      <section className="mx-auto max-w-6xl xl:max-w-7xl 2xl:max-w-[90vw] px-4 pb-20 2xl:pb-32">
+        <div className="mt-10 text-center md:mt-16 2xl:mt-24">
+          <h2 className="text-3xl font-bold md:text-4xl 2xl:text-6xl">Why Choose TVK Membership?</h2>
+          <p className="mt-3 text-base text-slate-300 2xl:text-xl">
             Explore the exclusive benefits that come with every membership tier.
           </p>
         </div>
 
         {/* Benefits grid with Framer Motion */}
         <motion.div
-          className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-8 2xl:mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 2xl:gap-10"
           variants={benefitsContainerVariants}
           initial="hidden"
           whileInView="show"
