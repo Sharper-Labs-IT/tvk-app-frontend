@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { X, CheckSquare, Square } from 'lucide-react';
+import { X, CheckSquare, Square, RefreshCw, CreditCard, Undo2, Scale, Heart } from 'lucide-react';
 
 interface MembershipTermsModalProps {
   isOpen: boolean;
@@ -66,7 +66,7 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
         <div className="mb-6 space-y-6 text-slate-300 text-sm bg-[#0f132a] p-4 rounded-xl border border-[#1d2340]">
           <section>
             <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
-              <span>🔁</span> Subscription & Renewal
+              <RefreshCw className="w-5 h-5 text-brand-gold" /> Subscription & Renewal
             </h3>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
               <li>This is a recurring monthly subscription</li>
@@ -77,7 +77,7 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
 
           <section>
             <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
-              <span>💸</span> Price & Payments
+              <CreditCard className="w-5 h-5 text-brand-gold" /> Price & Payments
             </h3>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
               <li>The subscription fee will be displayed in your selected currency</li>
@@ -90,7 +90,7 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
 
           <section>
             <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
-              <span>💷</span> Refunds
+              <Undo2 className="w-5 h-5 text-brand-gold" /> Refunds
             </h3>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
               <li>Payments already made are non-refundable for the current billing period</li>
@@ -100,7 +100,7 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
 
           <section>
             <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
-              <span>⚖️</span> Eligibility & Availability
+              <Scale className="w-5 h-5 text-brand-gold" /> Eligibility & Availability
             </h3>
             <ul className="list-disc pl-5 space-y-1 text-slate-400">
               <li>You must be 18 years or older to subscribe</li>
@@ -110,7 +110,7 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
 
           <section>
             <h3 className="font-semibold text-white mb-2 flex items-center gap-2">
-              <span>❤️</span> Platform Identity & Disclaimer
+              <Heart className="w-5 h-5 text-brand-gold" /> Platform Identity & Disclaimer
             </h3>
             <p className="text-slate-400 mb-2">
               Independent fan platform created to celebrate and honour Thalapathy Vijay following his last movie, Jana Nayagan — keeping the spirit, passion and inspiration of the actor Vijay alive in the hearts and minds of fans around the world.
