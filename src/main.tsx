@@ -6,7 +6,7 @@ import App from './App.tsx'
 import './styles/global.css' // <--- MAKE SURE THIS LINE EXISTS!
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string;
-console.log("VITE_STRIPE_PUBLISHABLE_KEY =", stripeKey);
+//console.log("VITE_STRIPE_PUBLISHABLE_KEY =", stripeKey);
 
 const stripePromise = loadStripe(stripeKey);
 
