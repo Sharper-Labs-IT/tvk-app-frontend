@@ -23,6 +23,9 @@ import { toast } from 'react-hot-toast';
 import { getCountryFromMobile } from '../utils/countryHelper';
 import { useGeoLocation } from '../hooks/useGeoLocation';
 
+
+
+
 // ---------- Framer Motion variants ----------
 const benefitsContainerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -51,12 +54,52 @@ const benefitItemVariants: Variants = {
   },
 };
 
+const hardCodedPlans: Plan[] = [
+  {
+    id: 1,
+    name: 'Free Tier',
+    description: 'Basic membership with limited access',
+    price: '0.00',
+    duration_days: 36500, // lifetime
+    status: 1,
+    benefits: [
+      'Limited Media Content Library',
+      'Standard Member Badge',
+      '10% Off Merchandise',
+      'Introductory Gaming Experience',
+    ],
+  created_at: "2025-01-01T00:00:00Z",  // or new Date().toISOString()
+  updated_at: "2025-01-01T00:00:00Z",
+  },
+  {
+    id: 2,
+    name: 'Super Fan',
+    description: 'Premium access (30-day subscription)',
+    price: '9.99',
+    duration_days: 30,
+    status: 1,
+    benefits: [
+      'Access to the Gaming Zone – AI-powered celebrity-style gaming experiences',
+      'Play in virtual challenges inspired by your favourite star, Our Thalapathy',
+      'Watch exclusive live event streams (Full HD)',
+      'Access the Premium content library',
+      'Premium Gold member badge',
+      '20% merchandise discount voucher',
+      'Priority RSVPs for fan meetups',
+      'Early access to announcements (24hrs)',
+      'Future Super Fan Chapters (suspense!)',
+      'Gaming experiences feature artificial-intelligence–generated visuals and simulated environments',
+    ],
+    created_at: "2025-01-01T00:00:00Z",  // or new Date().toISOString()
+    updated_at: "2025-01-01T00:00:00Z",
+  },
+];
+
+
 const MembershipPage: React.FC = () => {
+  
   const [billing, setBilling] = useState<BillingPeriod>('monthly');
 
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
@@ -75,28 +118,7 @@ const MembershipPage: React.FC = () => {
   const navigate = useNavigate();
   const { countryCode: detectedCountryCode } = useGeoLocation();
 
-  // ---------- Fetch membership plans via Axios ----------
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const response = await axiosClient.get<{ plans: Plan[] }>('/membership/plans');
-
-        let filteredPlans = (response.data.plans || [])
-          .filter((p) => p.status === 1)
-          .filter((p) => [1, 2].includes(p.id));
-
-        filteredPlans = filteredPlans.sort((a, b) => a.id - b.id);
-
-        setPlans(filteredPlans);
-      } catch (err) {
-        setError('Unable to load membership plans.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPlans();
-  }, []);
+  
 
   // Fetch current user membership status (only if logged in)
   useEffect(() => {
@@ -254,19 +276,9 @@ const MembershipPage: React.FC = () => {
               Checking your membership status...
             </p>
           )}
-          {loading && (
-            <p className="col-span-2 text-center text-slate-300">Loading membership plans...</p>
-          )}
+          
 
-          {error && !loading && <p className="col-span-2 text-center text-red-400">{error}</p>}
-
-          {!loading && !error && plans.length === 0 && (
-            <p className="col-span-2 text-center text-slate-400">No membership plans available.</p>
-          )}
-
-          {!loading &&
-            !error &&
-            plans.map((plan) => {
+          {hardCodedPlans.map((plan) => {
               const isFree = plan.price === '0.00';
 
               const priceLabel = isFree ? 'Free' : `£${plan.price}`;
