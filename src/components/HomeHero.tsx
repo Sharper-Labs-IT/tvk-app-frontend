@@ -134,7 +134,7 @@ const HomeHero: React.FC = () => {
                 <img
                   src="/images/HeroBackImg.png"
                   alt="Thalapathy Vijay"
-                  className={`w-auto h-[75%] xl:h-[80%] max-h-[calc(100vh-6rem)] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
+                  className={`w-auto h-[75%] xl:h-[90%] 2xl:h-[100%] max-h-[calc(100vh-6rem)] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
                     isVisible ? 'opacity-100' : 'opacity-0'
                   }`}
                 />
