@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Crown, Search } from 'lucide-react';
+import { Trophy, Crown } from 'lucide-react';
 import LogoHeader from '../components/common/LogoHeader';
 import Footer from '../components/Footer';
 import { type TrophyTier } from '../utils/trophySystem';
@@ -110,7 +110,6 @@ const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<UserTrophyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'platinum' | 'gold'>('all');
-  const [searchQuery, setSearchQuery] = useState('');
 
   // --- Backend API Integration ---
   const fetchLeaderboard = useCallback(async () => {
@@ -182,24 +181,17 @@ const Leaderboard: React.FC = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [fetchLeaderboard]);
 
-  // Filter leaderboard data based on selected filter and search query
+  // Filter leaderboard data based on selected filter
   const filteredData = leaderboardData
     .filter(user => {
       // Apply trophy filter
       if (filter === 'platinum' && user.trophyBreakdown.PLATINUM === 0) return false;
       if (filter === 'gold' && user.trophyBreakdown.GOLD === 0) return false;
       
-      // Apply search filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const username = (user.username || '').toLowerCase();
-        const nickname = (user.nickname || '').toLowerCase();
-        return username.includes(query) || nickname.includes(query);
-      }
-      
       return true;
     })
-    .sort((a, b) => b.totalTrophies - a.totalTrophies); // Sort by total trophies descending
+    .sort((a, b) => b.totalTrophies - a.totalTrophies) // Sort by total trophies descending
+    .slice(0, 20); // Show only top 20 players
 
   const topThree = filteredData.slice(0, 3);
   const restOfPlayers = filteredData.slice(3);
@@ -313,17 +305,6 @@ const Leaderboard: React.FC = () => {
                   {f}
                 </button>
               ))}
-           </div>
-           
-           <div className="relative hidden md:block px-2">
-             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-             <input 
-               type="text" 
-               placeholder="Find player..." 
-               value={searchQuery}
-               onChange={(e) => setSearchQuery(e.target.value)}
-               className="bg-black/50 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-red-500/50 w-48 transition-colors"
-             />
            </div>
         </div>
 
