@@ -64,7 +64,8 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
           </div>
 
           <p className="mt-3 text-xs md:text-sm 2xl:text-base text-slate-400">
-            Renews automatically every 30 days • Cancel anytime
+            Renews automatically every 30 days {<br/>}
+            Cancel anytime
           </p>
         </div>
 
