@@ -92,7 +92,7 @@ const WhatYouGet: React.FC = () => {
           }`}
         >
           <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-wider text-[#D4AF37] drop-shadow-lg">
-            What You Get
+            Super Fan Benefits
           </h2>
         </div>
 
