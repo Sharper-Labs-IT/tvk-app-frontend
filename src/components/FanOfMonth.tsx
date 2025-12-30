@@ -38,20 +38,21 @@ const FanOfMonth: React.FC = () => {
 
       {/* Desktop Layout - Hidden on mobile */}
       <div className="hidden lg:block relative min-h-[700px]">
-        {/* Vijay Image - Positioned absolutely to the right */}
-        <motion.img
-          src="/images/VijayImg2.png"
-          alt="TVK Leader"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={imageVariants}
-          className="absolute bottom-0 right-0 h-[90%] object-contain z-0 pointer-events-none opacity-40"
-        />
-
+        {/* ✅ FIXED: Image moved INSIDE the container so it stays with the content */}
         <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-12 h-full flex items-center">
+          <motion.img
+            src="/images/VijayImg2.png"
+            alt="TVK Leader"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={imageVariants}
+            // Positioned relative to container, not screen
+            className="absolute bottom-0 right-0 h-[90%] object-contain z-0 pointer-events-none opacity-40"
+          />
+
           <motion.div
-            className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
+            className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
@@ -60,16 +61,31 @@ const FanOfMonth: React.FC = () => {
             {/* Left Column - Text & Leaderboard (Span 5) */}
             <div className="lg:col-span-5 flex flex-col space-y-10 relative z-10">
               <div className="space-y-8">
-                <motion.h2 variants={itemVariants} className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1]">
+                <motion.h2
+                  variants={itemVariants}
+                  className="text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-[1.1]"
+                >
                   Top Fan of <br />
                   the Month
                 </motion.h2>
 
                 <motion.ul variants={itemVariants} className="space-y-6 pl-4 md:pl-6">
-                  <ListItem icon={<Star className="w-6 h-6 text-white" />} text="Exclusive Top Fan Badge" />
-                  <ListItem icon={<Gem className="w-6 h-6 text-white" />} text="Special Digital Collectible" />
-                  <ListItem icon={<Zap className="w-6 h-6 text-white" />} text="Priority Shoutout" />
-                  <ListItem icon={<Award className="w-6 h-6 text-white" />} text="Bonus Fan Points" />
+                  <ListItem
+                    icon={<Star className="w-6 h-6 text-white" />}
+                    text="Exclusive Top Fan Badge"
+                  />
+                  <ListItem
+                    icon={<Gem className="w-6 h-6 text-white" />}
+                    text="Special Digital Collectible"
+                  />
+                  <ListItem
+                    icon={<Zap className="w-6 h-6 text-white" />}
+                    text="Priority Shoutout"
+                  />
+                  <ListItem
+                    icon={<Award className="w-6 h-6 text-white" />}
+                    text="Bonus Fan Points"
+                  />
                 </motion.ul>
               </div>
 
@@ -80,7 +96,10 @@ const FanOfMonth: React.FC = () => {
                   </h3>
                   <div className="space-y-4">
                     {[1, 2, 3].map((num) => (
-                      <div key={num} className="flex items-center justify-between border-b border-gray-800 pb-2">
+                      <div
+                        key={num}
+                        className="flex items-center justify-between border-b border-gray-800 pb-2"
+                      >
                         <span className="text-white font-bold text-xl">{num}.</span>
                         <Trophy className="w-5 h-5 text-gray-500" />
                       </div>
@@ -107,7 +126,7 @@ const FanOfMonth: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Right Column - Spacer for Image (Span 3) */}
+            {/* Right Column - Spacer (Span 3) */}
             <div className="lg:col-span-3"></div>
           </motion.div>
         </div>
@@ -122,14 +141,23 @@ const FanOfMonth: React.FC = () => {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          <motion.h2 variants={itemVariants} className="text-5xl md:text-6xl font-bold text-white leading-[1.1] text-center">
+          <motion.h2
+            variants={itemVariants}
+            className="text-5xl md:text-6xl font-bold text-white leading-[1.1] text-center"
+          >
             Top Fan of <br />
             the Month
           </motion.h2>
 
           <motion.ul variants={itemVariants} className="space-y-6">
-            <ListItem icon={<Star className="w-6 h-6 text-white" />} text="Exclusive Top Fan Badge" />
-            <ListItem icon={<Gem className="w-6 h-6 text-white" />} text="Special Digital Collectible" />
+            <ListItem
+              icon={<Star className="w-6 h-6 text-white" />}
+              text="Exclusive Top Fan Badge"
+            />
+            <ListItem
+              icon={<Gem className="w-6 h-6 text-white" />}
+              text="Special Digital Collectible"
+            />
             <ListItem icon={<Zap className="w-6 h-6 text-white" />} text="Priority Shoutout" />
             <ListItem icon={<Award className="w-6 h-6 text-white" />} text="Bonus Fan Points" />
           </motion.ul>
@@ -150,13 +178,19 @@ const FanOfMonth: React.FC = () => {
           </motion.div>
 
           {/* Leaderboard */}
-          <motion.div variants={itemVariants} className="w-full max-w-md bg-[#111] border border-brand-gold/30 rounded-xl p-6 shadow-2xl">
+          <motion.div
+            variants={itemVariants}
+            className="w-full max-w-md bg-[#111] border border-brand-gold/30 rounded-xl p-6 shadow-2xl"
+          >
             <h3 className="text-brand-gold text-xs font-bold uppercase tracking-wider mb-4">
               Lead Board Preview
             </h3>
             <div className="space-y-4">
               {[1, 2, 3].map((num) => (
-                <div key={num} className="flex items-center justify-between border-b border-gray-800 pb-2">
+                <div
+                  key={num}
+                  className="flex items-center justify-between border-b border-gray-800 pb-2"
+                >
                   <span className="text-white font-bold text-xl">{num}.</span>
                   <Trophy className="w-5 h-5 text-gray-500" />
                 </div>

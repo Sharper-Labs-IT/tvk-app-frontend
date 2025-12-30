@@ -11,7 +11,7 @@ import {
   LogOut,
   ChevronDown,
   FileText,
-  Globe,
+  Home,
 } from 'lucide-react';
 
 const MemberNavbar: React.FC = () => {
@@ -35,7 +35,7 @@ const MemberNavbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Website', path: '/', icon: <Globe size={20} /> },
+    { name: 'Home', path: '/', icon: <Home size={20} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     // 👇 CHECK THIS: This path MUST match the route in AppRoutes
     { name: 'Feed', path: '/dashboard/feed', icon: <FileText size={20} /> },
