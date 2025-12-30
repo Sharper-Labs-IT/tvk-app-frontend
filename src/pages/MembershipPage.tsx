@@ -294,7 +294,7 @@ const MembershipPage: React.FC = () => {
                   priceSuffix = `/ ${plan.duration_days}-Days`;
                 }
               } else {
-                priceSuffix = billing === 'monthly' ? '/ Monthly' : '/ Yearly';
+                priceSuffix = billing === 'monthly' ? '/ Monthly( you can pay in Euro or Dollars)' : '/ Yearly';
               }
 
               const features: TierFeature[] = (plan.benefits || []).map((b) => ({
