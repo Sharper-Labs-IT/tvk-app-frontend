@@ -98,3 +98,26 @@ export const confirmPasswordReset = async (data: {
 };
 
 export default api;
+
+// Add these to your existing api.ts file
+
+/**
+ * Calculate price based on selected currency
+ * Endpoint: POST /currency/calculate
+ */
+export const calculatePrice = async (planId: number, currency: string) => {
+  const response = await api.post('/currency/calculate', {
+    plan_id: planId,
+    currency: currency,
+  });
+  return response.data;
+};
+
+/**
+ * Validate address before payment
+ * Endpoint: POST /address/validate
+ */
+export const validateAddress = async (addressData: any) => {
+  const response = await api.post('/address/validate', addressData);
+  return response.data;
+};
