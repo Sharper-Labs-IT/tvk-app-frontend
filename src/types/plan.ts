@@ -3,6 +3,7 @@ export interface Plan {
   name: string;
   description: string;
   price: string;
+  billingNote: string;
   duration_days: number;
   benefits: string[];
   status: number;
