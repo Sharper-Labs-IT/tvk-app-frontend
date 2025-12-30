@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Mailcheck from 'mailcheck';
 import api from '../utils/api';
 import InputField from '../components/common/InputField';
 import Button from '../components/common/Button';
@@ -9,100 +10,55 @@ import TermsModal from '../components/common/TermsModal';
 import PrivacyPolicyModal from '../components/common/PrivacyPolicyModal';
 import type { ISignupPayload, ISignupResponse } from '../types/auth';
 import { useGeoLocation } from '../hooks/useGeoLocation';
-import { COUNTRIES } from '../constants/countries'; // Import the country list
 
-// --- Phone Country Codes (Keep this for the mobile input prefix) ---
-const PHONE_CODES = [
-  { code: '+1', country: 'USA/Canada' },
-  { code: '+44', country: 'UK' },
-  { code: '+94', country: 'Sri Lanka' },
-  { code: '+61', country: 'Australia' },
-  { code: '+81', country: 'Japan' },
-  { code: '+49', country: 'Germany' },
-  { code: '+33', country: 'France' },
-  { code: '+86', country: 'China' },
-  { code: '+971', country: 'UAE' },
-  { code: '+966', country: 'Saudi Arabia' },
-  { code: '+65', country: 'Singapore' },
-  { code: '+60', country: 'Malaysia' },
-  { code: '+7', country: 'Russia' },
-  { code: '+55', country: 'Brazil' },
-  { code: '+52', country: 'Mexico' },
-  { code: '+39', country: 'Italy' },
-  { code: '+34', country: 'Spain' },
-  { code: '+82', country: 'South Korea' },
-  { code: '+31', country: 'Netherlands' },
-  { code: '+46', country: 'Sweden' },
-  { code: '+41', country: 'Switzerland' },
-  { code: '+27', country: 'South Africa' },
-  { code: '+20', country: 'Egypt' },
-  { code: '+92', country: 'Pakistan' },
-  { code: '+880', country: 'Bangladesh' },
-  { code: '+62', country: 'Indonesia' },
-  { code: '+63', country: 'Philippines' },
-  { code: '+84', country: 'Vietnam' },
-  { code: '+66', country: 'Thailand' },
-  { code: '+90', country: 'Turkey' },
-  { code: '+98', country: 'Iran' },
-  { code: '+234', country: 'Nigeria' },
-  { code: '+254', country: 'Kenya' },
-  { code: '+351', country: 'Portugal' },
-  { code: '+30', country: 'Greece' },
-  { code: '+48', country: 'Poland' },
-  { code: '+43', country: 'Austria' },
-  { code: '+32', country: 'Belgium' },
-  { code: '+45', country: 'Denmark' },
-  { code: '+358', country: 'Finland' },
-  { code: '+47', country: 'Norway' },
-  { code: '+353', country: 'Ireland' },
-  { code: '+64', country: 'New Zealand' },
-  { code: '+974', country: 'Qatar' },
-  { code: '+973', country: 'Bahrain' },
-  { code: '+968', country: 'Oman' },
-  { code: '+965', country: 'Kuwait' },
-].sort((a, b) => a.country.localeCompare(b.country));
+// --- Imported Constants ---
+import { COUNTRIES } from '../constants/countries';
+import { PHONE_CODES } from '../constants/phoneCodes';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
-  // Updated state to match backend requirements
+  // --- FORM STATE ---
   const [formData, setFormData] = useState<ISignupPayload>({
     first_name: '',
     surname: '',
     email: '',
     mobile: '',
-    country: '', // Selected Country Name
+    country: '',
     password: '',
     password_confirmation: '',
   });
 
-  const [mobileCountryCode, setMobileCountryCode] = useState('+44');
+  // CHANGED: Default is now empty string, so "Code" placeholder shows
+  const [mobileCountryCode, setMobileCountryCode] = useState('');
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
-  // Success Modal State
+  // --- MODAL STATES ---
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-
-  // Warning Modal State (for India)
   const [showRestrictedModal, setShowRestrictedModal] = useState(false);
 
+  // --- EMAIL SUGGESTION STATE ---
+  const [emailSuggestion, setEmailSuggestion] = useState<string | null>(null);
+  const [showEmailSuggestionModal, setShowEmailSuggestionModal] = useState(false);
+
+  // --- UI ANIMATION STATE ---
   const [isVisible, setIsVisible] = useState(false);
 
-  // Checkboxes
+  // --- CHECKBOX STATES ---
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [participationAgreed, setParticipationAgreed] = useState(false);
-
-  // Modals
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
   const { countryCode: detectedCountryCode, loading: geoLoading } = useGeoLocation();
 
-  // Password Validation State
+  // --- PASSWORD LOGIC ---
   const [passwordCriteria, setPasswordCriteria] = useState({
     length: false,
     number: false,
@@ -127,9 +83,7 @@ const Signup: React.FC = () => {
   useEffect(() => {
     if (successData) {
       sessionStorage.setItem('temp_signup_email', formData.email);
-      // Combine names for session storage display if needed
       sessionStorage.setItem('temp_signup_name', `${formData.first_name} ${formData.surname}`);
-
       setSuccessMessage(
         `${successData.message} Click 'Close' below to go to the OTP verification screen.`
       );
@@ -137,10 +91,51 @@ const Signup: React.FC = () => {
     }
   }, [successData, formData.email, formData.first_name, formData.surname]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // --- SMART COUNTRY SYNC ---
+  useEffect(() => {
+    if (formData.country && formData.country !== 'India') {
+      const foundCode = PHONE_CODES.find((c) => c.country === formData.country);
+      if (foundCode) {
+        setMobileCountryCode(foundCode.code);
+      }
+    }
+  }, [formData.country]);
+
+  // --- MAILCHECK LOGIC ---
+  const checkEmailTypos = () => {
+    if (!formData.email) return;
+
+    Mailcheck.run({
+      email: formData.email,
+      domains: ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 'live.com'],
+      topLevelDomains: ['com', 'net', 'org', 'edu', 'gov', 'uk', 'lk'],
+      suggested: (suggestion: { full: React.SetStateAction<string | null> }) => {
+        setEmailSuggestion(suggestion.full);
+        setShowEmailSuggestionModal(true);
+      },
+      empty: () => {
+        setEmailSuggestion(null);
+      },
+    });
+  };
+
+  const applyEmailSuggestion = () => {
+    if (emailSuggestion) {
+      setFormData((prev) => ({ ...prev, email: emailSuggestion }));
+      if (fieldErrors.email) {
+        setFieldErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors.email;
+          return newErrors;
+        });
+      }
+    }
+    setShowEmailSuggestionModal(false);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
 
-    // Clear field error when user types
     if (fieldErrors[name]) {
       setFieldErrors((prev) => {
         const newErrors = { ...prev };
@@ -150,15 +145,21 @@ const Signup: React.FC = () => {
     }
 
     if (name === 'mobileCountryCode') {
-      setMobileCountryCode(value);
+      // 1. STRICT INDIA CHECK FOR MOBILE CODE
+      if (value === '+91') {
+        setShowRestrictedModal(true);
+        setMobileCountryCode(''); // Reset to placeholder
+      } else {
+        setMobileCountryCode(value);
+      }
     } else if (name === 'country') {
-      // Logic for restricted countries (India)
+      // 2. STRICT INDIA CHECK FOR COUNTRY
       if (value === 'India') {
         setShowRestrictedModal(true);
-        // We still set it to allow the user to change it, or we can block it.
-        // Let's set it but show the modal.
+        setFormData((prev) => ({ ...prev, country: '' }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
       }
-      setFormData((prev) => ({ ...prev, [name]: value }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -176,71 +177,49 @@ const Signup: React.FC = () => {
     const newErrors: { [key: string]: string } = {};
     let isValid = true;
 
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = 'First name is required';
+    if (!formData.first_name.trim()) newErrors.first_name = 'First name is required';
+    if (!formData.surname.trim()) newErrors.surname = 'Surname is required';
+    if (!formData.country) newErrors.country = 'Please select your country';
+
+    // Validate Mobile Code
+    if (!mobileCountryCode) {
+      newErrors.mobile = 'Please select a country code';
       isValid = false;
     }
 
-    if (!formData.surname.trim()) {
-      newErrors.surname = 'Surname is required';
-      isValid = false;
-    }
-
-    if (!formData.country) {
-      newErrors.country = 'Please select your country';
-      isValid = false;
-    }
-
-    // Backend specifically blocks India, double check here
     if (formData.country === 'India') {
       setShowRestrictedModal(true);
+      setFormData((prev) => ({ ...prev, country: '' }));
       isValid = false;
     }
 
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-      isValid = false;
     } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
-      isValid = false;
     }
 
     if (!formData.mobile.trim()) {
       newErrors.mobile = 'Mobile number is required';
-      isValid = false;
     } else if (!/^\d+$/.test(formData.mobile)) {
       newErrors.mobile = 'Mobile number must contain only digits';
-      isValid = false;
     }
 
-    if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-      isValid = false;
-    } else if (!/\d/.test(formData.password)) {
+    if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+    else if (!/\d/.test(formData.password))
       newErrors.password = 'Password must include at least one number';
-      isValid = false;
-    }
 
-    if (formData.password !== formData.password_confirmation) {
+    if (formData.password !== formData.password_confirmation)
       newErrors.password_confirmation = 'Passwords do not match';
-      isValid = false;
-    }
 
-    if (!termsAccepted) {
+    if (!termsAccepted)
       newErrors.terms = 'You must agree to the Terms & Conditions and Privacy Policy';
-      isValid = false;
-    }
-
-    if (!ageConfirmed) {
-      newErrors.age = 'You must confirm that you are 18 years of age or older';
-      isValid = false;
-    }
-
-    if (!participationAgreed) {
+    if (!ageConfirmed) newErrors.age = 'You must confirm that you are 18 years of age or older';
+    if (!participationAgreed)
       newErrors.participation = 'You must agree to the participation declaration';
-      isValid = false;
-    }
+
+    if (Object.keys(newErrors).length > 0) isValid = false;
 
     setFieldErrors(newErrors);
     return isValid;
@@ -252,9 +231,16 @@ const Signup: React.FC = () => {
     setError(null);
     setSuccessData(null);
 
-    // Initial check for India (GeoLocation or Manual Selection)
-    if (detectedCountryCode === 'IN' || formData.country === 'India') {
+    if (detectedCountryCode === 'IN') {
       setShowRestrictedModal(true);
+      setLoading(false);
+      return;
+    }
+
+    if (formData.country === 'India' || mobileCountryCode === '+91') {
+      setShowRestrictedModal(true);
+      if (formData.country === 'India') setFormData((prev) => ({ ...prev, country: '' }));
+      if (mobileCountryCode === '+91') setMobileCountryCode('');
       setLoading(false);
       return;
     }
@@ -412,7 +398,7 @@ const Signup: React.FC = () => {
                   Create an Account
                 </h2>
                 <p className="text-gray-400 text-sm lg:text-base">
-                  Join the Free TVK Membership Program today
+                  Join the Free TVK Membership Programme today
                 </p>
                 <p className="text-gray-400 text-xs lg:text-sm mt-1">
                   Membership is currently available to fans outside India only
@@ -457,8 +443,8 @@ const Signup: React.FC = () => {
                         type="text"
                         required
                         value={formData.first_name}
-                        onChange={handleChange}
-                        placeholder="Vijay"
+                        onChange={handleInputChange}
+                        placeholder="Enter First Name"
                         icon={UserIcon}
                       />
                       {fieldErrors.first_name && (
@@ -473,8 +459,8 @@ const Signup: React.FC = () => {
                         type="text"
                         required
                         value={formData.surname}
-                        onChange={handleChange}
-                        placeholder="Kumar"
+                        onChange={handleInputChange}
+                        placeholder="Enter Surname"
                         icon={UserIcon}
                       />
                       {fieldErrors.surname && (
@@ -500,7 +486,7 @@ const Signup: React.FC = () => {
                         id="country"
                         required
                         value={formData.country}
-                        onChange={handleChange}
+                        onChange={handleInputChange}
                         className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-[#2C2C2C] text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm appearance-none cursor-pointer"
                       >
                         <option value="" disabled>
@@ -542,7 +528,8 @@ const Signup: React.FC = () => {
                       type="email"
                       required
                       value={formData.email}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
+                      onBlur={checkEmailTypos}
                       placeholder="you@example.com"
                       icon={MailIcon}
                     />
@@ -551,6 +538,7 @@ const Signup: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Mobile Number with Prefixes */}
                   <div>
                     <label
                       htmlFor="mobile"
@@ -559,14 +547,18 @@ const Signup: React.FC = () => {
                       Mobile Number
                     </label>
                     <div className="relative flex rounded-lg shadow-sm">
+                      {/* MOBILE CODE DROP DOWN */}
                       <div className="relative">
                         <select
                           name="mobileCountryCode"
                           value={mobileCountryCode}
-                          onChange={handleChange}
-                          className="h-full rounded-l-lg border-r-0 border border-gray-600 bg-[#2C2C2C] text-gray-200 sm:text-sm focus:ring-tvk-accent-gold focus:border-tvk-accent-gold py-3 pl-3 pr-7 appearance-none cursor-pointer outline-none"
-                          style={{ minWidth: '80px' }}
+                          onChange={handleInputChange}
+                          // Added max-w-[100px] and w-[30%] to force it to stay small on mobile
+                          className="h-full max-w-[100px] w-[30vw] sm:w-auto rounded-l-lg border-r-0 border border-gray-600 bg-[#2C2C2C] text-gray-200 text-xs sm:text-sm focus:ring-tvk-accent-gold focus:border-tvk-accent-gold py-3 pl-3 pr-7 appearance-none cursor-pointer outline-none truncate"
                         >
+                          <option value="" disabled>
+                            Code
+                          </option>
                           {PHONE_CODES.map((country) => (
                             <option key={country.code} value={country.code}>
                               {country.code} ({country.country})
@@ -574,6 +566,8 @@ const Signup: React.FC = () => {
                           ))}
                         </select>
                       </div>
+
+                      {/* NUMBER INPUT */}
                       <div className="relative flex-grow">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                           {PhoneIcon}
@@ -586,7 +580,7 @@ const Signup: React.FC = () => {
                           className="block w-full pl-10 pr-3 py-3 border border-gray-600 border-l-0 rounded-r-lg bg-[#2C2C2C] placeholder-gray-500 text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm transition-colors"
                           placeholder="7700123456"
                           value={formData.mobile}
-                          onChange={handleChange}
+                          onChange={handleInputChange}
                         />
                       </div>
                     </div>
@@ -603,13 +597,12 @@ const Signup: React.FC = () => {
                       type="password"
                       required
                       value={formData.password}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       placeholder="••••••••"
                       icon={LockIcon}
                       className="lg:py-4 lg:text-base"
                     />
 
-                    {/* Password Validation UI */}
                     <div className="mt-2 space-y-1 pl-1">
                       <div
                         className={`flex items-center text-xs lg:text-sm transition-colors duration-300 ${
@@ -650,7 +643,7 @@ const Signup: React.FC = () => {
                       type="password"
                       required
                       value={formData.password_confirmation}
-                      onChange={handleChange}
+                      onChange={handleInputChange}
                       placeholder="••••••••"
                       icon={LockIcon}
                       className="lg:py-4 lg:text-base"
@@ -839,7 +832,7 @@ const Signup: React.FC = () => {
             'delay-[500ms]'
           )}`}
         >
-          &copy; 2025 TVK Membership Program. All rights reserved.
+          &copy; 2025 TVK Membership Programme. All rights reserved.
         </div>
       </div>
 
@@ -852,15 +845,43 @@ const Signup: React.FC = () => {
         autoCloseDelay={null}
       />
 
-      {/* Restricted Country Modal (India) */}
       <MessageModal
         isOpen={showRestrictedModal}
         title="Service Not Available"
-        message="We are sorry, but the TVK Membership Program is currently not available for users in India."
+        message="We are sorry, but the TVK Membership Programme is currently not available for users inside India."
         type="error"
         onClose={() => setShowRestrictedModal(false)}
         autoCloseDelay={null}
       />
+
+      {showEmailSuggestionModal && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+          <div className="relative bg-[#1E1E1E] border border-tvk-accent-gold/30 rounded-2xl p-6 max-w-sm w-full shadow-2xl z-10 animate-fade-in-up">
+            <h3 className="text-xl font-bold text-white mb-2">Check Email?</h3>
+            <p className="text-gray-300 text-sm mb-6">
+              Did you mean <span className="font-bold text-tvk-accent-gold">{emailSuggestion}</span>
+              ?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowEmailSuggestionModal(false)}
+                className="px-4 py-2 rounded-lg text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                No, keep original
+              </button>
+              <button
+                type="button"
+                onClick={applyEmailSuggestion}
+                className="px-4 py-2 rounded-lg text-sm bg-tvk-accent-gold text-black font-bold hover:bg-yellow-400 transition-colors"
+              >
+                Yes, correct it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <TermsModal isOpen={isTermsModalOpen} onClose={() => setIsTermsModalOpen(false)} />
 

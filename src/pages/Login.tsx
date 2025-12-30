@@ -214,18 +214,26 @@ const Login: React.FC = () => {
           delayClass="delay-0"
           text={
             <>
-              THALAPAHTY <span className="text-tvk-accent-gold">VJ</span> {' '}
+              THALAPAHTY <span className="text-tvk-accent-gold">VJ</span>{' '}
               <span className="text-tvk-accent-gold">KUDUMBAM MEMBERSHIP</span> – SIGN IN
             </>
           }
         />
 
         <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 z-10 py-10 lg:py-16">
-          <div className={`max-w-md lg:max-w-xl w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
+          <div
+            className={`max-w-md lg:max-w-xl w-full space-y-8 ${getAnimationClass(
+              'delay-[100ms]'
+            )}`}
+          >
             <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 lg:p-12 rounded-2xl shadow-2xl">
               <div className={`text-center mb-10 lg:mb-12 ${getAnimationClass('delay-[200ms]')}`}>
-                <h2 className="text-3xl lg:text-4xl font-bold text-tvk-accent-gold mb-2 lg:mb-4">Welcome Back</h2>
-                <p className="text-gray-400 text-sm lg:text-base">Sign in to your TVK Membership Dashboard</p>
+                <h2 className="text-3xl lg:text-4xl font-bold text-tvk-accent-gold mb-2 lg:mb-4">
+                  Welcome Back
+                </h2>
+                <p className="text-gray-400 text-sm lg:text-base">
+                  Sign in to your TVK Membership Dashboard
+                </p>
               </div>
 
               {error && (
@@ -314,12 +322,13 @@ const Login: React.FC = () => {
 
               <div className={`text-center text-sm mt-8 ${getAnimationClass('delay-[400ms]')}`}>
                 <p className="text-gray-500">
-                  Don't have a membership?{' '}
+                  Don’t have a membership yet? Join the TVK Global Fan Forum today and be part of
+                  the community.{' '}
                   <Link
                     to="/signup"
                     className="font-bold text-tvk-accent-gold hover:text-yellow-400 transition-colors"
                   >
-                    Join TVK Now
+                    Join TVK Now!
                   </Link>
                 </p>
               </div>
