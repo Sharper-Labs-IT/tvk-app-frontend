@@ -33,116 +33,102 @@ const HomeHero: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-full h-1.5 sm:h-2 bg-red-600 z-20" />
 
       {/* Desktop Layout (xl+) - Grid with image on right */}
-      <div className="hidden xl:block">
-        <div className="relative h-screen">
-          <div className="max-w-7xl 2xl:max-w-[90vw] mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
-            <div className="grid grid-cols-2 gap-8 xl:gap-12 2xl:gap-24 items-center w-full">
-              {/* Left: Text Content */}
-              <div className="flex flex-col justify-center text-left space-y-3 2xl:space-y-6">
-                <h1
-                  className={`
-                    ${getAnimClass('delay-0')}
-                    font-extrabold tracking-tight uppercase
-                    text-[clamp(1.8rem,2.5vw,3rem)] 
-                    2xl:text-[clamp(3rem,4vw,5rem)]
-                    leading-none
-                  `}
-                >
-                  <span
-                    className="
-                    bg-[linear-gradient(to_bottom,theme('colors.brand.goldDark'),#e8d479ff,#a06800ff,#e8d479ff)]
-                    bg-clip-text text-transparent
-                    drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]
-                  "
+      {/* Desktop Layout (xl+) - Flex instead of grid, better spacing */}
+<div className="hidden xl:block">
+  <div className="relative h-screen">
+    <div className="max-w-6xl mx-auto px-6 lg:px-12 h-full flex items-center justify-center">
+      <div className="flex flex-row items-center justify-between gap-12 w-full max-w-[95%]">
+        {/* Left: Text Content */}
+        <div className="flex flex-col justify-center text-left space-y-4 lg:space-y-6 max-w-lg">
+          <h1
+            className={`
+              ${getAnimClass('delay-0')}
+              font-extrabold tracking-tight uppercase
+              text-[clamp(2.5rem,4vw,4rem)] 
+              leading-none
+            `}
+          >
+            <span
+              className="
+                bg-[linear-gradient(to_bottom,theme('colors.brand.goldDark'),#e8d479ff,#a06800ff,#e8d479ff)]
+                bg-clip-text text-transparent
+                drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]
+              "
+            >
+              TVK MEMBERS
+            </span>
+          </h1>
+
+          <h2
+            className={`text-2xl lg:text-3xl font-bold text-white leading-tight ${getAnimClass('delay-[200ms]')}`}
+          >
+            The Ultimate Global Fan Hub
+          </h2>
+
+          <div
+            className={`text-base lg:text-lg text-gray-300 font-medium ${getAnimClass('delay-[400ms]')}`}
+          >
+            <p>One World. One Thalapathy Family.</p>
+            <p className="mt-2 text-sm text-gray-400">
+              Membership is currently available to fans outside India only
+            </p>
+          </div>
+
+          <div className="flex flex-col items-start gap-4 pt-4">
+            <div
+              className={`flex flex-row justify-start gap-4 ${getAnimClass('delay-[600ms]')}`}
+            >
+              {/* Your existing button logic here - unchanged */}
+              {isIndia ? (
+                <button disabled className="px-6 py-3 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-sm border border-gray-700">
+                  Not Available in India
+                </button>
+              ) : isLoggedIn && isSuperFan ? (
+                <button onClick={() => navigate('/membership')} className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm">
+                  Manage Membership
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => !isLoggedIn && navigate('/signup')}
+                    disabled={isLoggedIn}
+                    className={`px-6 py-3 font-bold rounded-md shadow-lg transition-all duration-200 uppercase tracking-wide text-sm ${
+                      isLoggedIn ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-white text-brand-dark hover:bg-gray-100 hover:shadow-xl hover:scale-105'
+                    }`}
                   >
-                    TVK MEMBERS
-                  </span>
-                </h1>
+                    {isLoggedIn ? 'Already Joined' : 'Join Free'}
+                  </button>
 
-                <h2
-                  className={`text-lg xl:text-xl 2xl:text-4xl font-bold text-white leading-tight ${getAnimClass(
-                    'delay-[200ms]'
-                  )}`}
-                >
-                  The Ultimate Global Fan Hub
-                </h2>
-
-                <div
-                  className={`text-xs xl:text-sm 2xl:text-xl text-gray-300 font-medium ${getAnimClass(
-                    'delay-[400ms]'
-                  )}`}
-                >
-                  <p>One World. One Thalapathy Family.</p>
-                  <p className="relative z-10 block mt-2 text-left text-[10px] font-medium text-gray-400 md:text-xs xl:text-xs animate-fade-in-up">
-                    Membership is currently available to fans outside India only
-                  </p>
-                </div>
-
-                <div className="flex flex-col items-start gap-3">
-                  <div
-                    className={`flex flex-row justify-start gap-3 pt-2 2xl:gap-6 2xl:pt-6 ${getAnimClass(
-                      'delay-[600ms]'
-                    )}`}
+                  <button
+                    onClick={() => navigate('/membership')}
+                    className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
                   >
-                    {isIndia ? (
-                      <button
-                        disabled
-                        className="px-4 py-1.5 xl:px-6 xl:py-2.5 2xl:px-12 2xl:py-5 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl whitespace-nowrap border border-gray-700"
-                      >
-                        Not Available in India
-                      </button>
-                    ) : isLoggedIn && isSuperFan ? (
-                      <button
-                        onClick={() => navigate('/membership')}
-                        className="px-4 py-1.5 xl:px-6 xl:py-2.5 2xl:px-12 2xl:py-5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl whitespace-nowrap"
-                      >
-                        Manage Membership
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => !isLoggedIn && navigate('/signup')}
-                          disabled={isLoggedIn}
-                          className={`px-4 py-1.5 xl:px-6 xl:py-2.5 2xl:px-12 2xl:py-5 font-bold rounded-md shadow-lg transition-all duration-200 uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl ${
-                            isLoggedIn
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-white text-brand-dark hover:bg-gray-100 hover:shadow-xl hover:scale-105'
-                          }`}
-                        >
-                          {isLoggedIn ? 'Already Joined' : 'Join Free'}
-                        </button>
-
-                        <button
-                          onClick={() => navigate('/membership')}
-                          className="px-4 py-1.5 xl:px-5 xl:py-2.5 2xl:px-10 2xl:py-5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-[10px] xl:text-xs 2xl:text-xl whitespace-nowrap"
-                        >
-                          Become a Super Fan £9.99
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* Desktop Disclaimer - Added 'italic' */}
-                  <p className={`mt-2 text-xs text-gray-500 font-light italic max-w-xl leading-relaxed ${getAnimClass('delay-[700ms]')}`}>
-                    This is an independent global fan platform created to celebrate actor Vijay’s legacy following his final film. It is not officially affiliated with or endorsed by Thalapathy Vijay or his representatives.
-                  </p>
-                </div>
-              </div>
-
-              {/* Right: Hero Image */}
-              <div className="relative flex justify-center items-end h-full">
-                <img
-                  src="/images/HeroBackImg.png"
-                  alt="Thalapathy Vijay"
-                  className={`w-auto h-[75%] xl:h-[90%] 2xl:h-[100%] max-h-[calc(100vh-6rem)] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
-                    isVisible ? 'opacity-100' : 'opacity-0'
-                  }`}
-                />
-              </div>
+                    Become a Super Fan £9.99
+                  </button>
+                </>
+              )}
             </div>
+
+            <p className={`text-sm text-gray-500 font-light italic max-w-md ${getAnimClass('delay-[700ms]')}`}>
+              This is an independent global fan platform created to celebrate actor Vijay’s legacy following his final film. It is not officially affiliated with or endorsed by Thalapathy Vijay or his representatives.
+            </p>
           </div>
         </div>
+
+        {/* Right: Hero Image */}
+        <div className="flex justify-center items-center flex-1">
+          <img
+            src="/images/HeroBackImg.png"
+            alt="Thalapathy Vijay"
+            className={`w-full max-w-[500px] lg:max-w-[600px] h-auto max-h-[85vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
+              isVisible ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+        </div>
       </div>
+    </div>
+  </div>
+</div>
 
       {/* Tablet Layout (md to xl) */}
       <div className="hidden md:block xl:hidden">
