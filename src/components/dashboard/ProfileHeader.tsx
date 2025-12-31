@@ -173,9 +173,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 </button>
                 <button
                   onClick={onResetPassword}
-                  className="px-4 py-2.5 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-white border border-white/10 rounded-xl transition"
+                  className="px-6 py-2.5 bg-white/5 hover:bg-yellow-500 hover:text-black border border-white/10 hover:border-yellow-500 text-white font-bold rounded-xl transition flex items-center gap-2 whitespace-nowrap"
                 >
-                  <Lock size={18} />
+                  Change Password
                 </button>
               </div>
             </div>
