@@ -39,6 +39,7 @@ const Signup: React.FC = () => {
   // --- MODAL STATES ---
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  
   const [successMessage, setSuccessMessage] = useState('');
   const [showRestrictedModal, setShowRestrictedModal] = useState(false);
 
@@ -85,7 +86,9 @@ const Signup: React.FC = () => {
       sessionStorage.setItem('temp_signup_email', formData.email);
       sessionStorage.setItem('temp_signup_name', `${formData.first_name} ${formData.surname}`);
       setSuccessMessage(
-        `${successData.message} Click 'Close' below to go to the OTP verification screen.`
+        "We’ve sent a One-Time Password (OTP) to your email." +
+      "Please verify your account to continue.<br /><br />" +
+      "Tap ‘Close’ to go to the OTP verification screen."
       );
       setShowSuccessModal(true);
     }
@@ -838,7 +841,7 @@ const Signup: React.FC = () => {
 
       <MessageModal
         isOpen={showSuccessModal}
-        title="Account Created!"
+        title="Account Created Successfully!"
         message={successMessage}
         type="success"
         onClose={handleSuccessModalClose}
