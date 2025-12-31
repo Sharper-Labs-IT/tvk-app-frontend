@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { useIdleTimer } from 'react-idle-timer';
 import { useAuth } from '../context/AuthContext';
@@ -9,6 +11,7 @@ const IdleTimeout: React.FC = () => {
 
   const handleOnIdle = () => {
     if (isLoggedIn) {
+
       logout(); // Perform logout: clear auth state, cookies, redirect to login
     }
   };
@@ -19,9 +22,6 @@ const IdleTimeout: React.FC = () => {
     eventsThrottle: 200, // Default value, but kept for clarity
     
   });
-
-  
-
   return null;
 };
 

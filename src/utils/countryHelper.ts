@@ -1,17 +1,17 @@
 // src/utils/countryHelper.ts
 
+import { PHONE_CODES } from '../constants/phoneCodes';
+
 export const getCountryFromMobile = (mobile: string | undefined): string => {
-  if (!mobile) return 'Unknown';
+  if (!mobile) return 'Global';
 
-  // Remove all non-digit characters (including +)
-  const cleanNumber = mobile.replace(/\D/g, '');
+  // Ensure mobile starts with + for matching
+  const formattedMobile = mobile.startsWith('+') ? mobile : `+${mobile}`;
 
-  if (cleanNumber.startsWith('94')) return 'Sri Lanka';
-  if (cleanNumber.startsWith('91')) return 'India';
-  if (cleanNumber.startsWith('44')) return 'United Kingdom';
-  if (cleanNumber.startsWith('1')) return 'USA / Canada';
-  if (cleanNumber.startsWith('61')) return 'Australia';
-  if (cleanNumber.startsWith('971')) return 'UAE';
+  // Sort codes by length (descending) to match longest prefix first (e.g. +1-242 before +1)
+  const sortedCodes = [...PHONE_CODES].sort((a, b) => b.code.length - a.code.length);
 
-  return 'Global'; // Default fallback
+  const found = sortedCodes.find(c => formattedMobile.startsWith(c.code));
+
+  return found ? found.country : 'Global';
 };

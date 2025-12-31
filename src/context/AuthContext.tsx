@@ -117,7 +117,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         setUser(userWithCoins);
         localStorage.setItem('user', JSON.stringify(userWithCoins));
-        console.log('[AuthContext] User refreshed from API:', userWithCoins);
       }
     } catch (error) {
        console.error("Failed to refresh user:", error);
@@ -147,7 +146,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
             setUser(userWithCoins);
             localStorage.setItem('user', JSON.stringify(userWithCoins));
-            console.log('Auth Initialized: Data synced with server');
           }
         } catch (error) {
           console.error('Failed to sync user profile on load:', error);

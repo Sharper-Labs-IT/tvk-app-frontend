@@ -30,6 +30,7 @@ const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
 const EventPage = React.lazy(() => import('../pages/EventPage'));
+const FanOfMonthPage = React.lazy(() => import('../pages/FanOfMonthPage'));
 
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
 const Store = React.lazy(() => import('../pages/Store'));
@@ -168,6 +169,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/" element={<Home />} />
           {/* <Route path="/home" element={<Home />} /> */} {/* Countdown is over, home is now at / */}
           <Route path="/membership" element={<Membership />} />
+          <Route path="/fan-of-the-month" element={<FanOfMonthPage />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
