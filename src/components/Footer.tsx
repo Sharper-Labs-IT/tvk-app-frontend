@@ -152,7 +152,7 @@ const Footer: React.FC = () => {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="text-center text-gray-500 text-sm"
         >
-          © {new Date().getFullYear()} TVK Members ONLY – GLOBAL. All rights reserved.
+          © {new Date().getFullYear()} TVK GLOBAL Membership Programme. All rights reserved.
         </motion.div>
       </div>
     </footer>

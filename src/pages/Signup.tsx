@@ -832,7 +832,7 @@ const Signup: React.FC = () => {
             'delay-[500ms]'
           )}`}
         >
-          &copy; 2025 TVK Membership Programme. All rights reserved.
+          &copy; 2026 TVK Global Membership Programme. All rights reserved.
         </div>
       </div>
 
