@@ -45,7 +45,6 @@ const EventDetailsPage: React.FC = () => {
     try {
       const submissionText = "My entry for event";
       const data = await participateInEvent(event.id, submissionText);
-      console.log("Participation response:", data);
       if(data?.participation?.status){
         setParticipationStatus(data.participation.status);
       }
@@ -79,7 +78,7 @@ const EventDetailsPage: React.FC = () => {
           setParticipationStatus(participation.status);
         }
       } catch(error){
-        console.log("No participation found or not loggedIn")
+        // No participation found or not loggedIn
       }
     };
     loadParticipationStatus();
