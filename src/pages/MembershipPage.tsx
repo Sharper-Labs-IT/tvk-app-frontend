@@ -211,7 +211,7 @@ const MembershipPage: React.FC = () => {
       toast.success('Membership Cancelled Successfully');
     } catch (err) {
       toast.error('Failed to cancel membership.');
-      console.log(err);
+      console.error(err);
     }
   };
 

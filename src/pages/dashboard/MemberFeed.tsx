@@ -45,7 +45,6 @@ const MemberFeed: React.FC = () => {
 
       // 4. Logic: If category ID exists in URL, use Filter Endpoint
       if (categoryFilter) {
-        console.log(`Fetching filtered content for Category ID: ${categoryFilter}`);
         // Using the route: Route::get('contents/filter', ...)
         response = await api.get<IContentResponse>(`/v1/contents/filter`, {
           params: { category_id: categoryFilter },

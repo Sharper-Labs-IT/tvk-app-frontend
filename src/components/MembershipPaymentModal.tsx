@@ -72,7 +72,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         save_card: saveCard, // backend can ignore/handle this
       });
 
-      console.log('payments/subscribe response:', res.data);
       // const data = res.data;
 
       // if (data.requires_action && data.client_secret) {
@@ -106,9 +105,8 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
           setLoading(false);
           return;
         }
-        console.log('Stripe confirmation successful. Webhook Pending');
       } else if (data.status === 'active' || data.status === 'trailing') {
-        console.log('Subscription activated immediately');
+        // Subscription activated immediately
       } else {
         setError(`Subscription created with status: ${data.status}. No action taken.`);
         setLoading(false);
