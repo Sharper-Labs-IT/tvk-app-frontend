@@ -62,6 +62,7 @@ const hardCodedPlans: Plan[] = [
     price: '0.00',
     duration_days: 36500, // lifetime
     status: 1,
+    billingNote: "",
     benefits: [
       'Limited Media Content Library',
       'Standard Member Badge',
@@ -78,6 +79,7 @@ const hardCodedPlans: Plan[] = [
     price: '9.99',
     duration_days: 30,
     status: 1,
+    billingNote:  `Renews automatically every 30 days\nCancel anytime`,
     benefits: [
       'Access to the Gaming Zone – AI-powered celebrity-style gaming experiences',
       'Play in virtual challenges inspired by your favourite star, Our Thalapathy',
@@ -294,7 +296,7 @@ const MembershipPage: React.FC = () => {
                   priceSuffix = `/ ${plan.duration_days}-Days`;
                 }
               } else {
-                priceSuffix = billing === 'monthly' ? '/ Monthly' : '/ Yearly';
+                priceSuffix = billing === 'monthly' ? '/ Monthly( you can pay in Euro or Dollars)' : '/ Yearly';
               }
 
               const features: TierFeature[] = (plan.benefits || []).map((b) => ({
@@ -338,6 +340,7 @@ const MembershipPage: React.FC = () => {
                   tagline={plan.description}
                   priceLabel={priceLabel}
                   priceSuffix={priceSuffix}
+                  billingNote={!isFree ? plan.billingNote : undefined}
                   features={features}
                   highlight={isHighlighted}
                   badgeLabel={isHighlighted ? 'Most Popular' : undefined}

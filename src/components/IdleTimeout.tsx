@@ -1,3 +1,6 @@
+
+
+import React from 'react';
 import { useIdleTimer } from 'react-idle-timer';
 import { useAuth } from '../context/AuthContext';
 
@@ -8,18 +11,17 @@ const IdleTimeout: React.FC = () => {
 
   const handleOnIdle = () => {
     if (isLoggedIn) {
-      logout(); // Clears cookie, localStorage, navigates to '/'
+
+      logout(); // Perform logout: clear auth state, cookies, redirect to login
     }
   };
 
   useIdleTimer({
     timeout: INACTIVITY_TIMEOUT,
     onIdle: handleOnIdle,
-    debounce: 500,
-    // No crossTab → Timer starts immediately!
+    eventsThrottle: 200, // Default value, but kept for clarity
+    
   });
-
-
   return null;
 };
 
