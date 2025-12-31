@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, User, Edit, Check, X, MapPin, Lock } from 'lucide-react';
+import { Camera, User, Edit, Check, X, MapPin} from 'lucide-react';
 import { getCountryFromMobile } from '../../utils/countryHelper';
 
 interface ProfileHeaderProps {
