@@ -120,13 +120,13 @@ const MemberNavbar: React.FC = () => {
                     <p className="text-sm font-bold text-gold truncate">{user?.email}</p>
                   </div>
 
-                  <Link
+                  {/* <Link
                     to="/dashboard"
                     onClick={() => setIsProfileDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-gold"
                   >
                     My Profile
-                  </Link>
+                  </Link> */}
 
                   <button
                     onClick={logout}
