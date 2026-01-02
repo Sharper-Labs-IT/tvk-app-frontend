@@ -26,7 +26,6 @@ const CreateAdminPage = React.lazy(() => import('../pages/admin/member/CreateAdm
 const EditAdminPage = React.lazy(() => import('../pages/admin/member/EditAdminPage'));
 
 // Lazy Loaded Pages
-// const Countdown = React.lazy(() => import('../pages/Countdown')); // Countdown is over
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
@@ -48,6 +47,7 @@ const Privacy = React.lazy(() => import('../components/common/PrivacyPolicyModal
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
 const MemberFeed = React.lazy(() => import('../pages/dashboard/MemberFeed'));
+const MemberPostEditPage = React.lazy(() => import('../pages/dashboard/MemberPostEditPage'));
 
 // Game Pages
 const MemoryChallenge = React.lazy(() => import('../pages/games/MemoryStart'));
@@ -92,17 +92,11 @@ const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) =>
   return !isLoggedIn ? <>{element}</> : <Navigate to="/home" replace />;
 };
 
-// Wrapper component that supplies the required props
+// Wrapper component for Terms Modal
 const TermsPage: React.FC = () => {
-  // The modal should be open when this route is active
   const isOpen = true;
-
-  // Close handler — you can navigate back or to home
   const handleClose = () => {
-    // Example: go back in history
     window.history.back();
-    // Or navigate to a specific route:
-    // navigate('/'); // if using useNavigate
   };
 
   return (
@@ -112,17 +106,13 @@ const TermsPage: React.FC = () => {
   );
 };
 
-
+// Wrapper component for Privacy Policy Modal
 const PrivacyPolicyPage: React.FC = () => {
   const navigate = useNavigate();
 
   return (
     <Suspense fallback={<div>Loading privacy policy...</div>}>
-      <Privacy
-        isOpen={true}                    // Modal is open when this route is active
-        onClose={() => navigate(-1)}     // Go back when user closes it
-        // Add any other props if your modal requires them
-      />
+      <Privacy isOpen={true} onClose={() => navigate(-1)} />
     </Suspense>
   );
 };
@@ -138,7 +128,6 @@ const AdminRoute: React.FC = () => {
     return <Navigate to="/login" replace />;
   }
 
-  // Handle both string and object roles
   const isAdminAccess = user.roles?.some((role) =>
     ['admin', 'moderator'].includes(getRoleName(role))
   );
@@ -164,8 +153,6 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   }
 
   const allowedRoles = ['member', 'premium', 'admin', 'moderator'];
-
-  // Handle both string and object roles
   const isMember = user.roles?.some((role) => allowedRoles.includes(getRoleName(role)));
 
   if (!isMember) {
@@ -184,7 +171,6 @@ const DashboardRedirect: React.FC = () => {
   if (!isAuthInitialized) return <Loader />;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
-  // Handle both string and object roles
   const roles = user?.roles?.map((r) => getRoleName(r)) || [];
 
   if (roles.includes('admin') || roles.includes('moderator')) {
@@ -205,22 +191,22 @@ const AppRoutes: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          {/* <Route path="/home" element={<Home />} /> */} {/* Countdown is over, home is now at / */}
           <Route path="/membership" element={<Membership />} />
           <Route path="/fan-of-the-month" element={<FanOfMonthPage />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
+
+          {/* Resolved Conflict: Merged these three routes */}
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
           <Route path="/terms-and-conditions" element={<TermsPage />} />
-          <Route path= "/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
 
-          {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
+          {/* MEMBER DASHBOARD ROUTES (Protected) */}
           <Route path="/dashboard" element={<UserRoute element={<MemberLayout />} />}>
-            {/* 1. Profile Page (Default) */}
             <Route index element={<MemberProfile />} />
-            {/* 2. Feed Page (New) */}
             <Route path="feed" element={<MemberFeed />} />
+            <Route path="posts/edit/:id" element={<MemberPostEditPage />} />
           </Route>
 
           {/* Auth Routes */}
@@ -236,10 +222,7 @@ const AppRoutes: React.FC = () => {
           {/* Game Routes */}
           <Route path="/leaderboard" element={<Leaderboards />} />
           <Route path="/store" element={<Store />} />
-
-          {/* Event Details Route */}
           <Route path="/events/:id" element={<EventDetailsPage />} />
-
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
           <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
           <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
@@ -266,7 +249,6 @@ const AppRoutes: React.FC = () => {
             <Route path="membership" element={<MembershipPlanList />} />
             <Route path="membership/create" element={<MembershipPlanCreate />} />
 
-            {/* --- NEW ROUTES FOR GAME MANAGEMENT --- */}
             <Route path="games" element={<GameListPage />} />
             <Route path="games/create" element={<CreateGamePage />} />
             <Route path="games/edit/:id" element={<EditGamePage />} />
@@ -275,19 +257,12 @@ const AppRoutes: React.FC = () => {
             <Route path="events/create" element={<CreateEventPage />} />
             <Route path="events/edit/:id" element={<EditEventPage />} />
 
-            {/* --- MEMBER MANAGEMENT ROUTES --- */}
+            {/* MEMBER MANAGEMENT ROUTES */}
             <Route path="members" element={<MemberListPage />} />
-
-            {/* View All Admins */}
             <Route path="members/admins" element={<AdminListPage />} />
-
-            {/* Create New Admin */}
             <Route path="members/admins/create" element={<CreateAdminPage />} />
-
-            {/* Edit Admin */}
             <Route path="members/admins/edit/:id" element={<EditAdminPage />} />
 
-            <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
 
@@ -297,5 +272,5 @@ const AppRoutes: React.FC = () => {
     </AuthProvider>
   );
 };
-
+//
 export default AppRoutes;
