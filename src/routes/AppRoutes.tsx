@@ -44,6 +44,7 @@ const CookiePolicy = React.lazy(() => import('../pages/CookiePolicy'));
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
 const MemberFeed = React.lazy(() => import('../pages/dashboard/MemberFeed'));
+const MemberPostEditPage = React.lazy(() => import('../pages/dashboard/MemberPostEditPage'));
 
 // Game Pages
 const MemoryChallenge = React.lazy(() => import('../pages/games/MemoryStart'));
@@ -166,21 +167,21 @@ const AppRoutes: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
-          {/* <Route path="/home" element={<Home />} /> */} {/* Countdown is over, home is now at / */}
+          {/* <Route path="/home" element={<Home />} /> */}{' '}
+          {/* Countdown is over, home is now at / */}
           <Route path="/membership" element={<Membership />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
-
           {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
           <Route path="/dashboard" element={<UserRoute element={<MemberLayout />} />}>
             {/* 1. Profile Page (Default) */}
             <Route index element={<MemberProfile />} />
             {/* 2. Feed Page (New) */}
             <Route path="feed" element={<MemberFeed />} />
+            <Route path="posts/edit/:id" element={<MemberPostEditPage />} />
           </Route>
-
           {/* Auth Routes */}
           <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
           <Route path="/signup" element={<PublicOnlyRoute element={<Signup />} />} />
@@ -190,14 +191,11 @@ const AppRoutes: React.FC = () => {
             element={<PublicOnlyRoute element={<ForgotPassword />} />}
           />
           <Route path="/reset-password" element={<PublicOnlyRoute element={<ResetPassword />} />} />
-
           {/* Game Routes */}
           <Route path="/leaderboard" element={<Leaderboards />} />
           <Route path="/store" element={<Store />} />
-
           {/* Event Details Route */}
           <Route path="/events/:id" element={<EventDetailsPage />} />
-
           <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
           <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
           <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
@@ -211,7 +209,6 @@ const AppRoutes: React.FC = () => {
           <Route path="/game/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
           <Route path="/game/city-defender" element={<CityDefenderStart />} />
           <Route path="/game/city-defender/start" element={<CityDefenderGame />} />
-
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute />}>
             <Route index element={<Navigate to="dashboard" replace />} />
@@ -248,7 +245,6 @@ const AppRoutes: React.FC = () => {
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
-
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

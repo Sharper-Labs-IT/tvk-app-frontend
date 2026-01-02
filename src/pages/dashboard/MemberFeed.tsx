@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom'; // 1. Import this
+import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
 import type { IContent, IContentResponse } from '../../types/content';
 import CreatePostWidget from '../../components/dashboard/CreatePostWidget';
@@ -46,7 +46,6 @@ const MemberFeed: React.FC = () => {
       // 4. Logic: If category ID exists in URL, use Filter Endpoint
       if (categoryFilter) {
         console.log(`Fetching filtered content for Category ID: ${categoryFilter}`);
-        // Using the route: Route::get('contents/filter', ...)
         response = await api.get<IContentResponse>(`/v1/contents/filter`, {
           params: { category_id: categoryFilter },
         });
@@ -87,7 +86,6 @@ const MemberFeed: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* Show Clear Filter button if category is active */}
           {categoryFilter && (
             <button
               onClick={clearFilter}
@@ -135,7 +133,12 @@ const MemberFeed: React.FC = () => {
         <div className="space-y-6">
           {contents.length > 0 ? (
             contents.map((post) => (
-              <PostCard key={post.id} post={post} isPremiumUser={isPremiumUser} />
+              <PostCard
+                key={post.id}
+                post={post}
+                isPremiumUser={isPremiumUser}
+                onPostDeleted={fetchFeed} // ✅ ADDED THIS LINE TO REFRESH AFTER DELETE
+              />
             ))
           ) : (
             /* Empty State */
