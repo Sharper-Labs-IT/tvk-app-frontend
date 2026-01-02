@@ -13,6 +13,7 @@ interface MembershipTireCardProps {
   tagline: string;
   priceLabel: string;
   priceSuffix: string;
+  billingNote?: string;
   highlight?: boolean;
   badgeLabel?: string;
   features: TierFeature[];
@@ -26,6 +27,7 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
   tagline,
   priceLabel,
   priceSuffix,
+  billingNote,
   highlight = false,
   badgeLabel,
   features,
@@ -62,11 +64,12 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
             <span className="text-4xl md:text-5xl 2xl:text-7xl font-bold text-[#f7c948]">{priceLabel}</span>
             <span className="text-sm md:text-base 2xl:text-xl text-slate-300">{priceSuffix}</span>
           </div>
-
-          <p className="mt-3 text-xs md:text-sm 2xl:text-base text-slate-400">
-            Renews automatically every 30 days {<br/>}
-            Cancel anytime
-          </p>
+        {billingNote && (
+        <p className="mt-2 text-xs md:text-sm 2xl:text-base text-slate-400 whitespace-pre-line">
+        {billingNote}
+        </p>
+    )}
+          
         </div>
 
         {/* Features List - Inline Check/X with Text */}

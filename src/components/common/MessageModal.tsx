@@ -80,7 +80,10 @@ const MessageModal: React.FC<MessageModalProps> = ({
           <h3 className={`text-2xl font-extrabold tracking-wider mb-2 ${headerColor}`}>{title}</h3>
 
           {/* Body */}
-          <p className="text-gray-300 text-base mb-6">{message}</p>
+          <div 
+  className="text-gray-300 mt-4 text-left leading-relaxed"
+  dangerouslySetInnerHTML={{ __html: message }}
+/>
         </div>
 
         {/* Close Button */}

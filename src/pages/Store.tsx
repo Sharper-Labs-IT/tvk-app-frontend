@@ -421,84 +421,85 @@ const Store: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
             {coinPackages.map((pkg, idx) => (
-              <motion.div
-                key={pkg.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className={`relative group rounded-2xl p-[1px] overflow-hidden transition-all duration-300 ${
-                  pkg.popular
-                    ? 'transform lg:-translate-y-4 shadow-[0_0_30px_rgba(246,168,0,0.15)]'
-                    : ''
-                }`}
-              >
-                {/* Animated Border Gradient - Always visible but subtle, brighter on hover */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${pkg.color} opacity-30 group-hover:opacity-100 transition-opacity duration-500`}
-                />
-                <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500" />
+  <motion.div
+    key={pkg.id}
+    initial={{ opacity: 0, scale: 0.9 }}
+    whileInView={{ opacity: 1, scale: 1 }}
+    viewport={{ once: true }}
+    transition={{ delay: idx * 0.1 }}
+    className={`relative group rounded-2xl p-[1px] overflow-visible transition-all duration-300 ${
+      pkg.popular
+        ? 'transform lg:-translate-y-4 shadow-[0_0_30px_rgba(246,168,0,0.15)]'
+        : ''
+    }`}
+  >
+    {/* Animated Border Gradient */}
+    <div
+      className={`absolute inset-0 bg-gradient-to-br ${pkg.color} opacity-30 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}
+    />
+    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 rounded-2xl" />
 
-                <div className="relative h-full bg-[#121212] rounded-2xl p-6 flex flex-col items-center text-center border border-white/10 group-hover:border-transparent transition-colors overflow-hidden">
-                  {/* Background Image */}
-                  <div className="absolute inset-0 z-0">
-                    <img
-                      src={pkg.image}
-                      alt=""
-                      className="w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-500 scale-110 group-hover:scale-100"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/90 to-transparent" />
-                  </div>
+    {/* Main Card - overflow-hidden kept only here for internal effects */}
+    <div className="relative h-full bg-[#121212] rounded-2xl p-6 flex flex-col items-center text-center border border-white/10 group-hover:border-transparent transition-colors overflow-hidden">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={pkg.image}
+          alt=""
+          className="w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-500 scale-110 group-hover:scale-100"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/90 to-transparent" />
+      </div>
 
-                  <div className="relative z-10 w-full flex flex-col items-center h-full">
-                    {pkg.popular && (
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
-                        <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black px-4 py-1.5 rounded-full shadow-[0_0_15px_rgba(234,179,8,0.4)] border border-yellow-300/50">
-                          <Star className="w-3 h-3 fill-black" />
-                          <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                            Most Popular
-                          </span>
-                        </div>
-                      </div>
-                    )}
+      <div className="relative z-10 w-full flex flex-col items-center h-full pt-8">
+        {/* Coin Icon Circle */}
+        <div className="relative w-24 h-24 mb-6">
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${pkg.color} rounded-full opacity-20 blur-xl group-hover:opacity-40 transition-opacity`}
+          />
+          <div className="relative w-full h-full bg-white/5 rounded-full flex items-center justify-center border border-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform duration-500 shadow-inner">
+            <Coins className="w-10 h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
+          </div>
+        </div>
 
-                    <div className="relative w-24 h-24 mb-6 mt-2">
-                      <div
-                        className={`absolute inset-0 bg-gradient-to-br ${pkg.color} rounded-full opacity-20 blur-xl group-hover:opacity-40 transition-opacity`}
-                      />
-                      <div className="relative w-full h-full bg-white/5 rounded-full flex items-center justify-center border border-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform duration-500 shadow-inner">
-                        <Coins
-                          className={`w-10 h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]`}
-                        />
-                      </div>
-                    </div>
+        <h3 className="text-4xl font-black text-white mb-1 tracking-tight">
+          {pkg.amount}
+        </h3>
+        <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-6">
+          TVK Coins
+        </p>
 
-                    <h3 className="text-4xl font-black text-white mb-1 tracking-tight">
-                      {pkg.amount}
-                    </h3>
-                    <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-6">
-                      TVK Coins
-                    </p>
+        {pkg.bonus && (
+          <div className="mb-6 px-3 py-1 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-[0_0_10px_rgba(74,222,128,0.1)]">
+            {pkg.bonus}
+          </div>
+        )}
 
-                    {pkg.bonus && (
-                      <div className="mb-6 px-3 py-1 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-[0_0_10px_rgba(74,222,128,0.1)]">
-                        {pkg.bonus}
-                      </div>
-                    )}
+        {/* Coming Soon Button */}
+        <div className="mt-auto w-full z-20 relative">
+          <button
+            disabled
+            className="w-full py-4 rounded-xl font-bold text-lg relative overflow-hidden bg-white/5 text-gray-500 border border-white/5 cursor-not-allowed"
+          >
+            <span className="relative z-30">Coming Soon</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
-                    <div className="mt-auto w-full">
-                      {/* UPDATED: Button for Coming Soon */}
-                      <button
-                        disabled
-                        className="w-full py-4 rounded-xl font-bold text-lg relative overflow-hidden bg-white/5 text-gray-500 border border-white/5 cursor-not-allowed"
-                      >
-                        <span className="relative z-10">Coming Soon</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+    {/* MOST POPULAR BADGE - Now outside the overflow-hidden card, fully visible and in front */}
+    {pkg.popular && (
+      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
+        <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.5)] border border-yellow-300/50 whitespace-nowrap">
+          <Star className="w-4 h-4 fill-black" />
+          <span className="text-xs font-black uppercase tracking-widest">
+            Most Popular
+          </span>
+        </div>
+      </div>
+    )}
+  </motion.div>
+))}
           </div>
         </section>
 
