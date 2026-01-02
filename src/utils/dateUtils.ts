@@ -1,7 +1,5 @@
 export const getToday = () => {
-  // SIMULATING DATE: Dec 31, 2025 (Reveal Time)
-  return new Date('2025-12-31T10:00:00');
-  // return new Date();
+  return new Date();
 };
 
 export const isLastWeekOfMonth = (): boolean => {
