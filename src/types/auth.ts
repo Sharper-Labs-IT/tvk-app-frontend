@@ -28,6 +28,7 @@ export interface IMembershipPlan {
 }
 
 export interface IMembership {
+  auto_renew: boolean;
   id: number;
   plan_id: number;
   status: string;
