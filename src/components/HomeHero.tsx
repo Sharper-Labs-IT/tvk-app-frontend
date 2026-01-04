@@ -36,15 +36,15 @@ const HomeHero: React.FC = () => {
       {/* Desktop Layout (xl+) - Flex instead of grid, better spacing */}
 <div className="hidden xl:block">
   <div className="relative h-screen">
-    <div className="max-w-6xl mx-auto px-6 lg:px-12 h-full flex items-center justify-center">
+    <div className="max-w-7xl 2xl:max-w-[90vw] mx-auto px-6 lg:px-12 h-full flex items-center justify-center">
       <div className="flex flex-row items-center justify-between gap-12 w-full max-w-[95%]">
         {/* Left: Text Content */}
-        <div className="flex flex-col justify-center text-left space-y-4 lg:space-y-6 max-w-lg">
+        <div className="flex flex-col justify-center text-left space-y-4 lg:space-y-6 max-w-lg 2xl:max-w-2xl">
           <h1
             className={`
               ${getAnimClass('delay-0')}
               font-extrabold tracking-tight uppercase
-              text-[clamp(2.5rem,4vw,4rem)] 
+              text-[clamp(2.5rem,4vw,6rem)] 
               leading-none
             `}
           >
@@ -60,16 +60,16 @@ const HomeHero: React.FC = () => {
           </h1>
 
           <h2
-            className={`text-2xl lg:text-3xl font-bold text-white leading-tight ${getAnimClass('delay-[200ms]')}`}
+            className={`text-2xl lg:text-3xl 2xl:text-5xl font-bold text-white leading-tight ${getAnimClass('delay-[200ms]')}`}
           >
             The Ultimate Global Fan Hub
           </h2>
 
           <div
-            className={`text-base lg:text-lg text-gray-300 font-medium ${getAnimClass('delay-[400ms]')}`}
+            className={`text-base lg:text-lg 2xl:text-2xl text-gray-300 font-medium ${getAnimClass('delay-[400ms]')}`}
           >
             <p>One World. One Thalapathy Family.</p>
-            <p className="mt-2 text-sm text-gray-400">
+            <p className="mt-2 text-sm text-gray-400 2xl:text-lg">
               Membership is currently available to fans outside India only
             </p>
           </div>
@@ -84,7 +84,7 @@ const HomeHero: React.FC = () => {
                   Not Available in India
                 </button>
               ) : isLoggedIn && isSuperFan ? (
-                <button onClick={() => navigate('/membership')} className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm">
+                <button onClick={() => navigate('/membership')} className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm 2xl:px-8 2xl:py-4 2xl:text-base">
                   Manage Membership
                 </button>
               ) : (
@@ -92,7 +92,7 @@ const HomeHero: React.FC = () => {
                   <button
                     onClick={() => !isLoggedIn && navigate('/signup')}
                     disabled={isLoggedIn}
-                    className={`px-6 py-3 font-bold rounded-md shadow-lg transition-all duration-200 uppercase tracking-wide text-sm ${
+                    className={`px-6 py-3 font-bold rounded-md shadow-lg transition-all duration-200 uppercase tracking-wide text-sm 2xl:px-8 2xl:py-4 2xl:text-base ${
                       isLoggedIn ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-white text-brand-dark hover:bg-gray-100 hover:shadow-xl hover:scale-105'
                     }`}
                   >
@@ -101,7 +101,7 @@ const HomeHero: React.FC = () => {
 
                   <button
                     onClick={() => navigate('/membership')}
-                    className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
+                    className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap 2xl:px-8 2xl:py-4 2xl:text-base"
                   >
                     Become a Super Fan £9.99
                   </button>
@@ -109,7 +109,7 @@ const HomeHero: React.FC = () => {
               )}
             </div>
 
-            <p className={`text-sm text-gray-500 font-light italic max-w-md ${getAnimClass('delay-[700ms]')}`}>
+            <p className={`text-sm text-gray-500 font-light italic max-w-md 2xl:max-w-xl 2xl:text-base ${getAnimClass('delay-[700ms]')}`}>
               This is an independent global fan platform created to celebrate actor Vijay’s legacy following his final film. It is not officially affiliated with or endorsed by Thalapathy Vijay or his representatives.
             </p>
           </div>
@@ -120,7 +120,7 @@ const HomeHero: React.FC = () => {
           <img
             src="/images/HeroBackImg.png"
             alt="Thalapathy Vijay"
-            className={`w-full max-w-[500px] lg:max-w-[600px] h-auto max-h-[85vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
+            className={`w-full max-w-[500px] lg:max-w-[600px] 2xl:max-w-[900px] h-auto max-h-[85vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
               isVisible ? 'opacity-100' : 'opacity-0'
             }`}
           />
