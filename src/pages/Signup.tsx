@@ -15,11 +15,26 @@ import { useGeoLocation } from '../hooks/useGeoLocation';
 import { COUNTRIES } from '../constants/countries';
 import { PHONE_CODES } from '../constants/phoneCodes';
 
+const TITLE_OPTIONS = [
+  "Mr",
+  "Mrs",
+  "Ms",
+  "Miss",
+  "Mx",
+  "Dr",
+  "Prof",
+  "Rev",
+  "Sir",
+  "Dame",
+  "Prefer not to say"
+];
+
 const Signup: React.FC = () => {
   const navigate = useNavigate();
 
   // --- FORM STATE ---
   const [formData, setFormData] = useState<ISignupPayload>({
+    title: '',
     first_name: '',
     surname: '',
     email: '',
@@ -436,6 +451,47 @@ const Signup: React.FC = () => {
                   className={`space-y-5 ${getAnimationClass('delay-[300ms]')}`}
                   onSubmit={handleSubmit}
                 >
+                  {/* Title Dropdown */}
+                  <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
+                      How should we address you?
+                    </label>
+                    <div className="relative flex rounded-lg shadow-sm">
+                      <select
+                        name="title"
+                        id="title"
+                        value={formData.title || ''}
+                        onChange={handleInputChange}
+                        className="block w-full px-3 py-3 border border-gray-600 rounded-lg bg-[#2C2C2C] text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm appearance-none cursor-pointer"
+                      >
+                        <option value="" disabled>
+                          Select Title
+                        </option>
+                        {TITLE_OPTIONS.map((title) => (
+                          <option key={title} value={title}>
+                            {title}
+                          </option>
+                        ))}
+                      </select>
+                      {/* Arrow Icon for Select */}
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg
+                          className="h-4 w-4 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M19 9l-7 7-7-7"
+                          ></path>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* First Name & Surname Split */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>

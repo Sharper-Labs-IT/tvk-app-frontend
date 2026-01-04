@@ -9,6 +9,7 @@ export interface ILoginPayload {
 // 2. Signup Request Payload - UPDATED
 // Matches the new form fields and backend validation
 export interface ISignupPayload {
+  title?: string;
   first_name: string;
   surname: string;
   email: string;

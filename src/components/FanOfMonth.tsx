@@ -2,15 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Star, Gem, Zap, Award, Trophy, ArrowRight, MessageCircle, Calendar, Gamepad2 } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { isLastWeekOfMonth, getToday } from '../utils/dateUtils';
+import { isLastWeekOfMonth, getPreviousMonthName } from '../utils/dateUtils';
 import { getCountryFromMobile } from '../utils/countryHelper';
 import { pointsService, type TopFan } from '../services/pointsService';
 
 const FanOfMonth: React.FC = () => {
   const isRevealTime = isLastWeekOfMonth();
-  const today = getToday();
-  // Check if we are in the new year (Jan 2026) to update the previous winner
-  const isNewMonth = today.getMonth() === 0 && today.getFullYear() === 2026;
+  const previousMonthName = getPreviousMonthName();
 
   const [topFan, setTopFan] = useState<TopFan | null>(null);
 
@@ -30,9 +28,9 @@ const FanOfMonth: React.FC = () => {
   }, []);
 
   const previousWinner = {
-    name: isNewMonth ? (topFan?.name || "Winner") : "Winner",
+    name: topFan?.name || "Winner",
     image: "/images/tvk-logo.png", // Force TVK logo
-    label: isNewMonth ? "December Winner" : "Previous Winner"
+    label: `${previousMonthName} Winner`
   };
 
   const currentTopName = topFan?.nickname || topFan?.name || "Loading...";
@@ -54,13 +52,13 @@ const FanOfMonth: React.FC = () => {
   return (
     <section className="relative w-full bg-brand-dark py-12 md:py-24 overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 z-0">
+      {/* <div className="absolute inset-0 z-0">
         <img
           src="/images/MemOfMonthBack.png"
           alt="Background"
           className="w-full h-full object-cover opacity-100"
         />
-      </div>
+      </div> */}
 
       <div className="container relative z-10 mx-auto px-4 sm:px-6 lg:px-12">
         <motion.div
@@ -147,7 +145,7 @@ const FanOfMonth: React.FC = () => {
                 to="/fan-of-the-month"
                 className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark font-bold py-3 px-8 rounded-xl hover:bg-white transition-colors shadow-lg shadow-brand-gold/20"
               >
-                {isRevealTime ? "Reveal Winner" : "View Top Fans"}
+                {isRevealTime ? "Reveal Winner" : "View Countdown"}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
