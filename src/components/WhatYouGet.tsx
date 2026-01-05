@@ -86,13 +86,89 @@ const WhatYouGet: React.FC = () => {
       </div>
 
       <div className="relative z-10 container mx-auto px-4">
+        {/* Introduction Section */}
+        <div className="text-center mb-16 max-w-5xl mx-auto">
+          {/* Main Heading */}
+          <div
+            className={`transition-all duration-700 transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+            style={{ transitionDelay: '0ms' }}
+          >
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-8 text-white drop-shadow-lg leading-tight">
+              Ready to Join the <span className="text-[#D4AF37]">Thalapathy VJ Kudumbam (TVK)</span> Global Movement?
+            </h2>
+          </div>
+          
+          {/* Subheading */}
+          <div
+            className={`transition-all duration-700 transform ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}
+            style={{ transitionDelay: '150ms' }}
+          >
+            <h3 className="text-2xl md:text-4xl font-bold mb-8 text-[#D4AF37] drop-shadow-lg">
+              Why Become a Super Fan?
+            </h3>
+          </div>
+          
+          {/* Content */}
+          <div className="space-y-6 text-gray-200 text-base md:text-xl leading-relaxed max-w-4xl mx-auto">
+            <div
+              className={`transition-all duration-700 transform ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{ transitionDelay: '300ms' }}
+            >
+              <p className="font-medium">
+                This is more than a membership.
+              </p>
+            </div>
+            
+            <div
+              className={`transition-all duration-700 transform ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{ transitionDelay: '450ms' }}
+            >
+              <p>
+                It's your place in the Thalapathy VJ Kudumbam a global fan family connected by passion, pride, and shared moments.
+              </p>
+            </div>
+            
+            <div
+              className={`transition-all duration-700 transform ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{ transitionDelay: '600ms' }}
+            >
+              <p>
+                As a Super Fan, you unlock deeper access, closer connections, and experiences that bring fans together across borders.
+              </p>
+            </div>
+            
+            <div
+              className={`transition-all duration-700 transform ${
+                isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+              style={{ transitionDelay: '750ms' }}
+            >
+              <p className="text-lg md:text-xl font-medium text-[#D4AF37]/90 pt-4">
+                The Super Fan Experience is where passion meets connection. A global space where exclusive content, live moments, personalised features, interactive communities, and Super Hero games come together making fandom feel immersive, exciting, and alive.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Super Fan Benefits Section */}
         <div
           className={`text-center mb-12 transition-all duration-700 transform ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
+          style={{ transitionDelay: '900ms' }}
         >
           <h2 className="text-3xl md:text-5xl font-bold uppercase tracking-wider text-[#D4AF37] drop-shadow-lg">
-            Super Fan Benefits
+            Inside the Super Fan Experience
           </h2>
         </div>
 
