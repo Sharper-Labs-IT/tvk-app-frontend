@@ -527,6 +527,16 @@ const Signup: React.FC = () => {
                       )}
                     </div>
                   </div>
+                  {/*Add description*/}
+                  <div className="mt-3 px-1">
+                    <p className="text-gray-400 text-xs lg:text-sm leading-relaxed">
+                      We’ll auto-generate a display name for you.
+                    </p>
+                    <p className="text-gray-400 text-xs lg:text-sm leading-relaxed mt-1">
+                      This name will be shown publicly in games, leaderboards, and winner announcements. You can change it later in your profile dashboard.
+                    </p>
+                  </div>
+
 
                   {/* Country Selection Dropdown */}
                   <div>
