@@ -8,6 +8,7 @@ import {
 } from '@stripe/react-stripe-js';
 import axiosClient from '../api/axiosClient';
 import type { Plan } from '../types/plan';
+import { COUNTRIES, getCountryName } from '../constants/countrieslist';
 
 // Define the specific allowed currency types
 type CurrencyCode = 'GBP' | 'USD' | 'EUR';
@@ -40,7 +41,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   const [priceLoading, setPriceLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Updated state with specific type to prevent the TS error
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>(currency || 'GBP');
   const [displayPrice, setDisplayPrice] = useState<string | null>(null);
 
@@ -51,15 +51,14 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     city: '',
     state: '',
     postal_code: '',
-    country: '',
+    country: '', // This will now store the 2-letter code (e.g., 'LK')
   });
 
-  // Stripe Element Styling - Dark text (Black) for visibility
   const stripeElementOptions = {
     style: {
       base: {
         fontSize: '14px',
-        color: '#000000', // Black text
+        color: '#000000',
         fontWeight: '500',
         fontFamily: 'Inter, sans-serif',
         '::placeholder': {
@@ -101,7 +100,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
   if (!isOpen || !plan) return null;
 
-  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setAddress({ ...address, [e.target.name]: e.target.value });
   };
 
@@ -131,8 +130,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
             city: address.city,
             state: address.state || undefined,
             postal_code: address.postal_code,
-            // Stripe requires 2-letter code; we take first 2 chars of what user types
-            country: address.country.substring(0, 2).toUpperCase() || 'GB',
+            country: address.country, // Sends the 2-letter code to Stripe
           },
         },
       });
@@ -143,11 +141,16 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         return;
       }
 
+      // We send the full country name to the database, but keep the code for Stripe logic if needed
       const res = await axiosClient.post('/payments/subscribe', {
         plan_id: plan.id,
         payment_method_id: paymentMethod.id,
         currency: selectedCurrency,
-        address: address,
+        address: {
+          ...address,
+          country_full: getCountryName(address.country), // Helper to send "Sri Lanka" to backend
+          country_code: address.country, // Sends "LK" to backend
+        },
       });
 
       const data = res.data;
@@ -196,7 +199,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
                 <button
                   key={c.code}
                   type="button"
-                  // Cast the code to CurrencyCode to satisfy TypeScript
                   onClick={() => setSelectedCurrency(c.code as CurrencyCode)}
                   className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
                     selectedCurrency === c.code
@@ -256,17 +258,21 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
                 />
               </div>
               <div>
-                <label className="text-[11px] font-bold text-slate-500 uppercase">
-                  Country Name
-                </label>
-                <input
+                <label className="text-[11px] font-bold text-slate-500 uppercase">Country</label>
+                <select
                   name="country"
                   required
-                  placeholder="e.g. United Kingdom"
-                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none appearance-none"
                   value={address.country}
                   onChange={handleAddressChange}
-                />
+                >
+                  <option value="">Select Country</option>
+                  {COUNTRIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-[11px] font-bold text-slate-500 uppercase">
