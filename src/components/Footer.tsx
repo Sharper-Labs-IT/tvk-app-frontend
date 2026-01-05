@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaFacebookF, FaInstagram, FaTwitter } from 'react-icons/fa';
+import { FaFacebookF, FaInstagram } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import type { Variants } from 'framer-motion'; // explicit type import
 
@@ -73,6 +73,21 @@ const Footer: React.FC = () => {
                   Community
                 </Link>
               </li>
+              <li>
+                <Link to="/cookie-policy" className="hover:text-brand-gold transition-colors">
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/privacy-policy" className="hover:text-brand-gold transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms-and-conditions" className="hover:text-brand-gold transition-colors">
+                  Terms & Conditions
+                </Link>
+              </li>
             </ul>
           </motion.div>
 
@@ -126,15 +141,6 @@ const Footer: React.FC = () => {
               >
                 <FaInstagram />
               </a>
-              {/* Twitter */}
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
-              >
-                <FaTwitter />
-              </a>
             </div>
           </motion.div>
         </motion.div>
@@ -146,7 +152,7 @@ const Footer: React.FC = () => {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="text-center text-gray-500 text-sm"
         >
-          © {new Date().getFullYear()} TVK Members ONLY – GLOBAL. All rights reserved.
+          © {new Date().getFullYear()} TVK GLOBAL Membership Programme. All rights reserved.
         </motion.div>
       </div>
     </footer>

@@ -80,12 +80,11 @@ const ForgotPassword: React.FC = () => {
 
     try {
       // API call to request the token
-      const response = await api.post<IMessageResponse>('/v1/auth/forgot-password', formData);
+      await api.post<IMessageResponse>('/v1/auth/forgot-password', formData);
 
-      // Success: Show the themed modal confirmation
+      // ✅ SUCCESS: Set your custom message here (Ignoring backend message)
       setModalMessage(
-        response.data.message ||
-          'A password reset token has been sent to your email. You will now be redirected to the token input page.'
+        'We’ve sent a password reset link to your registered email address. Please check your inbox (and spam/junk folder). The link will expire in 10 minutes.'
       );
       setIsSuccess(true);
       setShowModal(true);
@@ -224,7 +223,7 @@ const ForgotPassword: React.FC = () => {
       {/* SUCCESS/FAILURE MESSAGE MODAL */}
       <MessageModal
         isOpen={showModal}
-        title="Reset Email Sent"
+        title="Password Reset Email Sent"
         message={modalMessage}
         type="success"
         onClose={handleModalClose}

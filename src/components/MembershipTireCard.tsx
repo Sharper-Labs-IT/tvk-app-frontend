@@ -1,89 +1,120 @@
 import React from 'react';
-
-import { Check, X} from 'lucide-react';
-
+import { Check, X } from 'lucide-react';
 
 export type BillingPeriod = "monthly" | "yearly";
 
-
-export interface TierFeature{
-    label: string;
-    available: boolean;
+export interface TierFeature {
+  label: string;
+  available: boolean;
 }
 
-interface MembershipTireCardprops{
-    name: string;
-    tagline: string;
-    priceLabel: string;
-    priceSuffix: string;
-    highlight?: boolean;
-    badgeLabel?: string;
-    features: TierFeature[];
-     onSubscribe?: () => void;
-
+interface MembershipTireCardProps {
+  name: string;
+  tagline: string;
+  priceLabel: string;
+  priceSuffix: string;
+  billingNote?: string;
+  highlight?: boolean;
+  badgeLabel?: string;
+  features: TierFeature[];
+  onSubscribe?: () => void;
+  buttonText?: string;
+  buttonDisabled?: boolean;
 }
 
-const MembershipTireCard: React.FC<MembershipTireCardprops> =({
-    name,
-    tagline,
-    priceLabel,
-    priceSuffix,
-    highlight = false,
-    badgeLabel,
-    features,
-    onSubscribe,
-
+const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
+  name,
+  tagline,
+  priceLabel,
+  priceSuffix,
+  billingNote,
+  highlight = false,
+  badgeLabel,
+  features,
+  onSubscribe,
+  buttonText = "Subscribe Now",
+  buttonDisabled = false,
 }) => {
-    return (
-        <div
-            className={[
-                "relative flex flex-col rounded-3xl p-[2px] transition-transform hover:-translate-y-1 hover:shadow-xl",
-                highlight ? "gold-border" : "border border-[#1d2340]"
-            ].join(" ")}
-            >
-        <div className="rounded-3xl bg-[#07091a] p-6 flex flex-col h-full">
+  return (
+    <div
+      className={`relative flex flex-col rounded-3xl p-[2px] transition-transform hover:-translate-y-1 hover:shadow-xl ${
+        highlight ? "bg-gradient-to-r from-[#f7c948]/20 to-[#f7c948]/40" : "border border-[#1d2340]"
+      }`}
+    >
+      {/* Optional glowing border for highlighted card */}
+      {highlight && (
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-[#f7c948] to-[#e6b800] opacity-50 blur-lg -z-10" />
+      )}
 
-            {/*Badge*/}
-            {highlight && badgeLabel && (
-                <div className='absolute -top-3 right-6 rounded-full bg-[#f7c948] px-3 py-1 text-xs font-semibold text-[#111827] shadow-md'>{badgeLabel}</div>
-            )}
+      <div className="rounded-3xl bg-[#07091a] p-6 md:p-8 2xl:p-12 flex flex-col h-full">
+        {/* Most Popular Badge */}
+        {highlight && badgeLabel && (
+          <div className="absolute -top-3 right-6 rounded-full bg-[#f7c948] px-4 py-1.5 text-xs md:text-sm 2xl:text-base font-bold text-[#111827] shadow-lg">
+            {badgeLabel}
+          </div>
+        )}
 
-            <div className='mb-6'>
-                <h3 className="text-2xl font-semibold text-white">{name}</h3>
-                <p className="mt-1 text-sm text-slate-300">{tagline}</p>
-            </div>
-
-            <div className='mb-6'>
-                <div className='flex items-baseline gap-2'>
-                    <span className='text-4xl font-bold text-[#f7c948]'>{priceLabel}</span>
-                    <span className="text-sm text-slate-300">{priceSuffix}</span>
-                </div>
-            </div>
-
-            <ul className="mb-8 flex-1 flex-y-2 text-sm">
-                {features.map((feature, index)=> (
-                    <li key={index} className="flex-items-start gap-2">
-                        {feature.available ? (
-                            <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-[#f7c948]" />
-                        ) : (
-                            <X className = "mt-0.5 h-4 w-4 flex-shrink-0 text-slate-500"/>
-                            )}
-                            <span className={feature.available ? "text-slate-200" : "text-slate-500 line-through"}>{feature.label}</span>
-                    </li>
-                ))}
-            </ul>
-
-            <button type="button"  onClick={onSubscribe} className={["mt-auto w-full rounded-full px-4 py-3 text-sm font-semibold transition-colors",
-                highlight
-            ? "bg-[#f7c948] text-[#111827] hover:bg-[#f4b41a]"
-            : "bg-[#111827] text-slate-100 hover:bg-[#181e37]"
-            ].join(" ")}>
-               Subscribe Now
-            </button>
+        <div className="mb-6 2xl:mb-10">
+          <h3 className="text-2xl md:text-3xl 2xl:text-5xl font-semibold text-white">{name}</h3>
+          <p className="mt-2 text-sm md:text-base 2xl:text-xl text-slate-300">{tagline}</p>
         </div>
+
+        <div className="mb-8 2xl:mb-12">
+          <div className="flex items-baseline gap-2">
+            <span className="text-4xl md:text-5xl 2xl:text-7xl font-bold text-[#f7c948]">{priceLabel}</span>
+            <span className="text-sm md:text-base 2xl:text-xl text-slate-300">{priceSuffix}</span>
+          </div>
+        {billingNote && (
+        <p className="mt-2 text-xs md:text-sm 2xl:text-base text-slate-400 whitespace-pre-line">
+        {billingNote}
+        </p>
+    )}
+          
         </div>
-    )
-}
+
+        {/* Features List - Inline Check/X with Text */}
+        <ul className="mb-10 2xl:mb-14 flex-1 space-y-3 2xl:space-y-5 text-sm md:text-base 2xl:text-xl">
+          {features.map((feature, index) => (
+            <li key={index} className="flex items-start gap-3">
+              {feature.available ? (
+                <Check className="mt-0.5 h-5 w-5 2xl:h-7 2xl:w-7 flex-shrink-0 text-[#f7c948]" />
+              ) : (
+                <X className="mt-0.5 h-5 w-5 2xl:h-7 2xl:w-7 flex-shrink-0 text-slate-500" />
+              )}
+              <span
+                className={
+                  feature.available
+                    ? "text-slate-200"
+                    : "text-slate-500 line-through"
+                }
+              >
+                {feature.label}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Button */}
+        <button
+          type="button"
+          onClick={buttonDisabled ? undefined : onSubscribe}
+          disabled={buttonDisabled}
+          className={`mt-auto w-full rounded-full px-6 py-3.5 2xl:py-5 text-sm md:text-base 2xl:text-xl font-semibold transition-all duration-300 relative ${
+           buttonDisabled 
+            ? "bg-[#111827]/40 text-slate-500 border border-slate-700 opacity-60 cursor-not-allowed" 
+                : highlight
+                    ? "bg-[#f7c948] text-[#111827]"
+                    : "bg-[#111827] text-slate-100 border border-slate-700"
+                }
+                ${!buttonDisabled && highlight ? "hover:bg-[#f4b41a] hover:shadow-lg hover:scale-105" : ""}
+                ${!buttonDisabled && !highlight ? "hover:bg-[#181e37] hover:scale-105" : ""}
+                ${!buttonDisabled ? "active:scale-95" : ""}`}
+        >
+          {buttonText || (highlight ? "Manage your membership" : "Subscribe Now")}
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export default MembershipTireCard;
-

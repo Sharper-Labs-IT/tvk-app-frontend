@@ -6,16 +6,20 @@ export interface ILoginPayload {
   password: string;
 }
 
-// 2. Signup Request Payload
+// 2. Signup Request Payload - UPDATED
+// Matches the new form fields and backend validation
 export interface ISignupPayload {
-  name: string;
+  title?: string;
+  first_name: string;
+  surname: string;
   email: string;
   mobile: string;
+  country: string;
   password: string;
   password_confirmation: string;
 }
 
-// --- NEW HELPERS FOR DASHBOARD (Backend V2 Support) ---
+// --- NEW HELPERS FOR DASHBOARD ---
 
 export interface IMembershipPlan {
   id: number;
@@ -25,6 +29,7 @@ export interface IMembershipPlan {
 }
 
 export interface IMembership {
+  auto_renew: boolean;
   id: number;
   plan_id: number;
   status: string;
@@ -36,7 +41,7 @@ export interface IMembership {
 export interface IBadge {
   id: number;
   name: string;
-  icon?: string;
+  icon?: string; // This is the field from DB (e.g. "icons/badges/new-member.png")
   points_required: number;
 }
 
@@ -79,37 +84,42 @@ export interface IRole {
 
 // --- CORE TYPES ---
 
-// UPDATED IUser: Support for both Old and New Backend Structures
 export interface IUser {
   id: number;
-  name: string;
+  name: string; // Backend still returns combined 'name' for display
+
+  // MERGE FIX: Kept 'development' version because 'nickname_changes' is required
+  // for the Profile page logic (free nickname change calculation).
   nickname?: string; // Display name (shown instead of username)
+  nickname_changes?: number; // Track how many times nickname has been changed
+
   email: string;
   mobile?: string;
   is_verified: boolean;
   status?: 'active' | 'inactive' | string;
-  coins?: number; // Added coins
-  membership_type?: 'free' | 'premium' | 'vip'; // Frontend field
-  membership_tier?: 'free' | 'super_fan' | string; // Backend field
+  coins?: number;
+  membership_type?: 'free' | 'premium' | 'vip';
+  membership_tier?: 'free' | 'super_fan' | string;
 
-  // ⚠️ CRITICAL UPDATE: Roles can now be objects (Old) OR strings (New Backend)
-  // We allow both types here so your app doesn't crash if data format changes.
+  // Added country here as optional, so if you need to display it later, it's available in the type
+  country?: string;
+
+  // Roles can now be objects (Old) OR strings (New Backend)
   roles?: (IRole | string)[];
 
-  // Images
+  // Images (backend sends 'avatar', but we normalize to avatar_url for consistency)
   avatar_url?: string | null;
-  avatar?: string | null;
+  avatar?: string | null; // Legacy field from backend
 
   created_at?: string;
   last_login_at?: string;
   email_verified_at?: string | null;
 
-  // --- OPTIONAL FIELDS (Old Dashboard Logic) ---
+  // --- OPTIONAL FIELDS ---
   subscription?: ISubscriptionDetails;
   stats?: IUserStats;
 
-  // --- NEW FIELDS (New Backend Logic) ---
-  // These match the new 'me()' response from your Controller
+  // --- NEW FIELDS ---
   membership?: IMembership | null;
   points?: number;
   badges?: IBadge[];
@@ -117,7 +127,6 @@ export interface IUser {
   trophies?: ITrophies | any[];
 }
 
-// 4. Login Success Response
 export interface ILoginResponse {
   token?: string;
   user?: IUser;
@@ -125,36 +134,30 @@ export interface ILoginResponse {
   message?: string;
 }
 
-// 5. Signup Success Response
 export interface ISignupResponse {
   message: string;
   user_id: number;
 }
 
-// 6. Verification Payloads
 export interface IVerifyOtpPayload {
   user_id: number;
   otp: string;
 }
 
-// NEW: Admin 2FA Payload
 export interface IVerifyAdmin2FaPayload {
   email: string;
   otp: string;
 }
 
-// 7. Resend OTP Payload
 export interface IResendOtpPayload {
   user_id?: number;
   email?: string;
 }
 
-// 8. Forgot Password Request Payload
 export interface IForgotPasswordPayload {
   email: string;
 }
 
-// 9. Reset Password Request Payload
 export interface IResetPasswordPayload {
   email: string;
   token: string;
@@ -162,7 +165,6 @@ export interface IResetPasswordPayload {
   password_confirmation: string;
 }
 
-// 10. Generic Message Response
 export interface IMessageResponse {
   message: string;
 }

@@ -8,7 +8,6 @@ import Button from "./Button";
 import { useAuth } from "../../context/AuthContext";
 import MembershipModal from "../membership/MembershipModal";
 
-
 type BentoTiltProps = {
   children: ReactNode;
   className?: string;
@@ -86,18 +85,16 @@ export const BentoCard = ({
   const handleMouseLeave = () => setHoverOpacity(0);
 
   return (
-    <div className="relative size-full">
+    <div className="relative size-full overflow-hidden rounded-md group">
       {src && (
-        <video
+        <img
           src={src}
-          loop
-          muted
-          autoPlay
-          className="absolute left-0 top-0 size-full object-cover object-center"
+          alt="background"
+          className="absolute left-0 top-0 size-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
         />
       )}
 
-      <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50">
+      <div className="relative z-10 flex size-full flex-col justify-between p-5 text-blue-50 bg-black/40">
         <div>
           <h1 className="bento-title special-font">{title}</h1>
           {description && (
@@ -127,7 +124,7 @@ export const BentoCard = ({
         )}
 
         {clickToPlay && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 hover:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <Button
               title="Play Now"
               leftIcon={<TiLocationArrow className="relative z-20 text-xl scale-150 mr-2" />}
@@ -145,10 +142,9 @@ export const BentoCard = ({
 
 const Features = () => {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth(); //
+  const { isLoggedIn } = useAuth(); 
   const [showModal, setShowModal] = useState(false);
 
-  // Helper function to handle game clicks
   const handleGameClick = (path: string) => {
     if (isLoggedIn) {
       navigate(path);
@@ -174,7 +170,7 @@ const Features = () => {
 
           <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
             <BentoCard
-              src="videos/feature-1.mp4"
+              src="img/memory.webp"
               title={
                 <>
                   TVK<b> memory</b> Challenge
@@ -182,31 +178,26 @@ const Features = () => {
               }
               description="A VJ Movie shuffle game - remix iconic scenes from Thalapathy Vijay's blockbuster movies."
               clickToPlay
-              // UPDATED: Use handleGameClick
               onPlay={() => handleGameClick("/game/memory-challenge")}
             />
           </BentoTilt>
 
-          <div className="grid h-[180vh] w-full grid-cols-2 grid-rows-4 gap-7">
-            <BentoTilt className="bento-tilt_1 md:col-span-1 md:row-span-2">
+          <div className="flex flex-col gap-7 w-full md:grid md:grid-cols-2 md:grid-rows-4 md:h-[180vh]">
+            
+            {/* VJ Avatar */}
+            <BentoTilt className="bento-tilt_1 h-96 md:h-auto md:row-span-2 md:col-span-1">
               <BentoCard
                 src="img/feature-2.webp"
                 title={<>VJ</>}
                 description="Thalapathy Vijay's exclusive gaming avatar - a play-to-earn gaming experience like no other."
                 isComingSoon
               />
-              <img
-                src="img/feature-2.webp"
-                alt="zigma avatar"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0"
-              />
             </BentoTilt>
 
-            
-
-            <BentoTilt className="bento-tilt_2">
+            {/* Villain Hunt */}
+            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1">
               <BentoCard
-                src="videos/feature-2.mp4" 
+                src="img/game-1.webp" 
                 title={
                   <>
                     <b>Villain</b> Hunt
@@ -214,19 +205,14 @@ const Features = () => {
                 }
                 description="Whack the villains and clean up the system in this fast-paced reflex game!"
                 clickToPlay
-                // UPDATED: Use handleGameClick
                 onPlay={() => handleGameClick("/game/villain-hunt")}
-              />
-              <img
-                src="img/game-1.webp" 
-                alt="villain hunt"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
               />
             </BentoTilt>
 
-            <BentoTilt className="bento-tilt_1 me-14 md:col-span-1 md:me-0">
+            {/* Protect Galaxy */}
+            <BentoTilt className="bento-tilt_1 h-96 md:h-auto md:row-span-1 md:col-span-1 md:me-0">
               <BentoCard
-                src="videos/feature-4.mp4"
+                src="img/game-3.webp"
                 title={
                   <>
                     <b>Protect the</b> Galaxy
@@ -234,19 +220,14 @@ const Features = () => {
                 }
                 description="Defend your territory from alien invaders in this thrilling space shooter game"
                 clickToPlay
-                // UPDATED: Use handleGameClick
                 onPlay={() => handleGameClick("/game/protect-area")}
-              />
-              <img
-                src="img/game-3.webp"
-                alt="game 3"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
               />
             </BentoTilt>
 
-            <BentoTilt className="bento-tilt_2">
+            {/* Jigsaw */}
+            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1">
               <BentoCard
-                src="" 
+                src="img/jigsaw.webp" 
                 title={
                   <>
                     <b>Jigsaw</b> Puzzle
@@ -254,19 +235,14 @@ const Features = () => {
                 }
                 description="Piece together iconic moments in this timed puzzle challenge!"
                 clickToPlay
-                // UPDATED: Use handleGameClick
                 onPlay={() => handleGameClick("/game/jigsaw-puzzle")}
-              />
-              <img
-                src="img/jigsaw.webp" 
-                alt="jigsaw puzzle"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
               />
             </BentoTilt>
 
-            <BentoTilt className="bento-tilt_2">
+            {/* Trivia */}
+            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1">
               <BentoCard
-                src="" 
+                src="img/trivia.webp" 
                 title={
                   <>
                     <b>Trivia</b> Battle
@@ -275,46 +251,6 @@ const Features = () => {
                 description="Test your knowledge about Thalapathy Vijay and prove you are the biggest fan!"
                 clickToPlay
                 onPlay={() => handleGameClick("/game/trivia")}
-              />
-              <img
-                src="img/trivia.webp" 
-                alt="trivia battle"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
-              />
-            </BentoTilt>
-
-            <BentoTilt className="bento-tilt_1 ms-32 md:col-span-1 md:ms-0">
-              <BentoCard
-                src="videos/feature-3.mp4"
-                title={<>Protect the Queen</>}
-                description="Help VJ to rescue the queen and save the kingdom in this epic action-adventure game."
-                isComingSoon
-                onPlay={() => handleGameClick("/game/protect-queen")}
-              />
-              <img
-                src="img/game-4.webp"
-                alt="zigma avatar"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-75"
-              />
-            </BentoTilt>
-
-            <BentoTilt className="bento-tilt_2">
-              <BentoCard
-                src="" 
-                title={
-                  <>
-                    <b>City</b> Defender
-                  </>
-                }
-                description="Defend the city from villains as the ultimate protector - VJ!"
-                isComingSoon
-                // UPDATED: Use handleGameClick
-                onPlay={() => handleGameClick("/game/city-defender")}
-              />
-              <img
-                src="img/bg-game6.webp" 
-                alt="city defender"
-                className="absolute left-0 top-0 size-full object-cover object-center z-0 brightness-50"
               />
             </BentoTilt>
           </div>

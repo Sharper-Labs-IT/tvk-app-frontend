@@ -11,7 +11,7 @@ import {
   LogOut,
   ChevronDown,
   FileText,
-  Globe,
+  Home,
 } from 'lucide-react';
 
 const MemberNavbar: React.FC = () => {
@@ -35,7 +35,7 @@ const MemberNavbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Website', path: '/', icon: <Globe size={20} /> },
+    { name: 'Home', path: '/', icon: <Home size={20} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
     // 👇 CHECK THIS: This path MUST match the route in AppRoutes
     { name: 'Feed', path: '/dashboard/feed', icon: <FileText size={20} /> },
@@ -73,11 +73,11 @@ const MemberNavbar: React.FC = () => {
                   key={link.name}
                   to={link.path}
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 
-                    ${
-                      isActive(link.path)
-                        ? 'text-black bg-gold'
-                        : 'text-gray-300 hover:text-gold hover:bg-white/5'
-                    }`}
+                  ${
+                    isActive(link.path)
+                      ? 'text-black bg-gold'
+                      : 'text-gray-300 hover:text-gold hover:bg-white/5'
+                  }`}
                 >
                   {link.icon}
                   {link.name}
@@ -113,19 +113,20 @@ const MemberNavbar: React.FC = () => {
               </button>
 
               {isProfileDropdownOpen && (
-                <div className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg py-1 bg-[#1a1a1a] border border-gold/20 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
+                // UPDATED: Added 'top-full' to push the dropdown below the button
+                <div className="origin-top-right absolute right-0 top-full mt-2 w-56 rounded-md shadow-lg py-1 bg-[#1a1a1a] border border-gold/20 ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
                   <div className="px-4 py-3 border-b border-white/10">
                     <p className="text-xs text-gray-400">Signed in as</p>
                     <p className="text-sm font-bold text-gold truncate">{user?.email}</p>
                   </div>
 
-                  <Link
+                  {/* <Link
                     to="/dashboard"
                     onClick={() => setIsProfileDropdownOpen(false)}
                     className="block px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-gold"
                   >
                     My Profile
-                  </Link>
+                  </Link> */}
 
                   <button
                     onClick={logout}

@@ -3,8 +3,9 @@ export interface MembershipPlan {
   name: string;
   description: string | null;
   price: number;
+  stripe_price_id: string | null; // <--- Added this
   duration_days: number;
-  benefits: string[] | null; // The controller casts this to array
+  benefits: string[] | null;
   status: number;
   created_at: string;
 }

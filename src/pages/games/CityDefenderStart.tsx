@@ -10,6 +10,7 @@ const CityDefenderStart: React.FC = () => {
   const navigate = useNavigate();
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+
   const { checkAccess, consumePlay, remainingFreePlays, isPremium } = useGameAccess();
   const [showAccessModal, setShowAccessModal] = useState(false);
   const [accessCost, setAccessCost] = useState(0);
@@ -38,7 +39,6 @@ const CityDefenderStart: React.FC = () => {
     try {
       await refreshUser();
     } catch (error) {
-      console.error('Failed to fetch user stats:', error);
     } finally {
       setIsLoadingStats(false);
     }

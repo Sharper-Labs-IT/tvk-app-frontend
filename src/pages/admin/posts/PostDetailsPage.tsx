@@ -9,9 +9,12 @@ import {
   Lock,
   Download,
   Video,
+  Edit,
   Image as ImageIcon,
   User,
+  Trash2,
 } from 'lucide-react';
+import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
 const PostDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -19,7 +22,11 @@ const PostDetailsPage: React.FC = () => {
 
   const [post, setPost] = useState<IContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // State for delete confirmation modal
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -37,6 +44,35 @@ const PostDetailsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Triggered when user clicks the delete button
+  const initiateDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  // Triggered when user clicks "Confirm" in the modal
+  const handleConfirmDelete = async () => {
+    if (!post) return;
+
+    try {
+      setDeleting(true);
+      // Call API
+      await contentService.delete(post.id);
+
+      // Redirect on success
+      navigate('/admin/posts');
+    } catch (err: any) {
+      // Handle Error
+      const msg = err.response?.data?.message || 'Failed to delete post';
+      alert(msg);
+      setDeleting(false);
+      setIsDeleteModalOpen(false); // Close modal on error so user can try again
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setIsDeleteModalOpen(false);
   };
 
   if (loading)
@@ -178,16 +214,44 @@ const PostDetailsPage: React.FC = () => {
           <div className="bg-tvk-dark-card p-6 rounded-xl border border-white/10">
             <h3 className="text-white font-medium mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
-              <button className="w-full bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg border border-white/10 transition-colors">
-                Edit Post (Coming Soon)
+              <button
+                onClick={() => navigate(`/admin/posts/${post.id}/edit`)}
+                disabled={deleting}
+                className="w-full bg-gold/10 hover:bg-gold/20 text-gold py-2 rounded-lg border border-gold/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <Edit size={16} /> Edit Post
               </button>
-              <button className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg border border-red-500/20 transition-colors">
-                Delete Post
+
+              {/* Delete Button */}
+              <button
+                onClick={initiateDelete}
+                disabled={deleting}
+                className="w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 rounded-lg border border-red-500/20 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {deleting ? (
+                  'Deleting...'
+                ) : (
+                  <>
+                    <Trash2 size={16} /> Delete Post
+                  </>
+                )}
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        title="Delete Post"
+        message="Are you sure you want to delete this post? This action cannot be undone."
+        confirmText="Delete Post"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        isConfirming={deleting}
+      />
     </div>
   );
 };

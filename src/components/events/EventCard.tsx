@@ -8,8 +8,12 @@ export interface EventCardData {
   description: string;
   imageUrl: string;
   dateTime: string;
+  startDate: string;
   venue: string;
   tag: "Online" | "Live" | "Fan Meetup" | "Meetup" | "Other";
+  rules?: string;
+  rewardPoints?: number;
+  isCancelled?: boolean;
 }
 
 interface EventCardProps {
@@ -26,7 +30,7 @@ const EventCard: React.FC<EventCardProps> = ({ event }) => {
       "
     >
       {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden">
+      <div className="relative aspect-[2/3] overflow-hidden">
         {event.imageUrl ? (
           <img
             src={event.imageUrl}

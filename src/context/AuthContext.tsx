@@ -1,12 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import api from '../utils/api'; // Import your Axios instance
+// Uses the smart client that attaches the token automatically
+import axiosClient from '../api/axiosClient';
 import type { IUser } from '../types/auth';
 
 /**
  * @fileoverview Global Authentication Context.
- * FIXED: Now fetches fresh user data (with Roles) on application load.
+ * FIXED: 1. Uses axiosClient to prevent auto-logout.
+ * FIXED: 2. Loads user from localStorage immediately so profile data isn't lost on refresh.
  */
 
 // --- 1. Define Types ---
@@ -35,8 +37,17 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<IUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
+  // --- 🟢 FIX: Load user immediately from Local Storage ---
+  // This prevents the "blank profile" issue while waiting for the API
+  const [user, setUser] = useState<IUser | null>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const [token, setToken] = useState<string | null>(() => {
+    return Cookies.get('authToken') || null;
+  });
+
   const [isAuthInitialized, setIsAuthInitialized] = useState(false);
 
   const isLoggedIn = !!token;
@@ -46,10 +57,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setToken(newToken);
     Cookies.set('authToken', newToken, { expires: 7 });
 
+    // MERGE FIX: Used logic from 'development' branch to handle avatar normalization
     // Note: The userData coming from login MIGHT be missing roles depending on backend.
     // We set it for now, but the useEffect below will fix it on next reload.
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
+    // Normalize avatar field (backend sends 'avatar' but we use 'avatar_url')
+    const normalizedUser = { ...userData, avatar_url: userData.avatar_url || userData.avatar || null };
+    setUser(normalizedUser);
+    localStorage.setItem('user', JSON.stringify(normalizedUser));
   }, []);
 
   // Function called to log out the user
@@ -61,24 +75,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     navigate('/');
   }, [navigate]);
 
-  // Function to update user data (e.g., coins after game)
-  // TODO: This is a temporary local update until backend APIs are ready
+  // Function to update user data locally
   const updateUser = useCallback((updates: Partial<IUser>) => {
     setUser((prevUser) => {
       if (!prevUser) return null;
       const updatedUser = { ...prevUser, ...updates };
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      console.log('[AuthContext] User updated locally:', updates);
       return updatedUser;
     });
   }, []);
 
-  // Helper function to calculate total coins from game_participation
+  // Helper function to calculate total coins
   const calculateTotalCoins = (userData: IUser): number => {
     if (userData.coins !== undefined && userData.coins !== null) {
       return userData.coins;
     }
-    // Calculate from game_participation if coins field is not directly available
     if (userData.game_participation && Array.isArray(userData.game_participation)) {
       return userData.game_participation.reduce((total, participation) => {
         return total + (participation.coins || 0);
@@ -88,65 +99,68 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   // Function to refresh user data from the backend
-  // Call this after game ends to get updated coins/trophies
   const refreshUser = useCallback(async () => {
     try {
-      const response = await api.get('/v1/auth/me');
+      // Uses axiosClient (automatically adds Bearer token)
+      // Removed '/v1' because axiosClient baseURL already has it
+      const response = await axiosClient.get('/auth/me');
+
       if (response.data && response.data.user) {
         const fullUser = response.data.user;
-        
-        // Calculate total coins from game_participation if not provided
         const totalCoins = calculateTotalCoins(fullUser);
-        const userWithCoins = { ...fullUser, coins: totalCoins };
+        
+        // MERGE FIX: Kept 'development' logic to ensure avatar_url is set
+        // Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
+        const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+        
+        const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
         
         setUser(userWithCoins);
         localStorage.setItem('user', JSON.stringify(userWithCoins));
-        console.log('[AuthContext] User refreshed from API:', userWithCoins, 'Total coins:', totalCoins);
       }
     } catch (error) {
-      console.error('[AuthContext] Failed to refresh user:', error);
+       console.error("Failed to refresh user:", error);
     }
   }, []);
 
-  // --- 🛑 CRITICAL FIX: Fetch User Data on Load ---
+  // --- Initialize Auth on Load ---
   useEffect(() => {
     const initializeAuth = async () => {
       const storedToken = Cookies.get('authToken');
 
       if (storedToken) {
-        // 1. Set token immediately so API calls work
         setToken(storedToken);
 
         try {
-          // 2. FORCE call the API to get the user WITH ROLES
-          // We use the Axios instance 'api' which automatically adds the Bearer token
-          const response = await api.get('/v1/auth/me');
+          // Fetch fresh data from API to ensure roles/coins are up to date
+          const response = await axiosClient.get('/auth/me');
 
           if (response.data && response.data.user) {
             const fullUser = response.data.user;
-
-            // 3. Calculate total coins from game_participation
             const totalCoins = calculateTotalCoins(fullUser);
-            const userWithCoins = { ...fullUser, coins: totalCoins };
+            
+            // 3.5. Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
+            const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+            
+            const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
 
-            // 4. Update State with the FULL user object (including roles and coins)
             setUser(userWithCoins);
-
-            // 5. Update Local Storage so it's correct for next time
             localStorage.setItem('user', JSON.stringify(userWithCoins));
-            console.log('Auth Initialized: User roles loaded:', fullUser.roles, 'Total coins:', totalCoins);
           }
         } catch (error) {
-          console.error('Failed to fetch user profile on load:', error);
-          // If the token is invalid/expired, log them out
-          Cookies.remove('authToken');
-          localStorage.removeItem('user');
-          setToken(null);
-          setUser(null);
+          console.error('Failed to sync user profile on load:', error);
+
+          // MERGE FIX: Used logic from 'thilanka1' branch
+          // Only logout if it's strictly a 401 Unauthorized error (avoids logout on network error)
+          if ((error as any).response && (error as any).response.status === 401) {
+            Cookies.remove('authToken');
+            localStorage.removeItem('user');
+            setToken(null);
+            setUser(null);
+          }
         }
       }
 
-      // 6. Mark initialization as done
       setIsAuthInitialized(true);
     };
 

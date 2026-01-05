@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Crown, Target, Search, Users } from 'lucide-react';
+import { Trophy, Crown } from 'lucide-react';
 import LogoHeader from '../components/common/LogoHeader';
 import Footer from '../components/Footer';
 import { type TrophyTier } from '../utils/trophySystem';
-import { gameService } from '../services/gameService'; // Import gameService
+import { gameService } from '../services/gameService'; 
+
+// S3 Configuration
+const S3_BASE_URL = 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
 
 // --- Types ---
 interface UserTrophyData {
   userId: string;
   username: string;
-  nickname?: string; // Display name
+  nickname?: string; 
   avatar: string;
   totalTrophies: number;
   trophyBreakdown: {
@@ -81,62 +84,117 @@ const DUMMY_LEADERBOARD_DATA: UserTrophyData[] = [
   },
 ];
 
+
+const getAvatarUrl = (avatar: string | null | undefined): string => {
+  if (!avatar) {
+    // Return empty string, will use fallback later
+    return '';
+  }
+  
+
+  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
+    return avatar;
+  }
+  
+
+  if (avatar.startsWith('avatars/')) {
+    // Construct full S3 URL
+    return `${S3_BASE_URL}/${avatar}`;
+  }
+  
+  // Return as is (might be a data URI or other format)
+  return avatar;
+};
+
 const Leaderboard: React.FC = () => {
   const [leaderboardData, setLeaderboardData] = useState<UserTrophyData[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'platinum' | 'gold'>('all');
 
-  useEffect(() => {
-    // --- Backend API Integration ---
-    const fetchLeaderboard = async () => {
+  // --- Backend API Integration ---
+  const fetchLeaderboard = useCallback(async () => {
       try {
         const response = await gameService.getLeaderboard();
-        console.log('[Leaderboard] API Response:', response);
         
         // Handle potential response wrapping (e.g. { leaderboard: [...] } or { data: [...] })
         const data = Array.isArray(response) 
           ? response 
           : (response as any).leaderboard || (response as any).data || [];
-        console.log('[Leaderboard] Parsed data:', data);
         
         // If no data from API, use dummy data
         if (!data || data.length === 0) {
-          console.log('[Leaderboard] No data from API, using dummy data');
           setLeaderboardData(DUMMY_LEADERBOARD_DATA);
           return;
         }
         
         // Map backend data to frontend format
-        // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, nickname } }
-        const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => ({
-          userId: entry.user_id?.toString() || entry.user?.id?.toString() || '0',
-          username: entry.user?.name || entry.username || 'Unknown',
-          nickname: entry.user?.nickname || entry.nickname || null,
-          avatar: entry.user?.avatar || entry.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.user?.nickname || entry.user?.name || entry.username}`,
-          totalTrophies: entry.total_trophies || 0,
-          trophyBreakdown: entry.trophy_breakdown || {
-            PLATINUM: entry.platinum_count || 0,
-            GOLD: entry.gold_count || 0,
-            SILVER: entry.silver_count || 0,
-            BRONZE: entry.bronze_count || 0
-          },
-          rank: entry.rank || index + 1
-        }));
-        console.log('[Leaderboard] Formatted data:', formattedData);
+        // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, avatar_url, nickname } }
+        const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => {
+          
+ 
+          const rawAvatar = entry.user?.avatar_url || entry.user?.avatar || entry.avatar_url || entry.avatar;
+          
+          // Convert relative path to full URL
+          let avatarUrl = getAvatarUrl(rawAvatar);
+          
+          // If no avatar provided, use generated one
+          if (!avatarUrl) {
+            avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${entry.user?.nickname || entry.user?.name || entry.username}`;
+          }
+          
+          return {
+            userId: entry.user_id?.toString() || entry.user?.id?.toString() || '0',
+            username: entry.user?.name || entry.username || 'Unknown',
+            nickname: entry.user?.nickname || entry.nickname || null,
+            avatar: avatarUrl,
+            totalTrophies: entry.total_trophies || 0,
+            trophyBreakdown: {
+              PLATINUM: entry.trophy_breakdown?.PLATINUM ?? entry.platinum_count ?? 0,
+              GOLD: entry.trophy_breakdown?.GOLD ?? entry.gold_count ?? 0,
+              SILVER: entry.trophy_breakdown?.SILVER ?? entry.silver_count ?? 0,
+              BRONZE: entry.trophy_breakdown?.BRONZE ?? entry.bronze_count ?? 0
+            },
+            rank: entry.rank || index + 1
+          };
+        });
         setLeaderboardData(formattedData);
       } catch (error) {
-        console.error("[Leaderboard] Failed to fetch leaderboard:", error);
         // Fallback to dummy data
         setLeaderboardData(DUMMY_LEADERBOARD_DATA);
       } finally {
         setLoading(false);
       }
-    };
-    fetchLeaderboard();
-  }, []);
+    }, []);
 
-  const topThree = leaderboardData.slice(0, 3);
-  const restOfPlayers = leaderboardData.slice(3);
+  // Fetch on mount
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [fetchLeaderboard]);
+
+
+  useEffect(() => {
+    const handleFocus = () => {
+      fetchLeaderboard();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [fetchLeaderboard]);
+
+  // Filter leaderboard data based on selected filter
+  const filteredData = leaderboardData
+    .filter(user => {
+      // Apply trophy filter
+      if (filter === 'platinum' && user.trophyBreakdown.PLATINUM === 0) return false;
+      if (filter === 'gold' && user.trophyBreakdown.GOLD === 0) return false;
+      
+      return true;
+    })
+    .sort((a, b) => b.totalTrophies - a.totalTrophies) // Sort by total trophies descending
+    .slice(0, 20); // Show only top 20 players
+
+  const topThree = filteredData.slice(0, 3);
+  const restOfPlayers = filteredData.slice(3);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-red-500/30 selection:text-red-200 overflow-x-hidden">
@@ -166,7 +224,7 @@ const Leaderboard: React.FC = () => {
           <motion.h1 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="text-6xl md:text-8xl font-black tracking-tighter"
+            className="text-4xl md:text-6xl lg:text-8xl font-black tracking-tighter"
           >
             HALL OF <span className="text-transparent bg-clip-text bg-gradient-to-b from-red-500 to-red-800 drop-shadow-2xl">FAME</span>
           </motion.h1>
@@ -175,7 +233,7 @@ const Leaderboard: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="text-zinc-400 text-lg max-w-2xl mx-auto font-medium"
+            className="text-zinc-400 text-sm md:text-lg max-w-2xl mx-auto font-medium"
           >
             Rise through the ranks. Claim your throne.
           </motion.p>
@@ -183,7 +241,7 @@ const Leaderboard: React.FC = () => {
 
         {/* The Podium (Top 3) */}
         {!loading && (
-          <div className="flex flex-col md:flex-row items-end justify-center gap-4 md:gap-8 mb-20 min-h-[400px]">
+          <div className="flex flex-col md:flex-row items-center md:items-end justify-center gap-6 md:gap-8 mb-12 md:mb-20 min-h-0 md:min-h-[400px]">
             {/* Rank 2 */}
             {topThree[1] && <PodiumCard user={topThree[1]} rank={2} delay={0.2} />}
             
@@ -196,7 +254,7 @@ const Leaderboard: React.FC = () => {
         )}
 
         {/* Stats Grid */}
-        <div className="mb-24 max-w-7xl mx-auto px-4">
+        {/* <div className="mb-24 max-w-7xl mx-auto px-4">
           <motion.h3 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -224,21 +282,21 @@ const Leaderboard: React.FC = () => {
                 </motion.div>
             ))}
           </div>
-        </div>
+        </div> */}
 
         {/* Filter Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-8 bg-zinc-900/40 backdrop-blur-xl border border-white/5 p-2 rounded-2xl">
-           <div className="flex items-center gap-4 px-4">
+           <div className="flex items-center gap-4 px-4 w-full md:w-auto justify-center md:justify-start">
               <Trophy className="w-5 h-5 text-zinc-500" />
               <span className="font-bold text-zinc-300">Global Rankings</span>
            </div>
            
-           <div className="flex gap-2">
+           <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 justify-center md:justify-end no-scrollbar">
               {['all', 'platinum', 'gold'].map((f) => (
                 <button
                   key={f}
                   onClick={() => setFilter(f as any)}
-                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
+                  className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
                     filter === f 
                     ? 'bg-white text-black shadow-lg shadow-white/10' 
                     : 'text-zinc-500 hover:text-white hover:bg-white/5'
@@ -247,15 +305,6 @@ const Leaderboard: React.FC = () => {
                   {f}
                 </button>
               ))}
-           </div>
-           
-           <div className="relative hidden md:block px-2">
-             <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-             <input 
-               type="text" 
-               placeholder="Find player..." 
-               className="bg-black/50 border border-white/5 rounded-xl pl-10 pr-4 py-2 text-sm text-white focus:outline-none focus:border-red-500/50 w-48 transition-colors"
-             />
            </div>
         </div>
 
@@ -296,7 +345,7 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay, duration: 0.6, type: "spring" }}
-            className={`relative flex flex-col items-center justify-end ${isFirst ? 'w-full md:w-1/3 -mt-12 z-20' : 'w-full md:w-1/4 z-10'}`}
+            className={`relative flex flex-col items-center justify-end ${isFirst ? 'w-full md:w-1/3 md:-mt-12 z-20 order-first md:order-none' : 'w-full md:w-1/4 z-10'}`}
         >
             {/* Crown for #1 */}
             {isFirst && (
@@ -305,18 +354,18 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                     transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                     className="mb-4"
                 >
-                    <Crown className="w-16 h-16 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
+                    <Crown className="w-12 h-12 md:w-16 md:h-16 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
                 </motion.div>
             )}
 
             <div className={`
-                relative w-full p-6 rounded-3xl backdrop-blur-2xl border
+                relative w-full p-4 md:p-6 rounded-3xl backdrop-blur-2xl border
                 flex flex-col items-center gap-4 group transition-all duration-300
                 ${isFirst 
-                    ? 'bg-gradient-to-b from-yellow-500/10 to-black/80 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)] h-[380px]' 
+                    ? 'bg-gradient-to-b from-yellow-500/10 to-black/80 border-yellow-500/30 shadow-[0_0_50px_rgba(234,179,8,0.1)] md:h-[420px]' 
                     : rank === 2 
-                        ? 'bg-gradient-to-b from-zinc-300/10 to-black/80 border-zinc-400/20 h-[320px]'
-                        : 'bg-gradient-to-b from-amber-700/10 to-black/80 border-amber-700/20 h-[300px]'
+                        ? 'bg-gradient-to-b from-zinc-300/10 to-black/80 border-zinc-400/20 md:h-[360px]'
+                        : 'bg-gradient-to-b from-amber-700/10 to-black/80 border-amber-700/20 md:h-[340px]'
                 }
             `}>
                 {/* Avatar */}
@@ -324,7 +373,11 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
                    <img 
                         src={user.avatar} 
                         alt={user.username} 
-                        className={`rounded-full object-cover bg-zinc-800 ${isFirst ? 'w-24 h-24' : 'w-20 h-20'}`}
+                        className={`rounded-full object-cover bg-zinc-800 ${isFirst ? 'w-20 h-20 md:w-24 md:h-24' : 'w-16 h-16 md:w-20 md:h-20'}`}
+                        onError={(e) => {
+                          // Fallback to generated avatar if S3 image fails
+                          e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nickname || user.username)}&background=E6C65B&color=000&size=200`;
+                        }}
                     />
                     <div className={`absolute -bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-black bg-black border ${isFirst ? 'border-yellow-500 text-yellow-400' : 'border-zinc-700 text-white'}`}>
                         #{rank}
@@ -333,16 +386,44 @@ const PodiumCard = ({ user, rank, delay }: { user: UserTrophyData; rank: number;
 
                 {/* Info */}
                 <div className="text-center mt-2">
-                    <h3 className={`font-black tracking-tight ${isFirst ? 'text-2xl text-white' : 'text-xl text-zinc-200'}`}>
+                    <h3 className={`font-black tracking-tight ${isFirst ? 'text-xl md:text-2xl text-white' : 'text-lg md:text-xl text-zinc-200'}`}>
                         {user.nickname || user.username}
                     </h3>
-                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1">Level {Math.floor(user.totalTrophies / 5) + 1}</p>
+                    <p className="text-[10px] md:text-xs font-bold text-zinc-500 uppercase tracking-widest mt-1">Level {Math.floor(user.totalTrophies / 5) + 1}</p>
                 </div>
 
                 {/* Trophy Count */}
                 <div className="mt-auto flex items-center gap-2 px-4 py-2 bg-white/5 rounded-lg border border-white/5">
                     <Trophy className={`w-5 h-5 ${isFirst ? 'text-yellow-400' : 'text-zinc-400'}`} />
                     <span className="text-2xl font-bold font-mono">{user.totalTrophies}</span>
+                </div>
+
+                {/* Trophy Breakdown */}
+                <div className="flex flex-wrap justify-center gap-2 text-xs">
+                    {user.trophyBreakdown.PLATINUM > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-cyan-500/10 rounded-md border border-cyan-500/20">
+                            <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                            <span className="text-cyan-300 font-bold">{user.trophyBreakdown.PLATINUM}</span>
+                        </div>
+                    )}
+                    {user.trophyBreakdown.GOLD > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 rounded-md border border-yellow-500/20">
+                            <div className="w-2 h-2 rounded-full bg-yellow-400" />
+                            <span className="text-yellow-300 font-bold">{user.trophyBreakdown.GOLD}</span>
+                        </div>
+                    )}
+                    {user.trophyBreakdown.SILVER > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-zinc-500/10 rounded-md border border-zinc-400/20">
+                            <div className="w-2 h-2 rounded-full bg-zinc-400" />
+                            <span className="text-zinc-300 font-bold">{user.trophyBreakdown.SILVER}</span>
+                        </div>
+                    )}
+                    {user.trophyBreakdown.BRONZE > 0 && (
+                        <div className="flex items-center gap-1 px-2 py-1 bg-amber-700/10 rounded-md border border-amber-600/20">
+                            <div className="w-2 h-2 rounded-full bg-amber-600" />
+                            <span className="text-amber-400 font-bold">{user.trophyBreakdown.BRONZE}</span>
+                        </div>
+                    )}
                 </div>
                 
                 {/* Glow Effect on Hover */}
@@ -358,21 +439,51 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.05 }}
-            className="group relative flex items-center gap-4 md:gap-8 p-4 bg-zinc-900/30 hover:bg-zinc-800/50 border border-white/5 hover:border-red-500/30 rounded-2xl transition-all duration-300 backdrop-blur-sm"
+            className="group relative flex items-center gap-3 md:gap-8 p-3 md:p-4 bg-zinc-900/30 hover:bg-zinc-800/50 border border-white/5 hover:border-red-500/30 rounded-2xl transition-all duration-300 backdrop-blur-sm"
         >
             {/* Rank */}
-            <div className="w-12 text-center font-mono font-bold text-zinc-500 group-hover:text-white transition-colors text-xl">
+            <div className="w-8 md:w-12 text-center font-mono font-bold text-zinc-500 group-hover:text-white transition-colors text-lg md:text-xl">
                 #{index + 1}
             </div>
 
             {/* User Info */}
-            <div className="flex-1 flex items-center gap-4">
-                <img src={user.avatar} alt={user.nickname || user.username} className="w-12 h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors" />
-                <div>
-                    <h4 className="font-bold text-lg text-zinc-200 group-hover:text-white">{user.nickname || user.username}</h4>
-                    <div className="flex gap-3 text-xs text-zinc-500">
-                       <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />{user.trophyBreakdown.PLATINUM} Plat</span>
-                       <span className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />{user.trophyBreakdown.GOLD} Gold</span>
+            <div className="flex-1 flex items-center gap-3 md:gap-4 overflow-hidden">
+                <img 
+                    src={user.avatar} 
+                    alt={user.nickname || user.username} 
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-white/10 group-hover:border-red-500/50 transition-colors object-cover bg-zinc-800"
+                    onError={(e) => {
+                      // Fallback to generated avatar if S3 image fails
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.nickname || user.username)}&background=E6C65B&color=000&size=200`;
+                    }}
+                />
+                <div className="min-w-0">
+                    <h4 className="font-bold text-base md:text-lg text-zinc-200 group-hover:text-white truncate">{user.nickname || user.username}</h4>
+                    <div className="flex flex-wrap gap-2 md:gap-3 text-[10px] md:text-xs text-zinc-500">
+                       {user.trophyBreakdown.PLATINUM > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                           {user.trophyBreakdown.PLATINUM} Plat
+                         </span>
+                       )}
+                       {user.trophyBreakdown.GOLD > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                           {user.trophyBreakdown.GOLD} Gold
+                         </span>
+                       )}
+                       {user.trophyBreakdown.SILVER > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+                           {user.trophyBreakdown.SILVER} Silver
+                         </span>
+                       )}
+                       {user.trophyBreakdown.BRONZE > 0 && (
+                         <span className="flex items-center gap-1">
+                           <div className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                           {user.trophyBreakdown.BRONZE} Bronze
+                         </span>
+                       )}
                     </div>
                 </div>
             </div>
@@ -384,7 +495,7 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
                     <p className="text-xs font-medium text-zinc-300">{user.recentAchievement?.game || 'Idle'}</p>
                 </div>
                 
-                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-black/40 border border-white/5 group-hover:border-red-500/20 transition-colors">
+                <div className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-lg bg-black/40 border border-white/5 group-hover:border-red-500/20 transition-colors">
                      <Trophy className="w-4 h-4 text-zinc-500 group-hover:text-yellow-500 transition-colors" />
                      <span className="font-mono font-bold text-white">{user.totalTrophies}</span>
                 </div>
@@ -393,7 +504,7 @@ const ListRow = ({ user, index }: { user: UserTrophyData; index: number }) => {
     );
 };
 
-const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) => {
+/* const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label: string, value: string, color: string }) => {
     return (
         <div className="h-full p-6 rounded-2xl bg-zinc-900/30 border border-white/5 backdrop-blur-sm hover:bg-zinc-900/50 hover:border-white/10 transition-all duration-300 group flex flex-col items-center text-center justify-center gap-4">
             <div className={`p-4 rounded-2xl bg-${color}-500/10 group-hover:bg-${color}-500/20 transition-colors ring-1 ring-${color}-500/20 group-hover:ring-${color}-500/40`}>
@@ -405,6 +516,6 @@ const StatCard = ({ icon, label, value, color }: { icon: React.ReactNode, label:
             </div>
         </div>
     );
-}
+} */
 
 export default Leaderboard;

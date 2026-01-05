@@ -1,25 +1,24 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
-
 const axiosClient = axios.create({
-  baseURL: "https://api.tvkmembers.com/api/v1", //change here if API domain or version changes 
-  // baseURL: "http://localhost:8000/api/v1",
+  baseURL: `${import.meta.env.VITE_API_BASE_URL}/api/v1`,
   timeout: 1000000,
   headers: {
-    "Content-Type": "application/json",
-  }, 
+    'Content-Type': 'application/json',
+  },
 });
 
-//attach auto header, if token exist in cookies
-axiosClient.interceptors.request.use((config => {
+// Attach token automatically
+axiosClient.interceptors.request.use((config) => {
   const token = Cookies.get('authToken');
 
-  if(token){
+  if (token) {
     config.headers = config.headers || {};
     config.headers.Authorization = `Bearer ${token}`;
   }
-  return config;
-}))
 
-export default axiosClient; 
+  return config;
+});
+
+export default axiosClient;

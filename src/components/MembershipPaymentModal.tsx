@@ -1,305 +1,354 @@
-import React, { useState } from "react";
-import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
-import axiosClient from "../api/axiosClient";
-import type { Plan } from "../types/plan";
+import React, { useState, useEffect } from 'react';
+import {
+  useStripe,
+  useElements,
+  CardNumberElement,
+  CardExpiryElement,
+  CardCvcElement,
+} from '@stripe/react-stripe-js';
+import axiosClient from '../api/axiosClient';
+import type { Plan } from '../types/plan';
+
+// Define the specific allowed currency types
+type CurrencyCode = 'GBP' | 'USD' | 'EUR';
 
 interface MembershipPaymentModalProps {
   isOpen: boolean;
   onClose: () => void;
   plan: Plan | null;
+  currency: CurrencyCode;
   onSuccess?: () => void;
 }
+
+const CURRENCIES: { code: CurrencyCode; symbol: string }[] = [
+  { code: 'GBP', symbol: '£' },
+  { code: 'EUR', symbol: '€' },
+  { code: 'USD', symbol: '$' },
+];
 
 const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   isOpen,
   onClose,
   plan,
+  currency,
   onSuccess,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
 
   const [loading, setLoading] = useState(false);
+  const [priceLoading, setPriceLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cardholderName, setCardholderName] = useState("");
-  const [saveCard, setSaveCard] = useState(true);
+
+  // Updated state with specific type to prevent the TS error
+  const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>(currency || 'GBP');
+  const [displayPrice, setDisplayPrice] = useState<string | null>(null);
+
+  const [cardholderName, setCardholderName] = useState('');
+  const [address, setAddress] = useState({
+    line1: '',
+    line2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: '',
+  });
+
+  // Stripe Element Styling - Dark text (Black) for visibility
+  const stripeElementOptions = {
+    style: {
+      base: {
+        fontSize: '14px',
+        color: '#000000', // Black text
+        fontWeight: '500',
+        fontFamily: 'Inter, sans-serif',
+        '::placeholder': {
+          color: '#94a3b8',
+        },
+      },
+      invalid: {
+        color: '#dc2626',
+      },
+    },
+  };
+
+  useEffect(() => {
+    if (currency) setSelectedCurrency(currency);
+  }, [currency]);
+
+  useEffect(() => {
+    if (isOpen && plan) {
+      fetchConvertedPrice();
+    }
+  }, [selectedCurrency, plan, isOpen]);
+
+  const fetchConvertedPrice = async () => {
+    if (!plan) return;
+    setPriceLoading(true);
+    try {
+      const res = await axiosClient.post('/currency/calculate', {
+        plan_id: plan.id,
+        currency: selectedCurrency,
+      });
+      setDisplayPrice(res.data.converted_price);
+    } catch (err) {
+      console.error('Currency conversion failed', err);
+      setDisplayPrice(plan.price);
+    } finally {
+      setPriceLoading(false);
+    }
+  };
 
   if (!isOpen || !plan) return null;
+
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAddress({ ...address, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
     if (!stripe || !elements) {
-      setError("Payment system is not ready yet. Please try again.");
+      setError('Payment system is not ready yet.');
       return;
     }
 
-    const cardElement = elements.getElement(CardElement);
-    if (!cardElement) {
-      setError("Unable to find card input field.");
-      return;
-    }
+    const cardNumberElement = elements.getElement(CardNumberElement);
+    if (!cardNumberElement) return;
 
     setLoading(true);
-     try {
-      // 1) Create PaymentMethod on Stripe
-      const { paymentMethod, error: pmError } = await stripe.createPaymentMethod(
-        {
-          type: "card",
-          card: cardElement,
-          billing_details: {
-            name: cardholderName || undefined,
+
+    try {
+      const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardNumberElement,
+        billing_details: {
+          name: cardholderName,
+          address: {
+            line1: address.line1,
+            line2: address.line2 || undefined,
+            city: address.city,
+            state: address.state || undefined,
+            postal_code: address.postal_code,
+            // Stripe requires 2-letter code; we take first 2 chars of what user types
+            country: address.country.substring(0, 2).toUpperCase() || 'GB',
           },
-        }
-      );
+        },
+      });
 
       if (pmError || !paymentMethod) {
-        setError(pmError?.message || "Unable to create payment method.");
+        setError(pmError?.message || 'Unable to create payment method.');
         setLoading(false);
         return;
       }
 
-      // 2) Call backend
-      const res = await axiosClient.post("/payments/subscribe", {
+      const res = await axiosClient.post('/payments/subscribe', {
         plan_id: plan.id,
         payment_method_id: paymentMethod.id,
-        save_card: saveCard, // backend can ignore/handle this
+        currency: selectedCurrency,
+        address: address,
       });
 
-      console.log("payments/subscribe response:", res.data);
-      // const data = res.data;
-
-      // if (data.requires_action && data.client_secret) {
-      
-      //   const { error: confirmationError } = await stripe.confirmCardPayment(
-      //     data.client_secret
-      //   );
-
-      //   if (confirmationError) {
-      //     setError(confirmationError.message || "Payment confirmation failed.");
-      //     setLoading(false);
-      //     return;
-      //   }
-        
-      //   console.log("Stripe confirmation successful. Webhook pending.");
-        
-      // } else if (data.status === 'active' || data.status === 'trialing') {
-      //   console.log("Subscription activated immediately.");
-        
-      // } else {
-      //   setError(`Subscription created with status: ${data.status}. No action taken.`);
-      //   setLoading(false);
-      //   return;
-      // }
-
       const data = res.data;
-      if(data.requires_action && data.client_secret){
-        const {error: confirmationError} = await stripe.confirmCardPayment(
-          data.client_secret
-        );
-        if(confirmationError){
-          setError(confirmationError.message || "Payment confirmation failed.");
+
+      if (data.requires_action && data.client_secret) {
+        const { error: confirmationError } = await stripe.confirmCardPayment(data.client_secret);
+        if (confirmationError) {
+          setError(confirmationError.message || 'Payment confirmation failed.');
           setLoading(false);
           return;
         }
-        console.log("Stripe confirmation successful. Webhook Pending");
-      }else if(data.status === "active" || data.status === "trailing"){
-        console.log("Subscription activated immediately");
-      }else{
-        setError(`Subscription created with status: ${data.status}. No action taken.`);
-        setLoading(false);
-        return;
       }
 
-      if(onSuccess){
-        onSuccess();
-      }
-
-     // onSuccess?.();
+      if (onSuccess) onSuccess();
       onClose();
     } catch (err: any) {
-      console.error("payments/subscribe error:", err?.response || err);
-      const msg =
-        err?.response?.data?.message ||
-        (err?.response?.data?.errors
-          ? (Object.values(err.response.data.errors) as string[][])
-              .flat()
-              .join(" ")
-          : "Unable to start subscription. Please try again.");
+      const msg = err?.response?.data?.message || 'Subscription failed. Please check your details.';
       setError(msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const formattedPrice =
-    plan.price && plan.price !== "0.00" ? `$${plan.price}` : "Free";
+  const currentSymbol = CURRENCIES.find((c) => c.code === selectedCurrency)?.symbol || '£';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
-      {/* background click close */}
-      <div
-        className="absolute inset-0"
-        onClick={() => !loading && onClose()}
-      />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 backdrop-blur-sm overflow-y-auto py-10 px-4">
+      <div className="absolute inset-0" onClick={() => !loading && onClose()} />
 
-      <div className="relative z-10 w-full max-w-2xl rounded-3xl bg-[#f9fafb] text-slate-900 shadow-2xl overflow-hidden">
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={loading}
-          className="absolute right-4 top-4 text-slate-400 hover:text-slate-600 transition-colors text-lg"
-        >
-          ✕
-        </button>
-
-        {/* Header */}
-        <div className="px-6 pt-6 pb-4 border-b border-slate-200">
-          <h2 className="text-lg md:text-xl font-semibold text-slate-900">
-            Provide payment details
-          </h2>
-          <div className="mt-2 flex items-center gap-2 text-xs text-emerald-600">
-            <span>✅</span>
-            <span>Your payment information is safe with us</span>
+      <div className="relative z-10 w-full max-w-2xl bg-[#ffffff] rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto border border-slate-200">
+        <div className="px-6 pt-6 pb-4 border-b border-slate-200 bg-white">
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Checkout</h2>
+              <p className="text-sm text-slate-500">Complete your subscription for {plan.name}</p>
+            </div>
+            <button onClick={onClose} className="text-slate-400 hover:text-slate-600 text-xl p-2">
+              ✕
+            </button>
           </div>
 
-          {/* Plan summary pill */}
-          <div className="mt-4 inline-flex items-center gap-3 rounded-2xl bg-white border border-slate-200 px-4 py-2">
-            <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wide text-slate-400">
-                Plan
-              </span>
-              <span className="text-sm font-semibold text-slate-900">
-                {plan.name}
-              </span>
-            </div>
-            <div className="h-6 w-px bg-slate-200" />
-            <div className="flex flex-col">
-              <span className="text-[11px] uppercase tracking-wide text-slate-400">
-                Amount
-              </span>
-              <span className="text-sm font-semibold text-[#f97316]">
-                {formattedPrice}
-                {formattedPrice !== "Free" && (
-                  <span className="text-[11px] text-slate-500"> / month</span>
-                )}
-              </span>
+          <div className="mt-4 flex items-center gap-3">
+            <span className="text-xs font-semibold uppercase text-slate-400">Select Currency:</span>
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              {CURRENCIES.map((c) => (
+                <button
+                  key={c.code}
+                  type="button"
+                  // Cast the code to CurrencyCode to satisfy TypeScript
+                  onClick={() => setSelectedCurrency(c.code as CurrencyCode)}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${
+                    selectedCurrency === c.code
+                      ? 'bg-white text-[#f97316] shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {c.symbol} {c.code}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Body */}
-        <form onSubmit={handleSubmit} className="px-6 pb-6 pt-4 space-y-5">
-          {/* "Add a new card" row */}
-          <div className="rounded-2xl bg-white border border-slate-200 px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
-              <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-slate-100">
-                💳
-              </span>
-              <span>Add a new card</span>
-            </div>
-            <div className="flex items-center gap-1 text-[10px] text-slate-500">
-              <span className="px-2 py-1 rounded bg-slate-100">VISA</span>
-              <span className="px-2 py-1 rounded bg-slate-100">Mastercard</span>
-              <span className="px-2 py-1 rounded bg-slate-100">AMEX</span>
-              <span className="underline cursor-default">Full list</span>
-            </div>
-          </div>
-
-          {/* Card + name fields (2-column feel like screenshot) */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* CardElement styled like "Card number" field */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
-                Card number
-              </label>
-              <div className="rounded-xl bg-white border border-slate-300 px-3 py-2.5 shadow-sm focus-within:border-[#f59e0b] focus-within:ring-1 focus-within:ring-[#f59e0b] transition-all">
-                <CardElement
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: "14px",
-                        color: "#111827",
-                        "::placeholder": { color: "#9ca3af" },
-                      },
-                      invalid: { color: "#ef4444" },
-                    },
-                    hidePostalCode: false,
-                  }}
+        <form
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto px-6 py-6 space-y-6 max-h-[60vh] bg-[#fdfdfd]"
+        >
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <span className="p-1.5 bg-slate-100 rounded-lg">📍</span> Billing Address
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  Address Line 1
+                </label>
+                <input
+                  name="line1"
+                  required
+                  placeholder="Street name and house number"
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  value={address.line1}
+                  onChange={handleAddressChange}
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase">City</label>
+                <input
+                  name="city"
+                  required
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  value={address.city}
+                  onChange={handleAddressChange}
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  Postal Code
+                </label>
+                <input
+                  name="postal_code"
+                  required
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  value={address.postal_code}
+                  onChange={handleAddressChange}
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  Country Name
+                </label>
+                <input
+                  name="country"
+                  required
+                  placeholder="e.g. United Kingdom"
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  value={address.country}
+                  onChange={handleAddressChange}
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  State / Province
+                </label>
+                <input
+                  name="state"
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  value={address.state}
+                  onChange={handleAddressChange}
                 />
               </div>
             </div>
+          </div>
 
-            {/* Cardholder name */}
-            <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-700">
-                Cardholder name
-              </label>
-              <input
-                type="text"
-                className="w-full rounded-xl bg-white border border-slate-300 px-3 py-2.5 text-sm text-slate-900 shadow-sm focus:border-[#f59e0b] focus:ring-1 focus:ring-[#f59e0b] outline-none"
-                placeholder="Name on card"
-                value={cardholderName}
-                onChange={(e) => setCardholderName(e.target.value)}
-              />
+          <hr className="border-slate-200" />
+
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <span className="p-1.5 bg-slate-100 rounded-lg">💳</span> Payment Information
+            </h3>
+            <div className="space-y-4 rounded-2xl bg-white border border-slate-200 p-5">
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  Cardholder Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  className="w-full mt-1 rounded-xl border border-slate-300 px-4 py-2.5 text-sm text-black bg-white focus:border-[#f59e0b] outline-none"
+                  value={cardholderName}
+                  onChange={(e) => setCardholderName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-[11px] font-bold text-slate-500 uppercase">
+                  Card Number
+                </label>
+                <div className="rounded-xl border border-slate-300 px-4 py-3 bg-white">
+                  <CardNumberElement options={stripeElementOptions} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase">
+                    Expiry Date
+                  </label>
+                  <div className="rounded-xl border border-slate-300 px-4 py-3 bg-white">
+                    <CardExpiryElement options={stripeElementOptions} />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[11px] font-bold text-slate-500 uppercase">CVC</label>
+                  <div className="rounded-xl border border-slate-300 px-4 py-3 bg-white">
+                    <CardCvcElement options={stripeElementOptions} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Save card toggle */}
-          <label className="mt-1 flex items-center gap-2 text-xs md:text-sm text-slate-700 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={saveCard}
-              onChange={(e) => setSaveCard(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-[#f59e0b] focus:ring-[#f59e0b]"
-            />
-            <span>Save card details for faster checkout next time</span>
-          </label>
-
-          {/* Error box */}
           {error && (
-            <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-300 px-3 py-2">
-              <span className="mt-[2px] text-xs">⚠️</span>
-              <p className="text-xs md:text-sm text-red-700">{error}</p>
+            <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm">
+              ⚠️ {error}
             </div>
           )}
-
-          {/* Security info list */}
-          <div className="mt-2 rounded-2xl bg-white border border-slate-200 px-4 py-3 space-y-2 text-xs md:text-sm text-slate-700">
-            <div className="flex items-center gap-2 font-semibold text-slate-900">
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 text-xs">
-                🔒
-              </span>
-              <span>TVK protects your payment information</span>
-            </div>
-            <ul className="space-y-1 pl-1">
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-500">✔</span>
-                <span>Industry-standard encryption for all card details.</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-500">✔</span>
-                <span>Card data is processed securely via Stripe.</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-emerald-500">✔</span>
-                <span>We never sell or misuse your payment information.</span>
-              </li>
-            </ul>
-          </div>
         </form>
 
-        {/* Bottom sticky CTA like AliExpress */}
-        <div className="px-6 pb-5 pt-3 border-t border-slate-200 bg-white">
+        <div className="p-6 border-t border-slate-200 bg-white">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm font-medium text-slate-600">Total amount to pay:</span>
+            <span className="text-2xl font-black text-slate-900">
+              {priceLoading ? '...' : `${currentSymbol}${displayPrice ?? plan.price}`}
+            </span>
+          </div>
           <button
-            type="button"
-            onClick={handleSubmit as any}
-            disabled={loading || !stripe}
-            className="w-full inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#f97316] via-[#f59e0b] to-[#facc15] text-white font-semibold text-sm md:text-base px-6 py-3 shadow-md hover:shadow-lg hover:brightness-105 transition-all disabled:opacity-70"
+            type="submit"
+            onClick={handleSubmit}
+            disabled={loading || priceLoading}
+            className="w-full bg-gradient-to-r from-[#f97316] to-[#facc15] text-white font-black py-4 rounded-2xl shadow-lg hover:brightness-105 transition-all disabled:opacity-50"
           >
-            {loading ? "Processing..." : "Save & confirm subscription"}
+            {loading ? 'Processing Securely...' : `Pay & Subscribe Now`}
           </button>
         </div>
       </div>

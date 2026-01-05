@@ -56,12 +56,24 @@ export const userService = {
       const response = await api.get('/v1/user/stats');
       return response.data;
     } catch (error) {
-      console.warn('Stats endpoint not found, using placeholder data');
       return {
         points: 0,
         games_played: 0,
         trophies: 0,
       };
     }
+  },
+
+  /**
+   * Update Nickname
+   * Premium users: unlimited updates
+   * Free users: 1 free change, then 2000 coins per change
+   */
+  updateNickname: async (nickname: string) => {
+    const response = await api.patch<{ user: IUser; message: string; coins_deducted?: number }>(
+      '/v1/auth/update-nickname',
+      { nickname }
+    );
+    return response.data;
   },
 };

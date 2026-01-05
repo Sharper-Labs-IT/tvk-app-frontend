@@ -19,10 +19,18 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // RESTORED: Success/Welcome Modal State
+  // Success/Welcome Modal State
   const [successData, setSuccessData] = useState<ILoginResponse | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState('');
+
+  // --- Unverified User Modal State ---
+  const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
+  // We store both email AND user_id here now
+  const [pendingVerificationUser, setPendingVerificationUser] = useState<{
+    email: string;
+    id: number;
+  } | null>(null);
 
   // Animation State
   const [isVisible, setIsVisible] = useState(false);
@@ -34,11 +42,10 @@ const Login: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // RESTORED: Effect to handle delay after successful login (for normal members)
+  // Effect to handle delay after successful login
   useEffect(() => {
     let timer: number;
     if (successData && showWelcomeModal) {
-      // We wait 2 seconds so the user can see the "Welcome" message
       timer = setTimeout(() => {
         if (successData.token && successData.user) {
           login(successData.token, successData.user);
@@ -55,12 +62,44 @@ const Login: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // RESTORED: Handle manual close of modal
   const handleWelcomeModalClose = () => {
     if (successData && successData.token && successData.user) {
       login(successData.token, successData.user);
       setShowWelcomeModal(false);
       navigate('/');
+    }
+  };
+
+  // --- THE CLEAN FIX: Handle "Not Verified" Logic ---
+  const handleUnverifiedAction = async () => {
+    setShowUnverifiedModal(false); // Close modal
+
+    if (!pendingVerificationUser) return;
+
+    // We have the ID directly from the backend now! No local storage needed.
+    const { email, id } = pendingVerificationUser;
+
+    try {
+      setLoading(true);
+
+      // 1. Request new OTP
+      await api.post('/v1/auth/request-otp', {
+        email: email,
+        context: 'verification',
+      });
+
+      // 2. Navigate to OTP Page using the ID from the backend error
+      navigate('/verify-otp', {
+        state: {
+          email: email,
+          user_id: id,
+          context: 'verification',
+        },
+      });
+    } catch (err: any) {
+      setError('Failed to send OTP. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,27 +113,38 @@ const Login: React.FC = () => {
       const response = await api.post<ILoginResponse>('/v1/auth/login', formData);
       const data = response.data;
 
-      // 1. CHECK: Is this an Admin requiring 2FA?
       if (data.two_factor_required) {
-        // Redirect IMMEDIATELY to OTP page (No welcome modal yet)
         navigate('/verify-otp', {
-          state: {
-            email: formData.email,
-            context: 'admin-login',
-          },
+          state: { email: formData.email, context: 'admin-login' },
         });
         return;
       }
 
-      // 2. Normal Login (Member) -> Show Welcome Modal
       if (data.token && data.user) {
-        // Trigger the Welcome Modal Effect
         setSuccessData(data);
         setWelcomeMessage(`Welcome back, ${data.user.name}!`);
         setShowWelcomeModal(true);
       }
     } catch (err: any) {
       let errorMessage = 'Login failed. Please try again.';
+
+      // --- CATCH 403 ERROR (User Not Verified) ---
+      if (err.response && err.response.status === 403) {
+        // The backend now sends 'user_id' in the error response!
+        const backendData = err.response.data;
+
+        // Check if we received the user_id
+        if (backendData.user_id) {
+          setPendingVerificationUser({
+            email: formData.email,
+            id: backendData.user_id,
+          });
+          setShowUnverifiedModal(true); // Open the "Email not verified" modal
+          setLoading(false);
+          return; // STOP HERE
+        }
+      }
+
       if (err.response) {
         if (err.response.data.error) {
           errorMessage = err.response.data.error;
@@ -104,7 +154,9 @@ const Login: React.FC = () => {
       }
       setError(errorMessage);
     } finally {
-      setLoading(false);
+      if (!showUnverifiedModal) {
+        setLoading(false);
+      }
     }
   };
 
@@ -157,14 +209,31 @@ const Login: React.FC = () => {
           <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[100px] animate-pulse-slow"></div>
         </div>
 
-        <LogoHeader isVisible={isVisible} delayClass="delay-0" />
+        <LogoHeader
+          isVisible={isVisible}
+          delayClass="delay-0"
+          text={
+            <>
+              THALAPAHTY <span className="text-tvk-accent-gold">VJ</span>{' '}
+              <span className="text-tvk-accent-gold">KUDUMBAM MEMBERSHIP</span> – SIGN IN
+            </>
+          }
+        />
 
-        <div className="flex-grow flex items-center justify-center px-4 sm:px-6 z-10">
-          <div className={`max-w-md w-full space-y-8 ${getAnimationClass('delay-[100ms]')}`}>
-            <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 rounded-2xl shadow-2xl">
-              <div className={`text-center mb-10 ${getAnimationClass('delay-[200ms]')}`}>
-                <h2 className="text-3xl font-bold text-tvk-accent-gold mb-2">Welcome Back</h2>
-                <p className="text-gray-400 text-sm">Sign in to your TVK Membership Dashboard</p>
+        <div className="flex-grow flex items-center justify-center px-4 sm:px-6 lg:px-8 z-10 py-10 lg:py-16">
+          <div
+            className={`max-w-md lg:max-w-xl w-full space-y-8 ${getAnimationClass(
+              'delay-[100ms]'
+            )}`}
+          >
+            <div className="bg-[#121212] sm:bg-[#1E1E1E] sm:border sm:border-gray-800 p-8 sm:p-10 lg:p-12 rounded-2xl shadow-2xl">
+              <div className={`text-center mb-10 lg:mb-12 ${getAnimationClass('delay-[200ms]')}`}>
+                <h2 className="text-3xl lg:text-4xl font-bold text-tvk-accent-gold mb-2 lg:mb-4">
+                  Welcome Back
+                </h2>
+                <p className="text-gray-400 text-sm lg:text-base">
+                  Sign in to your TVK Membership Dashboard
+                </p>
               </div>
 
               {error && (
@@ -228,7 +297,7 @@ const Login: React.FC = () => {
                     type="submit"
                     variant="gold"
                     isLoading={loading}
-                    className="flex justify-center items-center gap-2 group"
+                    className="flex justify-center items-center gap-2 group w-full py-3 lg:py-4 text-base lg:text-lg font-bold"
                   >
                     <span>Sign In</span>
                     {!loading && (
@@ -253,12 +322,13 @@ const Login: React.FC = () => {
 
               <div className={`text-center text-sm mt-8 ${getAnimationClass('delay-[400ms]')}`}>
                 <p className="text-gray-500">
-                  Don't have a membership?{' '}
+                  Don’t have a membership yet? Join the TVK Global Fan Forum today and be part of
+                  the community.{' '}
                   <Link
                     to="/signup"
                     className="font-bold text-tvk-accent-gold hover:text-yellow-400 transition-colors"
                   >
-                    Join TVK Now
+                    Join TVK Now!
                   </Link>
                 </p>
               </div>
@@ -271,17 +341,26 @@ const Login: React.FC = () => {
             'delay-[500ms]'
           )}`}
         >
-          &copy; 2025 TVK Membership Program. All rights reserved.
+          &copy; 2026 TVK Global Membership Programme. All rights reserved.
         </div>
       </div>
 
-      {/* RESTORED: Welcome Modal */}
       <MessageModal
         isOpen={showWelcomeModal}
         title="Login Successful!"
         message={welcomeMessage}
         type="success"
         onClose={handleWelcomeModalClose}
+        autoCloseDelay={null}
+      />
+
+      {/* MODAL: Email Not Verified */}
+      <MessageModal
+        isOpen={showUnverifiedModal}
+        title="Email Not Verified"
+        message="Your email is not verified. Click OK to receive a new OTP."
+        type="error"
+        onClose={handleUnverifiedAction} // This triggers the resend and redirect
         autoCloseDelay={null}
       />
     </>

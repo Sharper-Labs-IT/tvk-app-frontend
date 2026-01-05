@@ -29,6 +29,7 @@ const TriviaGameStart: React.FC = () => {
   const [accessCost, setAccessCost] = useState(0);
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
@@ -54,7 +55,6 @@ const TriviaGameStart: React.FC = () => {
     try {
       await refreshUser();
     } catch (error) {
-      console.error('Failed to fetch user stats:', error);
     } finally {
       setIsLoadingStats(false);
     }

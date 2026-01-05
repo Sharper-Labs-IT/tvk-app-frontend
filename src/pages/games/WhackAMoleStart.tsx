@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gamepad2, Triangle, X, Target, Shield, Coins, Hammer, Trophy } from 'lucide-react';
+import {  Triangle, X, Target, Shield, Coins, Hammer, Trophy } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TextType from '../../components/TextType';
 import TrueFocus from '../../components/TrueFocus';
@@ -15,6 +15,7 @@ const WhackAMoleStart: React.FC = () => {
   const [accessCost, setAccessCost] = useState(0);
   const { user, refreshUser } = useAuth();
   const userCoins = user?.coins || 0;
+
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
@@ -40,7 +41,6 @@ const WhackAMoleStart: React.FC = () => {
     try {
       await refreshUser();
     } catch (error) {
-      console.error('Failed to fetch user stats:', error);
     } finally {
       setIsLoadingStats(false);
     }
@@ -106,9 +106,9 @@ const WhackAMoleStart: React.FC = () => {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat overflow-hidden font-sans"
+      className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat overflow-x-hidden font-sans flex flex-col"
       style={{
-        backgroundImage: "url('/img/bg-game3.webp')", // Reusing existing background
+        backgroundImage: "url('/img/bg-game3.webp')", 
       }}
     >
       <GameAccessModal 
@@ -122,47 +122,51 @@ const WhackAMoleStart: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-slate-900/30" />
 
       <div className="relative z-10 flex flex-col min-h-screen text-white">
-        {/* Header */}
-        <header className="flex justify-between items-center px-8 py-6 md:px-12">
-          <div
-            onClick={() => navigate('/game')}
-            className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            <div className="bg-white text-black p-1 rounded-full">
-              <Triangle className="w-5 h-5 fill-current -rotate-90" />
+        {/* Header - Made responsive with flex-col on mobile */}
+        <header className="flex flex-col md:flex-row justify-between items-center px-4 py-4 md:px-12 gap-4 w-full">
+          <div className="w-full md:w-auto flex justify-start">
+            <div
+              onClick={() => navigate('/game')}
+              className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <div className="bg-white text-black p-1 rounded-full">
+                <Triangle className="w-5 h-5 fill-current -rotate-90" />
+              </div>
+              {/* Back text hidden on mobile */}
+              <span className="text-lg font-bold tracking-wide hidden md:inline">Back</span>
             </div>
-            <span className="text-lg font-bold tracking-wide">Back</span>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          {/* Navigation/Stats - Visible on all devices now */}
+          <nav className="flex flex-wrap justify-center items-center gap-3 md:gap-6 text-xs md:text-sm font-medium w-full md:w-auto">
             {/* Trophies Display */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
-              <Trophy className="w-5 h-5 text-amber-400" />
+            <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1.5 md:px-4 md:py-2 rounded-full">
+              <Trophy className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
               <span className="text-white font-semibold">
                 {isLoadingStats ? '...' : totalTrophies.toLocaleString()}
               </span>
             </div>
 
             {/* Coins Display */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-4 py-2 rounded-full">
-              <span className="text-yellow-400 font-bold text-lg">🪙</span>
+            <div className="flex items-center gap-1.5 md:gap-2 bg-white/10 backdrop-blur-sm border border-white/20 px-3 py-1.5 md:px-4 md:py-2 rounded-full">
+              <span className="text-yellow-400 font-bold text-base md:text-lg">🪙</span>
               <span className="text-white font-semibold">
                 {isLoadingStats ? '...' : userCoins.toLocaleString()}
               </span>
             </div>
             
             {/* User Profile */}
-            <button className="flex items-center gap-2 hover:bg-white/10 transition-all px-4 py-2 rounded-full">
-              <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold">
-                {(user?.nickname || 'usernull').charAt(0).toUpperCase()}
+            <button className="flex items-center gap-2 hover:bg-white/10 transition-all px-3 py-1.5 md:px-4 md:py-2 rounded-full border border-transparent hover:border-white/10">
+              <div className="w-6 h-6 md:w-8 md:h-8 bg-gradient-to-br from-red-500 to-orange-500 rounded-full flex items-center justify-center text-white font-bold text-xs md:text-sm">
+                {(user?.nickname || 'U').charAt(0).toUpperCase()}
               </div>
-              <span className="text-white">{user?.nickname || 'usernull'}</span>
+              <span className="text-white truncate max-w-[80px] md:max-w-none">{user?.nickname || 'User'}</span>
             </button>
           </nav>
         </header>
 
-        {/* Main Content */}
-        <main className="flex-grow flex flex-col justify-center items-center text-center px-4 mt-[-60px]">
+        {/* Main Content - Adjust margin to prevent overlap on mobile */}
+        <main className="flex-grow flex flex-col justify-center items-center text-center px-4 mt-4 md:mt-[-60px]">
           <div className="mb-4 p-4 bg-red-600/20 rounded-full border border-red-500/50 backdrop-blur-sm animate-pulse">
             <Target className="w-12 h-12 text-red-500" />
           </div>
@@ -187,20 +191,20 @@ const WhackAMoleStart: React.FC = () => {
             pauseDuration={1000}
             showCursor={true}
             cursorCharacter="|"
-            className="text-gray-300 text-xl md:text-2xl max-w-3xl mb-10 font-light tracking-wide mt-4"
+            className="text-gray-300 text-lg md:text-2xl max-w-3xl mb-10 font-light tracking-wide mt-4"
           />
 
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto px-6 sm:px-0">
             <button
               onClick={handlePlayClick}
-              className="cursor-pointer bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 shadow-[0_0_30px_rgba(220,38,38,0.5)] transform hover:scale-105 text-lg md:text-xl border-2 border-white/20 uppercase tracking-wider"
+              className="cursor-pointer w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 shadow-[0_0_30px_rgba(220,38,38,0.5)] transform hover:scale-105 text-lg md:text-xl border-2 border-white/20 uppercase tracking-wider"
             >
               Start Hunt
             </button>
 
             <button
               onClick={() => setShowModal(true)}
-              className="cursor-pointer bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 transform hover:scale-105 text-lg md:text-xl uppercase tracking-wider"
+              className="cursor-pointer w-full sm:w-auto bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/10 text-white px-8 py-3 rounded-full font-bold transition-all duration-300 transform hover:scale-105 text-lg md:text-xl uppercase tracking-wider"
             >
               Briefing
             </button>
@@ -211,18 +215,16 @@ const WhackAMoleStart: React.FC = () => {
             </p>
           )}
           {isPremium && (
-            <p className="mt-4 text-green-400 text-sm flex items-center gap-2">
-              <span>⭐</span> You're a Super Fan of VJ! Enjoy unlimited access to all games.
+            <p className="mt-4 text-green-400 text-sm flex items-center justify-center gap-2">
+               You're a Super Fan of VJ! Enjoy unlimited access.
             </p>
           )}
         </main>
 
         {/* Footer */}
-        <footer className="px-8 py-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-sm">
-          <div>© 2025 TVK. All rights reserved.</div>
-          <div className="flex items-center gap-6">
-            <Gamepad2 className="w-6 h-6 hover:text-white transition-colors cursor-pointer" />
-          </div>
+        <footer className="px-6 py-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-sm mt-auto bg-slate-900/20 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none">
+          <div className="text-center md:text-left">© 2025 TVK. All rights reserved.</div>
+       
         </footer>
       </div>
 
@@ -234,10 +236,10 @@ const WhackAMoleStart: React.FC = () => {
             onClick={() => setShowModal(false)}
           />
 
-          <div className="relative bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden">
-            <div className="p-8">
-              <div className="flex justify-between items-start mb-6">
-                <h2 className="text-3xl font-black text-white uppercase italic">
+          <div className="relative bg-slate-900 border border-slate-700 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden flex flex-col max-h-[85vh]">
+            <div className="p-6 md:p-8 flex flex-col h-full">
+              <div className="flex justify-between items-start mb-6 shrink-0">
+                <h2 className="text-2xl md:text-3xl font-black text-white uppercase italic">
                   Mission Briefing
                 </h2>
                 <button
@@ -248,7 +250,7 @@ const WhackAMoleStart: React.FC = () => {
                 </button>
               </div>
 
-              <div className="space-y-6 text-gray-300 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-6 text-gray-300 overflow-y-auto pr-2 custom-scrollbar flex-grow">
                 <div className="flex gap-4 items-start">
                   <div className="bg-red-500/20 p-3 rounded-xl shrink-0">
                     <Target className="w-6 h-6 text-red-500" />
@@ -303,7 +305,7 @@ const WhackAMoleStart: React.FC = () => {
                   setShowModal(false);
                   navigate('/game/villain-hunt/start');
                 }}
-                className="w-full mt-8 bg-red-600 hover:bg-red-500 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-wider transition-all shadow-lg"
+                className="w-full mt-6 bg-red-600 hover:bg-red-500 text-white py-3 md:py-4 rounded-xl font-bold text-lg uppercase tracking-wider transition-all shadow-lg shrink-0"
               >
                 I'm Ready!
               </button>

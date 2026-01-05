@@ -12,6 +12,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -107,10 +108,7 @@ interface Piece {
 
 // --- Sound Controller Stub ---
 const playSound = (_: 'tap' | 'success' | 'win' | 'lose') => {
-  // In a real app, you'd play audio files here.
-  // For now, we'll just log or use browser beep if possible, 
-  // but mostly this is a placeholder for the structure.
-  // console.log(`Playing sound: ${type}`);
+  // Placeholder for sound logic
 };
 
 const JigsawPuzzleGame: React.FC = () => {
@@ -127,6 +125,7 @@ const JigsawPuzzleGame: React.FC = () => {
   const [currentImage, setCurrentImage] = useState<string>(PUZZLE_IMAGES[0]);
   
   const { user } = useAuth();
+  const { isPremium } = useGameAccess();
   
   // --- Stats & Progress ---
   const [timeLeft, setTimeLeft] = useState(0);
@@ -144,10 +143,14 @@ const JigsawPuzzleGame: React.FC = () => {
   const [isPeeking, setIsPeeking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const [lockMode, setLockMode] = useState(false); // If true, correct pieces lock in place
+  const [lockMode, setLockMode] = useState(false); 
   const [participantId, setParticipantId] = useState<number | null>(null);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
+
+  // --- Mobile Preview State ---
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
+  const previewTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // --- Combo System ---
   const [combo, setCombo] = useState(0);
@@ -207,10 +210,8 @@ const JigsawPuzzleGame: React.FC = () => {
   // --- Backend Integration ---
   const { refreshUser } = useAuth();
 
-  // Helper function to calculate total trophies from user object
   const calculateTotalTrophies = (userTrophies: any): number => {
     if (!userTrophies) return 0;
-    // Handle object with tier arrays: {BRONZE: [], SILVER: [], GOLD: [], PLATINUM: []}
     if (typeof userTrophies === 'object' && !Array.isArray(userTrophies)) {
       let total = 0;
       if (userTrophies.BRONZE) total += userTrophies.BRONZE.length;
@@ -219,12 +220,10 @@ const JigsawPuzzleGame: React.FC = () => {
       if (userTrophies.PLATINUM) total += userTrophies.PLATINUM.length;
       return total;
     }
-    // Handle flat array of trophies
     if (Array.isArray(userTrophies)) return userTrophies.length;
     return 0;
   };
 
-  // Update trophies when user data changes
   useEffect(() => {
     if (user?.trophies) {
       setTotalTrophies(calculateTotalTrophies(user.trophies));
@@ -241,12 +240,8 @@ const JigsawPuzzleGame: React.FC = () => {
             coins: earnedCoins,
             data: { moves: moves, timeLeft: timeLeft, difficulty: difficulty.label }
           });
-          
-          // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
-          // Trophies will be updated automatically via useEffect when user data changes
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false);
         }
       };
@@ -298,13 +293,19 @@ const JigsawPuzzleGame: React.FC = () => {
     };
   }, [gameStarted, isGameOver, isWon, isPaused]);
 
+  // Cleanup preview timeout
+  useEffect(() => {
+    return () => {
+        if (previewTimeoutRef.current) clearTimeout(previewTimeoutRef.current);
+    }
+  }, []);
+
   const startNewGame = async () => {
     try {
       const response = await gameService.joinGame(GAME_IDS.JIGSAW_PUZZLE);
       setParticipantId(response.participant.id);
       setScoreSubmitted(false);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 
@@ -339,13 +340,23 @@ const JigsawPuzzleGame: React.FC = () => {
     setGameStarted(true);
     setSelectedPiece(null);
     setIsPaused(false);
+
+    // Mobile Preview Logic
+    if (previewTimeoutRef.current) clearTimeout(previewTimeoutRef.current);
+    setShowMobilePreview(true);
+    previewTimeoutRef.current = setTimeout(() => {
+        setShowMobilePreview(false);
+    }, 5000);
   };
 
   const handlePieceClick = (index: number) => {
     if (isGameOver || isWon || isPaused) return;
 
+    // Prevent click if preview is showing
+    if (showMobilePreview && window.innerWidth < 1024) return;
+
     const clickedPiece = pieces[index];
-    if (lockMode && clickedPiece.isLocked) return; // Can't move locked pieces in lock mode
+    if (lockMode && clickedPiece.isLocked) return; 
 
     playSound('tap');
 
@@ -407,7 +418,7 @@ const JigsawPuzzleGame: React.FC = () => {
       const comboBonus = combo * 50;
       const finalScore = Math.max(0, (1000 * difficulty.multiplier) + timeBonus - movePenalty + comboBonus);
       
-      const coins = difficulty.baseCoins + Math.floor(timeLeft / 2) + (lockMode ? 0 : 10); // Bonus for no lock mode
+      const coins = difficulty.baseCoins + Math.floor(timeLeft / 2) + (lockMode ? 0 : 10); 
       setEarnedCoins(coins);
       
       const newTotal = totalCoins + coins;
@@ -422,9 +433,6 @@ const JigsawPuzzleGame: React.FC = () => {
 
       handleGameOver(true);
     } else {
-       // Check if a piece was placed correctly for sound feedback
-       // This is a bit complex to track perfectly without more state, 
-       // but we can check if the *swapped* pieces landed correctly.
        playSound('success'); 
     }
   };
@@ -590,6 +598,33 @@ const JigsawPuzzleGame: React.FC = () => {
                      </button>
                   </motion.div>
                )}
+            </AnimatePresence>
+
+            {/* Mobile Start Preview Overlay (Shows only on mobile) */}
+            <AnimatePresence>
+              {showMobilePreview && !isGameOver && !isWon && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0 z-50 rounded-2xl overflow-hidden bg-slate-900 lg:hidden border-2 border-yellow-400/50"
+                >
+                  <img 
+                    src={currentImage} 
+                    alt="Memorize" 
+                    className="w-full h-full object-cover opacity-80" 
+                  />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                    <span className="text-4xl font-black text-white drop-shadow-[0_0_15px_rgba(0,0,0,1)] animate-pulse tracking-wider">
+                      MEMORIZE!
+                    </span>
+                    <span className="text-yellow-400 font-bold mt-2 bg-black/60 px-4 py-1 rounded-full">
+                      Hiding in 5s...
+                    </span>
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
 
             {/* The Grid */}
@@ -816,12 +851,6 @@ const JigsawPuzzleGame: React.FC = () => {
                     })()}
                   </div>
                   
-                  {/* 
-                    TODO: Send score and trophy to backend
-                    POST /api/scores
-                    Body: { game: 'jigsaw', score: score, trophy: getTrophyFromScore('jigsaw', score) }
-                  */}
-
                 </>
               ) : (
                 <>
@@ -834,12 +863,14 @@ const JigsawPuzzleGame: React.FC = () => {
               )}
 
               <div className="flex flex-col gap-3">
-                <button
-                  onClick={startNewGame}
-                  className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1"
-                >
-                  {isWon ? 'Play Again' : 'Try Again'}
-                </button>
+                {isPremium && (
+                  <button
+                    onClick={startNewGame}
+                    className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-xl transition-all shadow-[0_4px_0_rgb(161,98,7)] active:shadow-none active:translate-y-1"
+                  >
+                    {isWon ? 'Play Again' : 'Try Again'}
+                  </button>
+                )}
                 <button
                   onClick={() => navigate('/game')}
                   className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"

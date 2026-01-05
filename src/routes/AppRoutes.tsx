@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 
 // Components
 import Loader from '../components/Loader';
@@ -17,12 +17,21 @@ import PostCreatePage from '../pages/admin/posts/PostCreatePage';
 import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
 import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
+import PostEditPage from '../pages/admin/posts/PostEditPage';
+
+// --- NEW IMPORTS FOR MEMBER MANAGEMENT ---
+const MemberListPage = React.lazy(() => import('../pages/admin/member/MemberListPage'));
+const AdminListPage = React.lazy(() => import('../pages/admin/member/AdminListPage'));
+const CreateAdminPage = React.lazy(() => import('../pages/admin/member/CreateAdminPage'));
+const EditAdminPage = React.lazy(() => import('../pages/admin/member/EditAdminPage'));
 
 // Lazy Loaded Pages
+// const Countdown = React.lazy(() => import('../pages/Countdown')); // Countdown is over
 const Home = React.lazy(() => import('../pages/Home'));
 const Membership = React.lazy(() => import('../pages/MembershipPage'));
 const Game = React.lazy(() => import('../pages/Game'));
 const EventPage = React.lazy(() => import('../pages/EventPage'));
+const FanOfMonthPage = React.lazy(() => import('../pages/FanOfMonthPage'));
 
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
 const Store = React.lazy(() => import('../pages/Store'));
@@ -32,6 +41,9 @@ const Signup = React.lazy(() => import('../pages/Signup'));
 const VerifyOtp = React.lazy(() => import('../pages/VerifyOtp'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
+const CookiePolicy = React.lazy(() => import('../pages/CookiePolicy'));
+const Terms = React.lazy(() => import('../components/common/TermsModal'));
+const Privacy = React.lazy(() => import('../components/common/PrivacyPolicyModal'));
 
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
@@ -77,7 +89,42 @@ const getRoleName = (role: any): string => {
 const PublicOnlyRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const { isLoggedIn, isAuthInitialized } = useAuth();
   if (!isAuthInitialized) return <Loader />;
-  return !isLoggedIn ? <>{element}</> : <Navigate to="/" replace />;
+  return !isLoggedIn ? <>{element}</> : <Navigate to="/home" replace />;
+};
+
+// Wrapper component that supplies the required props
+const TermsPage: React.FC = () => {
+  // The modal should be open when this route is active
+  const isOpen = true;
+
+  // Close handler — you can navigate back or to home
+  const handleClose = () => {
+    // Example: go back in history
+    window.history.back();
+    // Or navigate to a specific route:
+    // navigate('/'); // if using useNavigate
+  };
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Terms isOpen={isOpen} onClose={handleClose} />
+    </Suspense>
+  );
+};
+
+
+const PrivacyPolicyPage: React.FC = () => {
+  const navigate = useNavigate();
+
+  return (
+    <Suspense fallback={<div>Loading privacy policy...</div>}>
+      <Privacy
+        isOpen={true}                    // Modal is open when this route is active
+        onClose={() => navigate(-1)}     // Go back when user closes it
+        // Add any other props if your modal requires them
+      />
+    </Suspense>
+  );
 };
 
 /**
@@ -122,7 +169,6 @@ const UserRoute: React.FC<{ element: React.ReactNode }> = ({ element }) => {
   const isMember = user.roles?.some((role) => allowedRoles.includes(getRoleName(role)));
 
   if (!isMember) {
-    console.warn('Access Denied: User does not have member role.', user.roles);
     return <Navigate to="/" replace />;
   }
 
@@ -159,10 +205,15 @@ const AppRoutes: React.FC = () => {
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
+          {/* <Route path="/home" element={<Home />} /> */} {/* Countdown is over, home is now at / */}
           <Route path="/membership" element={<Membership />} />
+          <Route path="/fan-of-the-month" element={<FanOfMonthPage />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
+          <Route path="/terms-and-conditions" element={<TermsPage />} />
+          <Route path= "/privacy-policy" element={<PrivacyPolicyPage />} />
 
           {/* 👇 MEMBER DASHBOARD ROUTES (Protected) */}
           <Route path="/dashboard" element={<UserRoute element={<MemberLayout />} />}>
@@ -211,6 +262,7 @@ const AppRoutes: React.FC = () => {
             <Route path="posts" element={<PostListPage />} />
             <Route path="posts/create" element={<PostCreatePage />} />
             <Route path="posts/:id" element={<PostDetailsPage />} />
+            <Route path="posts/:id/edit" element={<PostEditPage />} />
             <Route path="membership" element={<MembershipPlanList />} />
             <Route path="membership/create" element={<MembershipPlanCreate />} />
 
@@ -223,10 +275,19 @@ const AppRoutes: React.FC = () => {
             <Route path="events/create" element={<CreateEventPage />} />
             <Route path="events/edit/:id" element={<EditEventPage />} />
 
-            <Route
-              path="members"
-              element={<div className="text-white p-8">Member Management</div>}
-            />
+            {/* --- MEMBER MANAGEMENT ROUTES --- */}
+            <Route path="members" element={<MemberListPage />} />
+
+            {/* View All Admins */}
+            <Route path="members/admins" element={<AdminListPage />} />
+
+            {/* Create New Admin */}
+            <Route path="members/admins/create" element={<CreateAdminPage />} />
+
+            {/* Edit Admin */}
+            <Route path="members/admins/edit/:id" element={<EditAdminPage />} />
+
+            <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
 

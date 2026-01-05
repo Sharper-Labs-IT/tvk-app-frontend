@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, AlertCircle, CreditCard } from 'lucide-react';
 import api from '../../../utils/api';
 
 const MembershipPlanCreate: React.FC = () => {
@@ -13,7 +13,8 @@ const MembershipPlanCreate: React.FC = () => {
     name: '',
     description: '',
     price: '',
-    duration_days: '30', // Default to 30 days
+    stripe_price_id: '', // New Field
+    duration_days: '30',
   });
 
   const [benefitInput, setBenefitInput] = useState('');
@@ -44,18 +45,16 @@ const MembershipPlanCreate: React.FC = () => {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
+        stripe_price_id: formData.stripe_price_id, // Sending the ID
         duration_days: parseInt(formData.duration_days),
         benefits: benefits,
       };
 
-      // FIX 1: Added '/v1' to match Postman
       await api.post('/v1/membership/plans', payload);
 
       navigate('/admin/membership');
     } catch (err: any) {
-      console.error('Create error:', err);
       if (err.response && err.response.data && err.response.data.errors) {
-        // Validation errors format
         setError(JSON.stringify(err.response.data.errors));
       } else if (err.response && err.response.status === 404) {
         setError('API Endpoint not found (404). Check URL.');
@@ -107,10 +106,10 @@ const MembershipPlanCreate: React.FC = () => {
             />
           </div>
 
-          {/* Price & Duration Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {/* Price, Stripe ID & Duration Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Price */}
             <div>
-              {/* FIX 2: Changed Label to USD */}
               <label className="block text-sm font-medium text-gray-300 mb-2">Price (USD $)</label>
               <input
                 type="number"
@@ -122,6 +121,8 @@ const MembershipPlanCreate: React.FC = () => {
                 className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
               />
             </div>
+
+            {/* Duration */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Duration (Days)
@@ -134,6 +135,26 @@ const MembershipPlanCreate: React.FC = () => {
                 onChange={handleChange}
                 className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all"
               />
+            </div>
+
+            {/* Stripe Price ID - Full Width on Mobile, Half on Desktop */}
+            <div className="md:col-span-2">
+              <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+                <CreditCard size={16} className="text-gold" />
+                Stripe Price ID
+              </label>
+              <input
+                type="text"
+                name="stripe_price_id"
+                required
+                value={formData.stripe_price_id}
+                onChange={handleChange}
+                placeholder="price_1Pxyz..."
+                className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-all font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Copy this ID from your Stripe Dashboard (Product Catalog).
+              </p>
             </div>
           </div>
 
@@ -191,7 +212,6 @@ const MembershipPlanCreate: React.FC = () => {
           </div>
 
           <div className="pt-4">
-            {/* FIX 3: Changed Button class to bg-gold text-black */}
             <button
               type="submit"
               disabled={loading}

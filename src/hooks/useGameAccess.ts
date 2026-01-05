@@ -8,26 +8,27 @@ const PLAY_COST = 500;
 const isPremiumUser = (user: any) => {
   if (!user) return false;
   
-  // Debug log to see what user data we have
-  console.log('[useGameAccess] Checking premium status for user:', {
-    membership_type: user.membership_type,
-    membership_tier: user.membership_tier,
-    roles: user.roles
-  });
-  
   // Check membership_type (frontend standard)
   if (user.membership_type === 'premium' || user.membership_type === 'vip') return true;
   
-  // Check membership_tier (backend field) - super_fan is treated as premium
-  if (user.membership_tier === 'super_fan') return true;
+  // Check membership_tier (backend field) - normalize spaces to underscores
+  const premiumTiers = ['super_fan', 'superfan', 'premium', 'vip', 'gold', 'platinum'];
+  if (user.membership_tier) {
+    const normalizedTier = user.membership_tier.toLowerCase().replace(/\s+/g, '_');
+    if (premiumTiers.includes(normalizedTier)) return true;
+  }
+  
+  // Check membership object's plan_id (plan_id 1 = Free, plan_id > 1 = Premium)
+  if (user.membership?.plan_id && Number(user.membership.plan_id) > 1) return true;
   
   // Check roles array for premium/super_fan/vip role names
   if (user.roles && Array.isArray(user.roles)) {
     const premiumRoleNames = ['premium', 'vip', 'super_fan', 'superfan', 'super-fan', 'admin'];
-    const hasPremiumRole = user.roles.some((role: any) => 
-      premiumRoleNames.includes(role.name?.toLowerCase()) || 
-      premiumRoleNames.includes(role.toLowerCase?.())
-    );
+    const hasPremiumRole = user.roles.some((role: any) => {
+      const roleName = role.name?.toLowerCase() || role.toLowerCase?.() || '';
+      const normalizedRole = roleName.trim().replace(/\s+/g, '_');
+      return premiumRoleNames.includes(normalizedRole);
+    });
     if (hasPremiumRole) return true;
   }
   
@@ -88,7 +89,6 @@ export const useGameAccess = () => {
         
         // For now, update local user state if possible or just proceed
         // Ideally AuthContext should expose a way to update user coins
-        console.log(`Deducting ${PLAY_COST} coins...`);
         
         // Update local storage for coins simulation if needed
         // const currentCoins = user.coins || 0;
@@ -99,7 +99,6 @@ export const useGameAccess = () => {
         
         return true;
       } catch (error) {
-        console.error("Failed to deduct coins", error);
         return false;
       }
     } else {

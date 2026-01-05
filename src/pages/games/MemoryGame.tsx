@@ -10,6 +10,7 @@ import { getTrophyFromScore, getTrophyIcon, getTrophyColor } from '../../utils/t
 import { gameService } from '../../services/gameService';
 import { useAuth } from '../../context/AuthContext';
 import { GAME_IDS } from '../../constants/games';
+import { useGameAccess } from '../../hooks/useGameAccess';
 
 // --- Gaming Loader Component ---
 const GamingLoader: React.FC<{ progress: number }> = ({ progress }) => {
@@ -208,6 +209,7 @@ const MemoryGame: React.FC = () => {
 
   // --- Backend Integration ---
   const { refreshUser, user } = useAuth();
+  const { isPremium } = useGameAccess();
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [totalTrophies, setTotalTrophies] = useState<number>(0);
 
@@ -239,18 +241,15 @@ const MemoryGame: React.FC = () => {
       const submitGameScore = async () => {
         try {
           setScoreSubmitted(true); // Prevent duplicate submissions
-          const response = await gameService.submitScore(participantId, {
+          await gameService.submitScore(participantId, {
             score: coins, // Using coins as score
             coins: coins,
             data: { moves: moves, timeLeft: timeLeft, matches: matches }
           });
           
-          console.log('[MemoryGame] Score submitted successfully:', response);
-          
           // Refresh user data from backend to get updated coins and trophies
           await refreshUser();
         } catch (error) {
-          console.error("Failed to submit score:", error);
           setScoreSubmitted(false); // Allow retry on error
         }
       };
@@ -263,7 +262,6 @@ const MemoryGame: React.FC = () => {
       const response = await gameService.joinGame(GAME_IDS.MEMORY);
       setParticipantId(response.participant.id);
     } catch (error) {
-      console.error("Failed to join game:", error);
       return;
     }
 
@@ -753,7 +751,7 @@ const MemoryGame: React.FC = () => {
                 Body: { game: 'memory', score: coins, trophy: getTrophyFromScore('memory', coins) }
               */}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className={`grid ${(!gameCompleted && !isPremium) ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
@@ -764,15 +762,15 @@ const MemoryGame: React.FC = () => {
                   Home
                 </motion.button>
                 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={gameCompleted ? handleCollectCoins : startNewGame}
-                  disabled={isCollecting}
-                  className={`w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 ${gameCompleted ? 'bg-yellow-500 hover:bg-yellow-400 text-black' : 'bg-red-600 hover:bg-red-500 text-white'}`}
-                >
-                  {gameCompleted ? (
-                    isCollecting ? (
+                {gameCompleted ? (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCollectCoins}
+                    disabled={isCollecting}
+                    className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 bg-yellow-500 hover:bg-yellow-400 text-black"
+                  >
+                    {isCollecting ? (
                       <motion.div
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
@@ -781,12 +779,20 @@ const MemoryGame: React.FC = () => {
                       </motion.div>
                     ) : (
                       <Coins size={18} />
-                    )
-                  ) : (
+                    )}
+                    {isCollecting ? "Collecting..." : "Collect Coins"}
+                  </motion.button>
+                ) : isPremium ? (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={startNewGame}
+                    className="w-full py-4 rounded-xl font-bold text-sm md:text-base uppercase tracking-wider transition-colors flex items-center justify-center gap-2 bg-red-600 hover:bg-red-500 text-white"
+                  >
                     <RotateCcw size={18} />
-                  )}
-                  {gameCompleted ? (isCollecting ? "Collecting..." : "Collect Coins") : "Retry"}
-                </motion.button>
+                    Retry
+                  </motion.button>
+                ) : null}
               </div>
 
             </motion.div>
