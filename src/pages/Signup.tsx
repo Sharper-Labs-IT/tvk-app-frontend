@@ -613,10 +613,10 @@ const Signup: React.FC = () => {
                           value={mobileCountryCode}
                           onChange={handleInputChange}
                           // Added max-w-[100px] and w-[30%] to force it to stay small on mobile
-                          className="h-full max-w-[100px] w-[30vw] sm:w-auto rounded-l-lg border-r-0 border border-gray-600 bg-[#2C2C2C] text-gray-200 text-xs sm:text-sm focus:ring-tvk-accent-gold focus:border-tvk-accent-gold py-3 pl-3 pr-7 appearance-none cursor-pointer outline-none truncate"
+                          className="h-full max-w-[150px] w-[30vw] sm:w-auto rounded-l-lg border-r-0 border border-gray-600 bg-[#2C2C2C] text-gray-200 text-xs sm:text-sm focus:ring-tvk-accent-gold focus:border-tvk-accent-gold py-3 pl-3 pr-7 appearance-none cursor-pointer outline-none truncate"
                         >
                           <option value="" disabled>
-                            Code
+                            Country Code
                           </option>
                           {PHONE_CODES.map((country) => (
                             <option key={country.code} value={country.code}>
@@ -865,7 +865,7 @@ const Signup: React.FC = () => {
                   <div className="pt-4 border-t border-gray-800">
                     <p className="text-[10px] text-gray-500 text-center leading-relaxed">
                       <span className="font-bold text-gray-400">Disclaimer:</span> Independent fan
-                      platform — not officially associated with or endorsed by actor Vijay or his
+                      platform - not officially associated with or endorsed by actor Vijay or his
                       representatives.
                     </p>
                   </div>

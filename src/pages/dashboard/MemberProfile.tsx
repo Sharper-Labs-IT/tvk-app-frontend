@@ -247,6 +247,7 @@ const MemberProfile: React.FC = () => {
         onClose={() => setIsPaymentModalOpen(false)}
         plan={SUPER_FAN_PLAN}
         onSuccess={handlePaymentSuccess}
+        currency={'GBP'}
       />
 
       <MembershipCancelModal

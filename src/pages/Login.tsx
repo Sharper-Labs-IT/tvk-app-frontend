@@ -6,6 +6,7 @@ import Button from '../components/common/Button';
 import LogoHeader from '../components/common/LogoHeader';
 import MessageModal from '../components/common/MessageModal';
 import type { ILoginPayload, ILoginResponse } from '../types/auth';
+import NicknameSetupModal from '../components/NicknameSetupModal'
 import { useAuth } from '../context/AuthContext';
 
 const Login: React.FC = () => {
@@ -23,6 +24,9 @@ const Login: React.FC = () => {
   const [successData, setSuccessData] = useState<ILoginResponse | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [welcomeMessage, setWelcomeMessage] = useState('');
+
+  const [showNicknameModal, setShowNicknameModal] = useState(false);
+  const [loginResponseData, setLoginResponseData] = useState<ILoginResponse | null>(null);
 
   // --- Unverified User Modal State ---
   const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
@@ -45,7 +49,7 @@ const Login: React.FC = () => {
   // Effect to handle delay after successful login
   useEffect(() => {
     let timer: number;
-    if (successData && showWelcomeModal) {
+    if (successData && showWelcomeModal && !showNicknameModal) {
       timer = setTimeout(() => {
         if (successData.token && successData.user) {
           login(successData.token, successData.user);
@@ -55,7 +59,7 @@ const Login: React.FC = () => {
       }, 2000);
     }
     return () => clearTimeout(timer);
-  }, [successData, showWelcomeModal, navigate, login]);
+  }, [successData, showWelcomeModal, showNicknameModal, navigate, login]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -120,10 +124,19 @@ const Login: React.FC = () => {
         return;
       }
 
-      if (data.token && data.user) {
-        setSuccessData(data);
-        setWelcomeMessage(`Welcome back, ${data.user.name}!`);
-        setShowWelcomeModal(true);
+            if (data.token && data.user) {
+        // Store response for potential nickname modal
+        setLoginResponseData(data);
+
+        if (data.is_first_login) {
+          // First login → force nickname setup
+          setShowNicknameModal(true);
+        } else {
+          // Normal login → show welcome message
+          setSuccessData(data);
+          setWelcomeMessage(`Welcome back, ${data.user.name}!`);
+          setShowWelcomeModal(true);
+        }
       }
     } catch (err: any) {
       let errorMessage = 'Login failed. Please try again.';
@@ -363,6 +376,21 @@ const Login: React.FC = () => {
         onClose={handleUnverifiedAction} // This triggers the resend and redirect
         autoCloseDelay={null}
       />
+
+            {/* First Login: Nickname Setup Modal */}
+      {loginResponseData && (
+        <NicknameSetupModal
+          isOpen={showNicknameModal}
+          currentNickname={loginResponseData.user?.nickname}
+          token={loginResponseData.token!}
+          onSuccess={() => {
+            setShowNicknameModal(false);
+            // Now finally log in and go to dashboard
+            login(loginResponseData.token!, loginResponseData.user!);
+            navigate('/');
+          }}
+        />
+      )}
     </>
   );
 };
