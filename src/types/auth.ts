@@ -132,6 +132,7 @@ export interface ILoginResponse {
   user?: IUser;
   two_factor_required?: boolean;
   message?: string;
+  is_first_login?: boolean;
 }
 
 export interface ISignupResponse {
