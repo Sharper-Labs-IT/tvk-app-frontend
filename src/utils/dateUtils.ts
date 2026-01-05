@@ -29,3 +29,16 @@ export const getTargetRevealDate = (): Date => {
 
   return lastDayOfMonth;
 };
+
+export const getPreviousMonthName = (): string => {
+  const today = getToday();
+  const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  return previousMonth.toLocaleString('en-US', { month: 'long' });
+};
+
+export const isNewMonth = (winnerMonthName?: string): boolean => {
+  if (!winnerMonthName) return false;
+  const today = getToday();
+  const currentMonthName = today.toLocaleString('en-US', { month: 'long' });
+  return currentMonthName !== winnerMonthName;
+};
