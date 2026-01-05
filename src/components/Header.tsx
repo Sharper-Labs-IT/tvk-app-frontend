@@ -272,7 +272,7 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <Link
-                to="/login"
+                to="/signup"
                 className="bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 Login / Join
