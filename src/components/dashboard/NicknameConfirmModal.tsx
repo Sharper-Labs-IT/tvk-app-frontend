@@ -11,6 +11,7 @@ interface NicknameConfirmModalProps {
   currentCoins: number;
   cost: number;
   isLoading?: boolean;
+  error?: string; // --- ADDED: To catch the "Already Taken" message ---
 }
 
 const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
@@ -23,10 +24,14 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
   currentCoins,
   cost,
   isLoading = false,
+  error, // --- ADDED ---
 }) => {
   if (!isOpen) return null;
 
   const hasEnoughCoins = currentCoins >= cost;
+
+  // Logic for button disabling
+  const isConfirmDisabled = isLoading || (!isPremium && !hasFreeChange && !hasEnoughCoins);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -64,6 +69,14 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* --- FIX: SPECIFIC ERROR MESSAGE DISPLAY --- */}
+          {error && (
+            <div className="flex items-center gap-3 bg-red-500/10 border border-red-500/50 rounded-lg p-4 animate-in fade-in slide-in-from-top-1">
+              <AlertCircle className="text-red-500 shrink-0" size={20} />
+              <p className="text-red-500 text-sm font-bold">{error}</p>
+            </div>
+          )}
+
           {/* New Nickname Display */}
           <div className="bg-black/40 p-4 rounded-lg border border-white/10">
             <p className="text-gray-400 text-sm mb-2">Your new nickname will be:</p>
@@ -87,21 +100,18 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
               <div>
                 <p className="text-green-400 font-bold text-sm mb-1">Free Change Available!</p>
                 <p className="text-gray-300 text-sm">
-                  This is your <span className="text-green-400 font-bold">FREE</span> nickname change. 
-                  Future changes will cost <span className="text-gold font-bold">{cost} coins</span> each.
+                  This is your <span className="text-green-400 font-bold">FREE</span> nickname
+                  change. Future changes will cost{' '}
+                  <span className="text-gold font-bold">{cost} coins</span> each.
                 </p>
               </div>
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Cost Breakdown */}
               <div className="flex items-start gap-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4">
                 <AlertCircle className="text-yellow-400 shrink-0 mt-0.5" size={20} />
                 <div className="flex-1">
                   <p className="text-yellow-400 font-bold text-sm mb-1">Coin Deduction Required</p>
-                  <p className="text-gray-300 text-sm mb-3">
-                    You've already used your free nickname change. This update will cost:
-                  </p>
                   <div className="flex items-center justify-between bg-black/40 rounded-lg p-3">
                     <span className="text-white font-bold flex items-center gap-2">
                       <Coins className="text-gold" size={18} />
@@ -112,7 +122,6 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
                 </div>
               </div>
 
-              {/* Balance Check */}
               <div className="bg-black/40 rounded-lg p-4 border border-white/10">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-gray-400 text-sm">Current Balance:</span>
@@ -121,19 +130,15 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
                     {currentCoins}
                   </span>
                 </div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-gray-400 text-sm">Cost:</span>
-                  <span className="text-red-400 font-bold">- {cost}</span>
-                </div>
-                <hr className="border-white/10 my-2" />
                 <div className="flex items-center justify-between">
-                  <span className="text-white font-bold">New Balance:</span>
+                  <span className="text-white font-bold">
+                    Remaining coin Balance After Name change:
+                  </span>
                   <span
                     className={`font-bold text-lg ${
                       hasEnoughCoins ? 'text-green-400' : 'text-red-400'
                     }`}
                   >
-                    <Coins className="inline text-gold mr-1" size={16} />
                     {currentCoins - cost}
                   </span>
                 </div>
@@ -142,12 +147,7 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
               {!hasEnoughCoins && (
                 <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-lg p-4">
                   <AlertCircle className="text-red-400 shrink-0 mt-0.5" size={20} />
-                  <div>
-                    <p className="text-red-400 font-bold text-sm mb-1">Insufficient Coins</p>
-                    <p className="text-gray-300 text-sm">
-                      You need {cost - currentCoins} more coins to update your nickname.
-                    </p>
-                  </div>
+                  <p className="text-red-400 text-sm font-bold">Insufficient Coins</p>
                 </div>
               )}
             </div>
@@ -165,7 +165,7 @@ const NicknameConfirmModal: React.FC<NicknameConfirmModalProps> = ({
           </button>
           <button
             onClick={onConfirm}
-            disabled={isLoading || (!isPremium && !hasFreeChange && !hasEnoughCoins)}
+            disabled={isConfirmDisabled}
             className="flex-1 px-6 py-3 bg-gold hover:bg-gold/80 text-black rounded-lg transition font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isLoading ? (
