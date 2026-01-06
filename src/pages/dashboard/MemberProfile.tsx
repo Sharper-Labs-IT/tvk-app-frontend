@@ -18,6 +18,9 @@ import MembershipCancelledSuccessModal from '../../components/MembershipCancelSu
 
 import type { Plan } from '../../types/plan';
 
+// --- SYSTEM NICKNAME TITLES ---
+const SYSTEM_TITLE_PREFIXES = ['mr', 'mrs', 'ms', 'miss', 'mx', 'dr', 'prof', 'rev', 'sir', 'dame'];
+
 const MemberProfile: React.FC = () => {
   const { user, login, token, refreshUser } = useAuth();
 
@@ -38,14 +41,10 @@ const MemberProfile: React.FC = () => {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // --- FIX: Robust Date Formatter ---
+  // --- Robust Date Formatter ---
   const formatDate = (dateString?: string) => {
-    // If date is missing, try to fall back to 'Now' or hide it,
-    // but usually 'created_at' exists.
     if (!dateString) return 'Recent';
-
     const date = new Date(dateString);
-    // Check if date is valid
     if (isNaN(date.getTime())) return 'Recent';
 
     return date.toLocaleDateString('en-US', {
@@ -55,6 +54,7 @@ const MemberProfile: React.FC = () => {
     });
   };
 
+  // --- PREMIUM LOGIC ---
   const isPremium = useMemo(() => {
     if (!user) return false;
     if (user.membership?.plan_id && Number(user.membership.plan_id) > 1) return true;
@@ -66,6 +66,21 @@ const MemberProfile: React.FC = () => {
       return true;
     return false;
   }, [user]);
+
+  // --- NEW: SYSTEM PATTERN CHECK (FREE CHANGE LOGIC) ---
+  const hasFreeChange = useMemo(() => {
+    if (!user?.nickname) return true;
+
+    const lowerNick = user.nickname.toLowerCase();
+
+    // Check if the current nickname starts with a title followed by a dash (system pattern)
+    // This allows one free change if they currently have a system-generated name.
+    const isSystemPattern = SYSTEM_TITLE_PREFIXES.some((title) =>
+      lowerNick.startsWith(`${title}-`)
+    );
+
+    return isSystemPattern;
+  }, [user?.nickname]);
 
   const handleAvatarClick = () => fileInputRef.current?.click();
 
@@ -107,16 +122,29 @@ const MemberProfile: React.FC = () => {
     try {
       const response = await userService.updateNickname(nicknameInput.trim());
       await refreshUser();
+
       const coins = response.coins_deducted || 0;
       setNicknameSuccess(
         coins > 0 ? `Updated! ${coins} coins deducted.` : 'Nickname updated successfully!'
       );
+
       setIsEditingNickname(false);
       setShowNicknameConfirmModal(false);
+      toast.success('Nickname updated!');
       setTimeout(() => setNicknameSuccess(''), 3000);
     } catch (error: any) {
-      setNicknameError(error.response?.data?.message || 'Failed to update nickname');
-      setShowNicknameConfirmModal(false);
+      const serverMessage = error.response?.data?.message || '';
+
+      // FIX: Replace generic backend message with specific "already taken" text
+      if (
+        serverMessage === 'Failed to update nickname' ||
+        serverMessage.toLowerCase().includes('taken') ||
+        serverMessage.toLowerCase().includes('exists')
+      ) {
+        setNicknameError('nickname already taken, choose another one');
+      } else {
+        setNicknameError(serverMessage || 'nickname already taken, choose another one');
+      }
     } finally {
       setIsUpdatingNickname(false);
     }
@@ -179,12 +207,10 @@ const MemberProfile: React.FC = () => {
         onResetPassword={() => setIsResetPassOpen(true)}
       />
 
-      {/* Divider */}
       <hr className="border-slate-800 mb-8" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          {/* FIX: Info Box Contrast - Slate-900 background */}
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-700/50 shadow-lg">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               Contact Info
@@ -202,7 +228,6 @@ const MemberProfile: React.FC = () => {
               </li>
               <li className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
                 <Calendar size={18} className="text-yellow-500 shrink-0" />
-                {/* User Joined Date */}
                 <span>Joined {formatDate(user?.created_at)}</span>
               </li>
             </ul>
@@ -219,7 +244,6 @@ const MemberProfile: React.FC = () => {
         <GameStats user={user} />
       </div>
 
-      {/* --- MODALS --- */}
       <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
@@ -236,10 +260,11 @@ const MemberProfile: React.FC = () => {
         onConfirm={confirmNicknameUpdate}
         nickname={nicknameInput}
         isPremium={isPremium}
-        hasFreeChange={!user?.nickname_changes || user.nickname_changes === 0}
+        hasFreeChange={hasFreeChange}
         currentCoins={user?.coins || 0}
         cost={2000}
         isLoading={isUpdatingNickname}
+        error={nicknameError}
       />
 
       <MembershipPaymentModal
