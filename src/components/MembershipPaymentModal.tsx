@@ -108,6 +108,19 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     e.preventDefault();
     setError(null);
 
+    // --- Validation Check Start ---
+    if (
+      !cardholderName.trim() ||
+      !address.line1.trim() ||
+      !address.city.trim() ||
+      !address.postal_code.trim() ||
+      !address.country.trim()
+    ) {
+      setError('Please fill in all required fields (Name and Billing Address).');
+      return;
+    }
+    // --- Validation Check End ---
+
     if (!stripe || !elements) {
       setError('Payment system is not ready yet.');
       return;

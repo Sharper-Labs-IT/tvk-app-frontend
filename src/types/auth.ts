@@ -6,8 +6,7 @@ export interface ILoginPayload {
   password: string;
 }
 
-// 2. Signup Request Payload - UPDATED
-// Matches the new form fields and backend validation
+// 2. Signup Request Payload
 export interface ISignupPayload {
   title?: string;
   first_name: string;
@@ -19,7 +18,7 @@ export interface ISignupPayload {
   password_confirmation: string;
 }
 
-// --- NEW HELPERS FOR DASHBOARD ---
+// --- DASHBOARD & MEMBERSHIP HELPERS ---
 
 export interface IMembershipPlan {
   id: number;
@@ -41,7 +40,7 @@ export interface IMembership {
 export interface IBadge {
   id: number;
   name: string;
-  icon?: string; // This is the field from DB (e.g. "icons/badges/new-member.png")
+  icon?: string;
   points_required: number;
 }
 
@@ -58,12 +57,11 @@ export interface IGameParticipation {
   };
 }
 
-// Trophies can be an array or an object grouped by tier
 export interface ITrophies {
   [tier: string]: any[];
 }
 
-// --- OLD HELPERS (Kept for compatibility) ---
+// --- LEGACY/COMPATIBILITY HELPERS ---
 
 export interface ISubscriptionDetails {
   plan_name: string;
@@ -82,16 +80,15 @@ export interface IRole {
   name: string;
 }
 
-// --- CORE TYPES ---
+// --- CORE USER TYPE ---
 
 export interface IUser {
   id: number;
-  name: string; // Backend still returns combined 'name' for display
+  name: string;
 
-  // MERGE FIX: Kept 'development' version because 'nickname_changes' is required
-  // for the Profile page logic (free nickname change calculation).
-  nickname?: string; // Display name (shown instead of username)
-  nickname_changes?: number; // Track how many times nickname has been changed
+  // Nickname logic for Profile page
+  nickname?: string;
+  nickname_changes?: number;
 
   email: string;
   mobile?: string;
@@ -101,31 +98,31 @@ export interface IUser {
   membership_type?: 'free' | 'premium' | 'vip';
   membership_tier?: 'free' | 'super_fan' | string;
 
-  // Added country here as optional, so if you need to display it later, it's available in the type
   country?: string;
-
-  // Roles can now be objects (Old) OR strings (New Backend)
   roles?: (IRole | string)[];
 
-  // Images (backend sends 'avatar', but we normalize to avatar_url for consistency)
+  // --- IMAGES & AVATARS (Normalized for Backend) ---
   avatar_url?: string | null;
-  avatar?: string | null; // Legacy field from backend
+  avatar?: string | null;
+  profile_photo_url?: string | null; // Added to fix Comment Section error
+  image?: string | null; // Added for extra backend compatibility
 
   created_at?: string;
   last_login_at?: string;
   email_verified_at?: string | null;
 
-  // --- OPTIONAL FIELDS ---
   subscription?: ISubscriptionDetails;
   stats?: IUserStats;
 
-  // --- NEW FIELDS ---
+  // Membership & Gamification
   membership?: IMembership | null;
   points?: number;
   badges?: IBadge[];
   game_participation?: IGameParticipation[];
   trophies?: ITrophies | any[];
 }
+
+// --- AUTH RESPONSE INTERFACES ---
 
 export interface ILoginResponse {
   token?: string;
