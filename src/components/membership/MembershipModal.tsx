@@ -66,8 +66,8 @@ const MembershipModal: React.FC = () => {
                   <Gamepad2 size={16} />
                 </div>
                 <div>
-                    <h3 className="text-base font-bold text-white leading-tight">Guest Player</h3>
-                    <p className="text-gray-400 text-[10px]">Not a True Fan?</p>
+                    <h3 className="text-base font-bold text-white leading-tight">Free Tier</h3>
+                    <p className="text-gray-400 text-[10px]">Basic membership</p>
                 </div>
               </div>
 
@@ -76,11 +76,10 @@ const MembershipModal: React.FC = () => {
               </div>
 
               <ul className="space-y-2 mb-4 flex-1">
-                <FeatureItem text="3 Game Plays per Day" active />
-                <FeatureItem text="Basic Leaderboard Access" active />
-                <FeatureItem text="Standard Badge" active />
-                <FeatureItem text="Reward Multipliers" active={false} />
-                <FeatureItem text="Event Access" active={false} />
+                <FeatureItem text="Introductory Gaming Experience" active />
+                <FeatureItem text="Standard Member Badge" active />
+                <FeatureItem text="10% Off Merchandise" active />
+                <FeatureItem text="Limited Media Content Library" active />
               </ul>
 
               <button 
@@ -116,7 +115,7 @@ const MembershipModal: React.FC = () => {
                 </div>
                 <div>
                    <h3 className="text-base font-bold text-white leading-tight">Super Fan</h3>
-                   <p className="text-yellow-200/60 text-[10px]">Ultimate experience</p>
+                   <p className="text-yellow-200/60 text-[10px]">Premium access</p>
                 </div>
               </div>
 
@@ -128,11 +127,16 @@ const MembershipModal: React.FC = () => {
               </div>
 
               <ul className="space-y-2 mb-4 flex-1 relative z-10">
-                <FeatureItem text="Unlimited Game Plays" active highlight />
-                <FeatureItem text="2x Reward Points (XP)" active highlight />
-                <FeatureItem text="Exclusive Badge" active highlight />
-                <FeatureItem text="Priority Event Access" active highlight />
-                <FeatureItem text="Monthly Prize Draws" active highlight />
+                <FeatureItem text="Access to the Gaming Zone" active highlight />
+                <FeatureItem text="AI-powered Celebrity Gaming" active highlight />
+                <FeatureItem text="Exclusive Live Streams" active highlight />
+                <FeatureItem text="Premium Content Library" active highlight />
+                <FeatureItem text="Premium Gold Badge" active highlight />
+                <FeatureItem text="20% Merchandise Discount" active highlight />
+                <FeatureItem text="Priority RSVPs" active highlight />
+                <FeatureItem text="Early Access to News" active highlight />
+                <FeatureItem text="Future Super Fan Chapters" active highlight />
+                <FeatureItem text="AI Generated Visuals" active highlight />
               </ul>
 
               <button 
