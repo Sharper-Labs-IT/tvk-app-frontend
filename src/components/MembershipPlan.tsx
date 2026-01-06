@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, type Variants } from 'framer-motion';
-import { Lock, Gamepad2, Star, Infinity, PlayCircle, Award, Radio, Clock, Zap, Vote } from 'lucide-react';
+import { Lock, Gamepad2, Star, Infinity, PlayCircle, Award, Radio, Clock, Zap, Calendar, Newspaper, Users, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -119,19 +119,19 @@ const MembershipPlan: React.FC = () => {
                   <ul className="inline-block space-y-4 text-gray-800 font-medium text-sm mb-8 xl:mb-10 text-left px-2 sm:px-4 flex-grow">
                     <li className="flex items-start gap-3">
                       <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 shrink-0"></span>
-                      <span>Limited access to selected content</span>
+                      <span>Introductory Gaming Experience</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 shrink-0"></span>
-                      <span>Up to 3 game plays per day</span>
+                      <span>Standard Member Badge</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 shrink-0"></span>
-                      <span>Earn basic digital badges</span>
+                      <span>10% Off Merchandise</span>
                     </li>
                     <li className="flex items-start gap-3">
                       <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 shrink-0"></span>
-                      <span>Join the global TVK fan community</span>
+                      <span>Limited Media Content Library</span>
                     </li>
                   </ul>
 
@@ -187,37 +187,52 @@ const MembershipPlan: React.FC = () => {
                     <div className="flex flex-col gap-4 text-white items-start w-full">
                       <div className="flex items-center gap-3">
                         <Infinity className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium">Unlimited game plays</span>
+                        <span className="text-sm font-medium">Access to the Gaming Zone</span>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <Zap className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium">Double reward points</span>
+                        <span className="text-sm font-medium">AI-powered Celebrity Gaming</span>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <PlayCircle className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium">Exclusive content & galleries</span>
+                        <span className="text-sm font-medium">Exclusive Live Streams</span>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <Radio className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium">Live streams & special events</span>
+                        <span className="text-sm font-medium">Premium Content Library</span>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <Award className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium">Premium digital badges</span>
+                        <span className="text-sm font-medium">Premium Gold Badge</span>
                       </div>
 
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-center gap-3">
                         <Clock className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium mt-1.5">Early access to announcements and experiences</span>
+                        <span className="text-sm font-medium">20% Merchandise Discount</span>
                       </div>
 
-                      <div className="flex items-start gap-3">
-                        <Vote className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium leading-tight mt-1.5">Take part in community polls, fan choices, and interactive voting experiences</span>
+                      <div className="flex items-center gap-3">
+                        <Calendar className="text-brand-gold shrink-0 w-8 h-8" />
+                        <span className="text-sm font-medium">Priority RSVPs</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Newspaper className="text-brand-gold shrink-0 w-8 h-8" />
+                        <span className="text-sm font-medium">Early Access to News</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Users className="text-brand-gold shrink-0 w-8 h-8" />
+                        <span className="text-sm font-medium">Future Super Fan Chapters</span>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Sparkles className="text-brand-gold shrink-0 w-8 h-8" />
+                        <span className="text-sm font-medium">AI Generated Visuals</span>
                       </div>
                     </div>
                   </div>
