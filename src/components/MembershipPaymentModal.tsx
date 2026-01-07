@@ -8,7 +8,7 @@ import {
 } from '@stripe/react-stripe-js';
 import axiosClient from '../api/axiosClient';
 import type { Plan } from '../types/plan';
-import { COUNTRIES, getCountryName } from '../constants/countrieslist';
+import { COUNTRIES } from '../constants/countrieslist';
 
 // Define the specific allowed currency types
 type CurrencyCode = 'GBP' | 'USD' | 'EUR';
@@ -178,10 +178,10 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
   //     // Step 3: Handle 3DS Authentication if Required
   //     if (data.requires_action && data.client_secret) {
-        
+
   //       console.log('🔐 3DS authentication required!');
   //       console.log('Client secret:', data.client_secret);
-        
+
   //       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
   //         data.client_secret
   //       );
@@ -195,7 +195,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   //       if (paymentIntent?.status === 'succeeded') {
   //         console.log('Payment succeeded after 3DS authentication');
   //         setPaymentSuccess(true);
-          
+
   //         // Wait a moment to show success message
   //         setTimeout(() => {
   //           if (onSuccess) onSuccess();
@@ -209,7 +209,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   //       // Payment succeeded without 3DS
   //       console.log('Payment succeeded without 3DS');
   //       setPaymentSuccess(true);
-        
+
   //       // Wait a moment to show success message
   //       setTimeout(() => {
   //         if (onSuccess) onSuccess();
@@ -282,7 +282,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       });
 
       const data = res.data;
-      
+
       console.log('=== Backend Response ===');
       console.log('Subscription created:', data.subscription_id);
       console.log('Status:', data.status);
@@ -292,7 +292,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       if (data.status === 'active') {
         console.log('✅ Payment succeeded without 3DS');
         setPaymentSuccess(true);
-        
+
         setTimeout(() => {
           if (onSuccess) onSuccess();
           onClose();
@@ -302,28 +302,28 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
       // Step 4: Poll for payment intent (subscription is incomplete)
       console.log('⏳ Subscription incomplete, polling for payment intent...');
-      
+
       const maxAttempts = 20;
       const delayMs = 1000; // 1 second between attempts
-      
+
       for (let attempt = 1; attempt <= maxAttempts; attempt++) {
         console.log(`Polling attempt ${attempt}/${maxAttempts}...`);
-        
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-        
+
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+
         try {
           const piRes = await axiosClient.post('/payments/subscription-payment-intent', {
             subscription_id: data.subscription_id,
           });
-          
+
           const piData = piRes.data;
-          
+
           console.log(`Attempt ${attempt} result:`, piData);
-          
+
           if (piData.found && piData.requires_action && piData.client_secret) {
             console.log('🔐 3DS authentication required!');
             console.log('Client secret found:', piData.client_secret);
-            
+
             // Step 5: Confirm payment with 3DS
             const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
               piData.client_secret
@@ -341,10 +341,10 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
             if (paymentIntent?.status === 'succeeded') {
               console.log('✅ Payment succeeded after 3DS authentication');
               setPaymentSuccess(true);
-              
+
               // Wait for webhook to process
-              await new Promise(resolve => setTimeout(resolve, 3000));
-              
+              await new Promise((resolve) => setTimeout(resolve, 3000));
+
               if (onSuccess) onSuccess();
               onClose();
               return;
@@ -353,28 +353,29 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
             // Payment succeeded during polling
             console.log('✅ Payment succeeded during polling');
             setPaymentSuccess(true);
-            
+
             setTimeout(() => {
               if (onSuccess) onSuccess();
               onClose();
             }, 2000);
             return;
           }
-          
         } catch (pollError: any) {
           console.error('Polling error:', pollError);
           // Continue polling on error
         }
       }
-      
+
       // If we get here, polling timed out
       setError('Payment verification timed out. Please check your account or contact support.');
       setLoading(false);
-
     } catch (err: any) {
       console.error('Subscription error:', err);
       console.error('Error response:', err?.response?.data);
-      const msg = err?.response?.data?.message || err?.response?.data?.error || 'Subscription failed. Please check your details.';
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        'Subscription failed. Please check your details.';
       setError(msg);
       setLoading(false);
     }
@@ -387,7 +388,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       <div className="absolute inset-0" onClick={() => !loading && onClose()} />
 
       <div className="relative z-10 w-full max-w-2xl bg-[#ffffff] rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto border border-slate-200">
-
         {loading && (
           <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center rounded-3xl">
             <div className="text-center">
@@ -579,8 +579,10 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
             disabled={loading || priceLoading || paymentSuccess}
             className="w-full bg-gradient-to-r from-[#f97316] to-[#facc15] text-white font-black py-4 rounded-2xl shadow-lg hover:brightness-105 transition-all disabled:opacity-50"
           >
-            {loading 
-              ? (paymentSuccess ? 'Payment Successful! ✓' : 'Processing Securely...') 
+            {loading
+              ? paymentSuccess
+                ? 'Payment Successful! ✓'
+                : 'Processing Securely...'
               : `Pay & Subscribe Now`}
           </button>
         </div>
