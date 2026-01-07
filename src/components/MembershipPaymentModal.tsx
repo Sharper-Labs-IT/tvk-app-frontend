@@ -41,13 +41,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     }
   }, [selectedCurrency, plan, isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setPaymentSuccess(false);
-      setError(null);
-    }
-  }, [isOpen]);
-
   const fetchConvertedPrice = async () => {
     if (!plan) return;
     setPriceLoading(true);
