@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom'; // 1. Import this
+import { useSearchParams } from 'react-router-dom';
 import api from '../../utils/api';
 import type { IContent, IContentResponse } from '../../types/content';
 import CreatePostWidget from '../../components/dashboard/CreatePostWidget';
@@ -12,19 +12,22 @@ const MemberFeed: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
 
-  // 2. Init Search Params
+  // Initialize Search Params for Filtering
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryFilter = searchParams.get('category');
 
   useEffect(() => {
     fetchFeed();
     checkUserStatus();
-  }, [categoryFilter]); // 3. Re-run when URL changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categoryFilter]); // Re-run when the URL category change
 
   const checkUserStatus = async () => {
     try {
       const response = await api.get('/v1/auth/me');
       const userData = response.data.user;
+
+      // Logic: Plan ID 1 is usually "Free", anything else is Premium
       if (userData && userData.membership && Number(userData.membership.plan_id) !== 1) {
         setIsPremiumUser(true);
       } else {
@@ -39,18 +42,18 @@ const MemberFeed: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      setContents([]); // Clear previous list immediately
+      setContents([]); // Clear list for better UX while loading
 
       let response;
 
-      // 4. Logic: If category ID exists in URL, use Filter Endpoint
+      // Logic: If category ID exists in URL, use the Filter Endpoint
       if (categoryFilter) {
-        // Using the route: Route::get('contents/filter', ...)
+        console.log(`Fetching filtered content for Category ID: ${categoryFilter}`);
         response = await api.get<IContentResponse>(`/v1/contents/filter`, {
           params: { category_id: categoryFilter },
         });
       } else {
-        // Normal fetch
+        // Normal fetch for all community posts
         response = await api.get<IContentResponse>('/v1/contents');
       }
 
@@ -68,7 +71,7 @@ const MemberFeed: React.FC = () => {
   };
 
   const clearFilter = () => {
-    setSearchParams({}); // Remove query params to show all
+    setSearchParams({}); // Removes the ?category=X from URL
   };
 
   return (
@@ -86,13 +89,12 @@ const MemberFeed: React.FC = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* Show Clear Filter button if category is active */}
           {categoryFilter && (
             <button
               onClick={clearFilter}
               className="flex items-center gap-2 px-3 py-2 bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white rounded-full text-xs font-bold transition"
             >
-              <X size={16} /> Clear
+              <X size={16} /> Clear Filter
             </button>
           )}
           <button
@@ -105,9 +107,10 @@ const MemberFeed: React.FC = () => {
         </div>
       </div>
 
+      {/* Widget to Create Posts */}
       <CreatePostWidget onPostCreated={fetchFeed} isPremiumUser={isPremiumUser} />
 
-      {/* Error State */}
+      {/* Error Alert */}
       {error && (
         <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl flex items-center gap-3 mb-6">
           <AlertCircle size={24} />
@@ -121,7 +124,7 @@ const MemberFeed: React.FC = () => {
         </div>
       )}
 
-      {/* Loading State */}
+      {/* Loading Spinner */}
       {loading && (
         <div className="flex flex-col items-center justify-center py-20">
           <LoaderIcon className="animate-spin text-gold mb-4" size={40} />
@@ -129,15 +132,20 @@ const MemberFeed: React.FC = () => {
         </div>
       )}
 
-      {/* Feed List */}
+      {/* The Feed */}
       {!loading && (
         <div className="space-y-6">
           {contents.length > 0 ? (
             contents.map((post) => (
-              <PostCard key={post.id} post={post} isPremiumUser={isPremiumUser} />
+              <PostCard
+                key={post.id}
+                post={post}
+                isPremiumUser={isPremiumUser}
+                onPostDeleted={fetchFeed} // Refreshes list after a successful delete
+              />
             ))
           ) : (
-            /* Empty State */
+            /* Empty State when no posts match */
             <div className="text-center py-16 bg-[#1E1E1E] rounded-xl border border-white/5">
               <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-600">
                 <RefreshCw size={30} />

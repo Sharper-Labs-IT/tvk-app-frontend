@@ -231,7 +231,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 )}
               </>
             ) : (
-              <Link to="/login" onClick={onClose}>
+              <Link to="/signup" onClick={onClose}>
                 <button className="w-full bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-3 rounded hover:opacity-90 transition-opacity text-base shadow-lg">
                   Login / Join
                 </button>
