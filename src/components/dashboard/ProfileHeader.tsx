@@ -20,7 +20,6 @@ interface ProfileHeaderProps {
   setIsEditingNickname: (val: boolean) => void;
   nicknameError: string;
   nicknameSuccess: string;
-  onEditProfile: () => void;
   onResetPassword: () => void;
 }
 
@@ -40,7 +39,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   setIsEditingNickname,
   nicknameError,
   nicknameSuccess,
-  onEditProfile,
   onResetPassword,
 }) => {
   const countryName = getCountryFromMobile(user?.mobile);
@@ -164,12 +162,6 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 w-full sm:w-auto">
-                <button
-                  onClick={onEditProfile}
-                  className="px-6 py-2.5 bg-white/5 hover:bg-yellow-500 hover:text-black border border-white/10 hover:border-yellow-500 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  <Edit size={16} /> Edit Profile
-                </button>
                 <button
                   onClick={onResetPassword}
                   className="px-6 py-2.5 bg-white/5 hover:bg-yellow-500 hover:text-black border border-white/10 hover:border-yellow-500 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap"
