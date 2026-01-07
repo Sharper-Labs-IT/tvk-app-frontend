@@ -8,7 +8,7 @@ import {
 } from '@stripe/react-stripe-js';
 import axiosClient from '../api/axiosClient';
 import type { Plan } from '../types/plan';
-import { COUNTRIES, getCountryName } from '../constants/countrieslist';
+import { COUNTRIES } from '../constants/countrieslist';
 
 // Define the specific allowed currency types
 type CurrencyCode = 'GBP' | 'USD' | 'EUR';
@@ -43,6 +43,8 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
 
   const [selectedCurrency, setSelectedCurrency] = useState<CurrencyCode>(currency || 'GBP');
   const [displayPrice, setDisplayPrice] = useState<string | null>(null);
+
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
 
   const [cardholderName, setCardholderName] = useState('');
   const [address, setAddress] = useState({
@@ -81,6 +83,13 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     }
   }, [selectedCurrency, plan, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setPaymentSuccess(false);
+      setError(null);
+    }
+  }, [isOpen]);
+
   const fetchConvertedPrice = async () => {
     if (!plan) return;
     setPriceLoading(true);
@@ -104,6 +113,121 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     setAddress({ ...address, [e.target.name]: e.target.value });
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setError(null);
+
+  //   if (!stripe || !elements) {
+  //     setError('Payment system is not ready yet.');
+  //     return;
+  //   }
+
+  //   const cardNumberElement = elements.getElement(CardNumberElement);
+  //   if (!cardNumberElement) return;
+
+  //   setLoading(true);
+
+  //   try {
+  //     // Step 1: Create Payment Method
+  //     const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
+  //       type: 'card',
+  //       card: cardNumberElement,
+  //       billing_details: {
+  //         name: cardholderName,
+  //         address: {
+  //           line1: address.line1,
+  //           line2: address.line2 || undefined,
+  //           city: address.city,
+  //           state: address.state || undefined,
+  //           postal_code: address.postal_code,
+  //           country: address.country,
+  //         },
+  //       },
+  //     });
+
+  //     if (pmError || !paymentMethod) {
+  //       setError(pmError?.message || 'Unable to create payment method.');
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     // Step 2: Create Subscription on Backend
+  //     const res = await axiosClient.post('/payments/subscribe', {
+  //       plan_id: plan.id,
+  //       payment_method_id: paymentMethod.id,
+  //       currency: selectedCurrency,
+  //       address: {
+  //         line1: address.line1,
+  //         line2: address.line2 || '',
+  //         city: address.city,
+  //         state: address.state || '',
+  //         postal_code: address.postal_code,
+  //         // country: getCountryName(address.country), // Send full country name
+  //         country: address.country,
+  //       },
+  //     });
+
+  //     const data = res.data;
+
+  //     console.log('=== Backend Response ===');
+  //     console.log('Full response:', data);
+  //     console.log('requires_action:', data.requires_action);
+  //     console.log('client_secret:', data.client_secret);
+  //     console.log('success:', data.success);
+  //     console.log('=======================');
+
+  //     // Step 3: Handle 3DS Authentication if Required
+  //     if (data.requires_action && data.client_secret) {
+
+  //       console.log('🔐 3DS authentication required!');
+  //       console.log('Client secret:', data.client_secret);
+
+  //       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+  //         data.client_secret
+  //       );
+
+  //       if (confirmError) {
+  //         setError(confirmError.message || 'Payment authentication failed.');
+  //         setLoading(false);
+  //         return;
+  //       }
+
+  //       if (paymentIntent?.status === 'succeeded') {
+  //         console.log('Payment succeeded after 3DS authentication');
+  //         setPaymentSuccess(true);
+
+  //         // Wait a moment to show success message
+  //         setTimeout(() => {
+  //           if (onSuccess) onSuccess();
+  //           onClose();
+  //         }, 2000);
+  //       } else {
+  //         setError('Payment verification incomplete. Please try again.');
+  //         setLoading(false);
+  //       }
+  //     } else if (data.success) {
+  //       // Payment succeeded without 3DS
+  //       console.log('Payment succeeded without 3DS');
+  //       setPaymentSuccess(true);
+
+  //       // Wait a moment to show success message
+  //       setTimeout(() => {
+  //         if (onSuccess) onSuccess();
+  //         onClose();
+  //       }, 2000);
+  //     } else {
+  //       setError(data.message || 'Subscription failed. Please try again.');
+  //       setLoading(false);
+  //     }
+
+  //   } catch (err: any) {
+  //     console.error('Subscription error:', err);
+  //     const msg = err?.response?.data?.message || err?.response?.data?.error || 'Subscription failed. Please check your details.';
+  //     setError(msg);
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -119,6 +243,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
     setLoading(true);
 
     try {
+      // Step 1: Create Payment Method
       const { paymentMethod, error: pmError } = await stripe.createPaymentMethod({
         type: 'card',
         card: cardNumberElement,
@@ -130,7 +255,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
             city: address.city,
             state: address.state || undefined,
             postal_code: address.postal_code,
-            country: address.country, // Sends the 2-letter code to Stripe
+            country: address.country,
           },
         },
       });
@@ -141,35 +266,117 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
         return;
       }
 
-      // We send the full country name to the database, but keep the code for Stripe logic if needed
+      // Step 2: Create Subscription on Backend
       const res = await axiosClient.post('/payments/subscribe', {
         plan_id: plan.id,
         payment_method_id: paymentMethod.id,
         currency: selectedCurrency,
         address: {
-          ...address,
-          country_full: getCountryName(address.country), // Helper to send "Sri Lanka" to backend
-          country_code: address.country, // Sends "LK" to backend
+          line1: address.line1,
+          line2: address.line2 || '',
+          city: address.city,
+          state: address.state || '',
+          postal_code: address.postal_code,
+          country: address.country,
         },
       });
 
       const data = res.data;
 
-      if (data.requires_action && data.client_secret) {
-        const { error: confirmationError } = await stripe.confirmCardPayment(data.client_secret);
-        if (confirmationError) {
-          setError(confirmationError.message || 'Payment confirmation failed.');
-          setLoading(false);
-          return;
+      console.log('=== Backend Response ===');
+      console.log('Subscription created:', data.subscription_id);
+      console.log('Status:', data.status);
+      console.log('=======================');
+
+      // Step 3: Check if subscription is already active (no 3DS needed)
+      if (data.status === 'active') {
+        console.log('✅ Payment succeeded without 3DS');
+        setPaymentSuccess(true);
+
+        setTimeout(() => {
+          if (onSuccess) onSuccess();
+          onClose();
+        }, 2000);
+        return;
+      }
+
+      // Step 4: Poll for payment intent (subscription is incomplete)
+      console.log('⏳ Subscription incomplete, polling for payment intent...');
+
+      const maxAttempts = 20;
+      const delayMs = 1000; // 1 second between attempts
+
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`Polling attempt ${attempt}/${maxAttempts}...`);
+
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+
+        try {
+          const piRes = await axiosClient.post('/payments/subscription-payment-intent', {
+            subscription_id: data.subscription_id,
+          });
+
+          const piData = piRes.data;
+
+          console.log(`Attempt ${attempt} result:`, piData);
+
+          if (piData.found && piData.requires_action && piData.client_secret) {
+            console.log('🔐 3DS authentication required!');
+            console.log('Client secret found:', piData.client_secret);
+
+            // Step 5: Confirm payment with 3DS
+            const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+              piData.client_secret
+            );
+
+            if (confirmError) {
+              console.error('3DS confirmation error:', confirmError);
+              setError(confirmError.message || 'Payment authentication failed.');
+              setLoading(false);
+              return;
+            }
+
+            console.log('PaymentIntent after confirmation:', paymentIntent);
+
+            if (paymentIntent?.status === 'succeeded') {
+              console.log('✅ Payment succeeded after 3DS authentication');
+              setPaymentSuccess(true);
+
+              // Wait for webhook to process
+              await new Promise((resolve) => setTimeout(resolve, 3000));
+
+              if (onSuccess) onSuccess();
+              onClose();
+              return;
+            }
+          } else if (piData.subscription_status === 'active') {
+            // Payment succeeded during polling
+            console.log('✅ Payment succeeded during polling');
+            setPaymentSuccess(true);
+
+            setTimeout(() => {
+              if (onSuccess) onSuccess();
+              onClose();
+            }, 2000);
+            return;
+          }
+        } catch (pollError: any) {
+          console.error('Polling error:', pollError);
+          // Continue polling on error
         }
       }
 
-      if (onSuccess) onSuccess();
-      onClose();
+      // If we get here, polling timed out
+      setError('Payment verification timed out. Please check your account or contact support.');
+      setLoading(false);
     } catch (err: any) {
-      const msg = err?.response?.data?.message || 'Subscription failed. Please check your details.';
+      console.error('Subscription error:', err);
+      console.error('Error response:', err?.response?.data);
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        'Subscription failed. Please check your details.';
       setError(msg);
-    } finally {
       setLoading(false);
     }
   };
@@ -181,6 +388,18 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       <div className="absolute inset-0" onClick={() => !loading && onClose()} />
 
       <div className="relative z-10 w-full max-w-2xl bg-[#ffffff] rounded-3xl shadow-2xl overflow-hidden flex flex-col my-auto border border-slate-200">
+        {loading && (
+          <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex items-center justify-center rounded-3xl">
+            <div className="text-center">
+              <div className="w-16 h-16 border-4 border-[#f97316] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-sm font-bold text-slate-700">
+                {paymentSuccess ? 'Activating membership...' : 'Processing payment securely...'}
+              </p>
+              <p className="text-xs text-slate-500 mt-2">Please do not close this window</p>
+            </div>
+          </div>
+        )}
+
         <div className="px-6 pt-6 pb-4 border-b border-slate-200 bg-white">
           <div className="flex justify-between items-start">
             <div>
@@ -339,6 +558,12 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
               ⚠️ {error}
             </div>
           )}
+
+          {paymentSuccess && (
+            <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm font-medium">
+              ✓ Payment successful! Activating your membership...
+            </div>
+          )}
         </form>
 
         <div className="p-6 border-t border-slate-200 bg-white">
@@ -351,10 +576,14 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
           <button
             type="submit"
             onClick={handleSubmit}
-            disabled={loading || priceLoading}
+            disabled={loading || priceLoading || paymentSuccess}
             className="w-full bg-gradient-to-r from-[#f97316] to-[#facc15] text-white font-black py-4 rounded-2xl shadow-lg hover:brightness-105 transition-all disabled:opacity-50"
           >
-            {loading ? 'Processing Securely...' : `Pay & Subscribe Now`}
+            {loading
+              ? paymentSuccess
+                ? 'Payment Successful! ✓'
+                : 'Processing Securely...'
+              : `Pay & Subscribe Now`}
           </button>
         </div>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
-import type { IContent, ReactionType } from '../../types/content';
+import type { IContent, ReactionType, IComment } from '../../types/content';
 import { interactionService } from '../../services/interactionService';
 import { contentService } from '../../services/contentService';
 import { useAuth } from '../../context/AuthContext';
@@ -65,14 +65,13 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
   const [author, setAuthor] = useState<AuthorProfile | null>(null);
   const [userReaction, setUserReaction] = useState<ReactionType | null>(post.user_reaction || null);
   const [reactionCount, setReactionCount] = useState(post.reactions_count || 0);
-  const [commentCount, setCommentCount] = useState(post.comments_count || 0);
+  const [commentCount, setCommentCount] = useState(post.comments_count ?? 0); // ✅ TS FIX: Added null check
   const [showComments, setShowComments] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
 
-  // Reaction Dock State (Original Logic)
   const [showReactionDock, setShowReactionDock] = useState(false);
   const longPressTimer = useRef<any>(null);
   const isLongPress = useRef(false);
@@ -80,7 +79,38 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
 
   const isLocked = Boolean(post.is_premium) && !isPremiumUser;
 
-  // ✅ TS FIX: Safe role detection
+  // --- RECURSIVE COUNTER FOR SYNC ---
+  const calculateTotalCount = (commentList: IComment[]): number => {
+    let total = 0;
+    commentList.forEach((c) => {
+      total += 1;
+      if (c.replies && c.replies.length > 0) {
+        total += calculateTotalCount(c.replies);
+      }
+    });
+    return total;
+  };
+
+  // ✅ SILENT SYNC ON MOUNT: Corrects the count to include replies before opening
+  useEffect(() => {
+    const syncRealCommentCount = async () => {
+      if (isLocked) return;
+      try {
+        const data = await interactionService.getComments(post.id);
+        const commentsArray = Array.isArray(data) ? data : data.data || [];
+        const realTotal = calculateTotalCount(commentsArray);
+        setCommentCount(realTotal);
+      } catch (error) {
+        console.error('Failed to sync comment count', error);
+      }
+    };
+
+    // Run if there is at least 1 comment (including potentially hidden replies)
+    if ((post.comments_count ?? 0) > 0) {
+      syncRealCommentCount();
+    }
+  }, [post.id, isLocked]);
+
   const getUserRole = () => {
     const roles = (user as any)?.roles;
     if (Array.isArray(roles) && roles.length > 0) {
@@ -95,7 +125,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
   const isOwner = user?.id === post.created_by;
   const canManage = isOwner || isAdmin;
 
-  // Click Outside logic for menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) setShowMenu(false);
@@ -104,7 +133,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch Author logic (Original)
   useEffect(() => {
     const fetchAuthor = async () => {
       if ((post as any).user) {
@@ -119,7 +147,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
             setAuthor(userData);
           }
         } catch (error) {
-          console.error('Failed to fetch author info', error);
           setAuthor({ id: post.created_by, name: 'Unknown Member' });
         }
       }
@@ -127,7 +154,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
     fetchAuthor();
   }, [post.created_by, post]);
 
-  // REACTION LOGIC (Original Long Press)
   const handleReactionClick = () => {
     if (isLocked) return;
     if (isLongPress.current) {
@@ -175,13 +201,12 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
     }
   };
 
-  // DELETE LOGIC
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
       await contentService.delete(post.id);
       setShowDeleteModal(false);
-      if (onPostDeleted) onPostDeleted(); // 🔥 REFRESHES FEED
+      if (onPostDeleted) onPostDeleted();
     } catch (error) {
       alert('Failed to delete post');
     } finally {
@@ -189,7 +214,6 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
     }
   };
 
-  // HELPERS (Original)
   const getReactionIcon = (type: ReactionType | null) => {
     switch (type) {
       case 'heart':
@@ -273,7 +297,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
                 <MoreHorizontal size={20} />
               </button>
               {showMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-[#2A2A2A] border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden py-1 animate-in fade-in slide-in-from-top-2 duration-150">
+                <div className="absolute right-0 mt-2 w-48 bg-[#2A2A2A] border border-white/10 rounded-xl shadow-2xl z-[60] overflow-hidden py-1">
                   <button
                     onClick={() => navigate(`/dashboard/posts/edit/${post.id}`)}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition"
@@ -369,15 +393,21 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
               )}
               <span>{reactionCount} reactions</span>
             </div>
-            <span>{commentCount} comments</span>
+            {/* ✅ FIXED: Recursive count is now displayed here */}
+            <button
+              onClick={() => setShowComments(!showComments)}
+              className="hover:underline hover:text-white transition-colors"
+            >
+              {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
+            </button>
           </div>
         )}
 
-        {/* 5. Action Buttons (Full Reaction Logic) */}
+        {/* 5. Action Buttons */}
         <div className="px-2 py-1 flex items-center justify-between text-gray-400 relative">
           <div className="flex-1 relative">
             {showReactionDock && !isLocked && (
-              <div className="absolute bottom-full left-0 mb-2 flex bg-[#2A2A2A] border border-white/10 rounded-full p-1 gap-1 shadow-xl animate-in fade-in zoom-in duration-200 z-50">
+              <div className="absolute bottom-full left-0 mb-2 flex bg-[#2A2A2A] border border-white/10 rounded-full p-1 gap-1 shadow-xl z-50">
                 {(['like', 'heart', 'fire', 'clap', 'star'] as ReactionType[]).map((type) => (
                   <button
                     key={type}
@@ -424,11 +454,10 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
             disabled={isLocked}
             className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg hover:bg-white/5 transition active:scale-95 ${
               isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:text-gold'
-            }`}
+            } ${showComments ? 'text-gold' : ''}`}
           >
             <MessageCircle size={20} /> Comment
           </button>
-
           <button
             onClick={() => !isLocked && setShowShareModal(true)}
             disabled={isLocked}
@@ -445,6 +474,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
             contentId={post.id}
             initialCount={commentCount}
             onCommentAdded={() => setCommentCount((prev) => prev + 1)}
+            onCountUpdate={(newTotal) => setCommentCount(newTotal)}
           />
         )}
       </div>
