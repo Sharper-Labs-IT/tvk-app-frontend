@@ -1,23 +1,34 @@
 // components/MembershipCancelModal.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { AlertCircle, X } from 'lucide-react';
+import { AlertCircle, X, Loader } from 'lucide-react';
 
 interface MembershipCancelModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;  // This will trigger the actual cancel API
+  onConfirm: (password: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
 const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
+  isLoading = false,
 }) => {
+  const [password, setPassword] = useState('');
+
   if (!isOpen) return null;
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password) {
+      await onConfirm(password);
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -25,50 +36,66 @@ const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
         transition={{ duration: 0.3 }}
         className="relative w-full max-w-md rounded-3xl bg-[#07091a] p-8 shadow-2xl border border-[#1d2340]"
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
+          disabled={isLoading}
           className="absolute top-4 right-4 text-slate-400 hover:text-slate-200 transition"
         >
           <X className="h-6 w-6" />
         </button>
 
-        {/* Warning Icon */}
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-red-900/30">
           <AlertCircle className="h-10 w-10 text-red-500" />
         </div>
 
-        {/* Title */}
         <h2 className="mb-4 text-center text-2xl font-bold text-white">
-          Cancel Super Fan Membership?
+          Cancel Membership?
         </h2>
 
-        {/* Description */}
-        <p className="mb-8 text-center text-sm leading-relaxed text-slate-300">
-          You're about to cancel your Super Fan membership. 
-          You will lose access to premium features at the end of your current billing period.
-          <br /><br />
-          <strong className="text-white">This action cannot be undone.</strong>
+        <p className="mb-6 text-center text-sm leading-relaxed text-slate-300">
+          You will lose access to premium features at the end of your billing period. 
+          Please confirm your password to proceed.
         </p>
 
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-full border border-slate-600 bg-transparent py-3 font-medium text-slate-200 transition hover:bg-slate-800"
-          >
-            Keep Membership
-          </button>
-          <button
-            onClick={() => {
-              onConfirm();
-              onClose();
-            }}
-            className="flex-1 rounded-full bg-red-600 py-3 font-semibold text-white transition hover:bg-red-700"
-          >
-            Yes, Cancel Membership
-          </button>
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase ml-1">
+              Verify Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-[#13172d] border border-slate-700 text-white px-4 py-3 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition placeholder-slate-600"
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 py-3 px-4 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-semibold transition"
+            >
+              Keep Plan
+            </button>
+            <button
+              type="submit"
+              disabled={!password || isLoading}
+              className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader size={18} className="animate-spin" /> Cancelling...
+                </>
+              ) : (
+                'Confirm Cancel'
+              )}
+            </button>
+          </div>
+        </form>
       </motion.div>
     </div>
   );
