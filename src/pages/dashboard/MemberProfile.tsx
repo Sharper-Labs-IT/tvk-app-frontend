@@ -1,13 +1,15 @@
 import React, { useState, useRef, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-hot-toast';
-import { Mail, Phone, Calendar } from 'lucide-react';
+import { Mail, Phone, Calendar, AlertTriangle, Trash2 } from 'lucide-react';
 
 
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
 import NicknameConfirmModal from '../../components/dashboard/NicknameConfirmModal';
+import DeleteAccountModal from '../../components/dashboard/DeleteAccountModal';
 import ProfileHeader from '../../components/dashboard/ProfileHeader';
 import GameStats from '../../components/dashboard/GameStats';
 import SubscriptionWidget from '../../components/dashboard/SubscriptionWidget';
@@ -20,6 +22,7 @@ import type { Plan } from '../../types/plan';
 
 const MemberProfile: React.FC = () => {
   const { user, login, token, refreshUser } = useAuth();
+  const navigate = useNavigate();
 
   const [isResetPassOpen, setIsResetPassOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -33,7 +36,13 @@ const MemberProfile: React.FC = () => {
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false); // State for cancel loading
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+
+  // --- DELETE ACCOUNT STATE ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -161,17 +170,37 @@ const MemberProfile: React.FC = () => {
     updated_at: new Date().toISOString(),
   };
 
-  const handleUpgradeClick = () => setIsPaymentModalOpen(true);
+  const handleUpgradeClick = () => navigate('/membership');
   const handleCancelClick = () => setIsCancelModalOpen(true);
 
-  const confirmCancelMembership = async () => {
+  // Updated to accept password
+  const confirmCancelMembership = async (password: string) => {
+    setIsCancelling(true);
     try {
-      await axiosClient.post('/membership/cancel');
+      await axiosClient.post('/membership/cancel', { password });
       await refreshUser();
       setIsSuccessModalOpen(true);
-    } catch (error) {
+      setIsCancelModalOpen(false);
+    } catch (error: any) {
       console.error(error);
-      toast.error('Failed to cancel membership. Please try again.');
+      const msg = error.response?.data?.message || 'Failed to cancel membership.';
+      toast.error(msg);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleDeleteAccountConfirm = async (password: string) => {
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      await userService.deleteAccount(password);
+      // Force logout
+      localStorage.clear();
+      window.location.href = '/login';
+    } catch (error: any) {
+      setDeleteError(error.response?.data?.message || 'Failed to delete account. Wrong password?');
+      setIsDeleting(false);
     }
   };
 
@@ -245,6 +274,28 @@ const MemberProfile: React.FC = () => {
         <GameStats user={user} />
       </div>
 
+      {/* --- DANGER ZONE (GDPR Compliance) --- */}
+      <div className="mt-12 bg-red-950/20 border border-red-900/40 rounded-2xl p-6 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+           <div>
+             <h3 className="text-xl font-bold text-red-500 flex items-center gap-2 mb-2">
+               <AlertTriangle size={24} /> Danger Zone
+             </h3>
+             <p className="text-sm text-gray-400 max-w-xl">
+               Permanently delete your account and all associated data. This action cannot be undone.
+               You will lose all coins, badges, and game history immediately.
+             </p>
+           </div>
+           
+           <button 
+             onClick={() => setIsDeleteModalOpen(true)}
+             className="px-6 py-3 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/50 text-red-500 rounded-xl font-bold transition flex items-center gap-2"
+           >
+             <Trash2 size={18} /> Delete Account
+           </button>
+        </div>
+      </div>
+
       {/* --- MODALS --- */}
       {/* <EditProfileModal
         isOpen={isEditProfileOpen}
@@ -280,6 +331,15 @@ const MemberProfile: React.FC = () => {
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
         onConfirm={confirmCancelMembership}
+        isLoading={isCancelling}
+      />
+
+      <DeleteAccountModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccountConfirm}
+        isLoading={isDeleting}
+        error={deleteError}
       />
 
       <MembershipCancelledSuccessModal
