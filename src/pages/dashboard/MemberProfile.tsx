@@ -5,7 +5,7 @@ import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-hot-toast';
 import { Mail, Phone, Calendar } from 'lucide-react';
 
-import EditProfileModal from '../../components/dashboard/EditProfileModal';
+
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
 import NicknameConfirmModal from '../../components/dashboard/NicknameConfirmModal';
 import ProfileHeader from '../../components/dashboard/ProfileHeader';
@@ -21,7 +21,6 @@ import type { Plan } from '../../types/plan';
 const MemberProfile: React.FC = () => {
   const { user, login, token, refreshUser } = useAuth();
 
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isResetPassOpen, setIsResetPassOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -70,11 +69,24 @@ const MemberProfile: React.FC = () => {
   const handleAvatarClick = () => fileInputRef.current?.click();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    // 🛡️ Security: Client-side Rate Limiting (60s cooldown)
+    const lastUpload = localStorage.getItem('last_avatar_update');
+    if (lastUpload) {
+      const remaining = 60000 - (Date.now() - Number(lastUpload));
+      if (remaining > 0) {
+        toast.error(`Please wait ${Math.ceil(remaining / 1000)}s before uploading again.`);
+        return;
+      }
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
     setIsUploadingAvatar(true);
     try {
       const response = await userService.updateAvatar(file);
+      
+      localStorage.setItem('last_avatar_update', Date.now().toString()); // Set cooldown
+
       if (token && user) {
         login(token, { ...user, avatar_url: response.avatar_url });
         await refreshUser();
@@ -101,11 +113,26 @@ const MemberProfile: React.FC = () => {
   };
 
   const confirmNicknameUpdate = async () => {
+    // 🛡️ Security: Client-side Rate Limiting (60s cooldown)
+    const lastUpdate = localStorage.getItem('last_nickname_update');
+    if (lastUpdate) {
+      const remaining = 60000 - (Date.now() - Number(lastUpdate));
+      if (remaining > 0) {
+        setNicknameError(`Change limit: Please wait ${Math.ceil(remaining / 1000)}s.`);
+        setShowNicknameConfirmModal(false);
+        return;
+      }
+    }
+
     setIsUpdatingNickname(true);
     setNicknameSuccess('');
     setNicknameError('');
     try {
       const response = await userService.updateNickname(nicknameInput.trim());
+      
+      // Set cooldown on success
+      localStorage.setItem('last_nickname_update', Date.now().toString());
+
       await refreshUser();
       const coins = response.coins_deducted || 0;
       setNicknameSuccess(
@@ -175,7 +202,6 @@ const MemberProfile: React.FC = () => {
         setIsEditingNickname={setIsEditingNickname}
         nicknameError={nicknameError}
         nicknameSuccess={nicknameSuccess}
-        onEditProfile={() => setIsEditProfileOpen(true)}
         onResetPassword={() => setIsResetPassOpen(true)}
       />
 
@@ -220,11 +246,11 @@ const MemberProfile: React.FC = () => {
       </div>
 
       {/* --- MODALS --- */}
-      <EditProfileModal
+      {/* <EditProfileModal
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
         currentName={user?.name || ''}
-      />
+      /> */}
       <ResetPasswordModal isOpen={isResetPassOpen} onClose={() => setIsResetPassOpen(false)} />
 
       <NicknameConfirmModal
