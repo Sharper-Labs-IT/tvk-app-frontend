@@ -32,6 +32,8 @@ const Game = React.lazy(() => import('../pages/Game'));
 const EventPage = React.lazy(() => import('../pages/EventPage'));
 const FanOfMonthPage = React.lazy(() => import('../pages/FanOfMonthPage'));
 
+const MembershipSuccessPage = React.lazy(() => import('../pages/MembershipSuccess'));
+
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
 const Store = React.lazy(() => import('../pages/Store'));
 
@@ -192,6 +194,7 @@ const AppRoutes: React.FC = () => {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/membership" element={<Membership />} />
+          <Route path="/membership/success" element={<MembershipSuccessPage />} />
           <Route path="/fan-of-the-month" element={<FanOfMonthPage />} />
           <Route path="/game" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
