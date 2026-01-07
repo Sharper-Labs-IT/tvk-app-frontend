@@ -78,6 +78,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       });
 
       const { url } = res.data;
+      if (onSuccess) onSuccess();
       window.location.href = url;
 
     } catch (err: any) {
@@ -136,7 +137,7 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
           <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-6 mb-6">
             <h3 className="text-sm font-bold text-slate-600 mb-3">Plan Features:</h3>
             <ul className="space-y-2">
-              {plan.features?.map((feature, idx) => (
+              {plan.features?.map((feature: string, idx: number) => (
                 <li key={idx} className="flex items-start gap-2 text-sm text-slate-700">
                   <span className="text-[#f97316] mt-0.5">✓</span>
                   <span>{feature}</span>
