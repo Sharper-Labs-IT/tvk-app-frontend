@@ -49,6 +49,12 @@ const EmailChangeModal: React.FC<EmailChangeModalProps> = ({
       return;
     }
 
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(newEmail)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await authService.requestEmailChange(newEmail, password);

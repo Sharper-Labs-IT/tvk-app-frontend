@@ -7,6 +7,8 @@ interface SubscriptionWidgetProps {
   isPremium: boolean;
   onUpgradeClick: () => void;
   onCancelClick: () => void;
+  onResubscribeClick?: () => void;
+  isResubscribing?: boolean;
 }
 
 const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
@@ -14,6 +16,8 @@ const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
   isPremium,
   onUpgradeClick,
   onCancelClick,
+  onResubscribeClick,
+  isResubscribing = false,
 }) => {
   // --- HELPERS ---
   const formatDate = (dateString: string) => {
@@ -114,10 +118,18 @@ const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
 
       {membershipStatus === 'active_auto_renew_off' && (
         <button
-          disabled
-          className="w-full py-2.5 bg-white/5 border border-white/10 text-gray-500 rounded-lg font-bold text-sm cursor-not-allowed"
+          onClick={onResubscribeClick}
+          disabled={isResubscribing}
+          className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white transition-all rounded-lg font-bold text-sm shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
         >
-          Cancelled Auto Reneval
+          {isResubscribing ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Reactivating...
+            </>
+          ) : (
+            'Resubscribe'
+          )}
         </button>
       )}
 
