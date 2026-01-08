@@ -17,6 +17,7 @@ import SubscriptionWidget from '../../components/dashboard/SubscriptionWidget';
 
 import MembershipPaymentModal from '../../components/MembershipPaymentModal';
 import MembershipCancelModal from '../../components/MembershipCancelModal';
+import MembershipReactivateModal from '../../components/MembershipReactivateModal';
 import MembershipCancelledSuccessModal from '../../components/MembershipCancelSuccessfulModal';
 
 import type { Plan } from '../../types/plan';
@@ -42,12 +43,17 @@ const MemberProfile: React.FC = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false); // State for cancel loading
+  const [cancelError, setCancelError] = useState('');
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
   // --- DELETE ACCOUNT STATE ---
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+
+  // --- RESUBSCRIBE STATE ---
+  const [isReactivateModalOpen, setIsReactivateModalOpen] = useState(false);
+  const [isResubscribing, setIsResubscribing] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -201,11 +207,15 @@ const MemberProfile: React.FC = () => {
   };
 
   const handleUpgradeClick = () => navigate('/membership');
-  const handleCancelClick = () => setIsCancelModalOpen(true);
+  const handleCancelClick = () => {
+    setCancelError('');
+    setIsCancelModalOpen(true);
+  };
 
   // Updated to accept password
   const confirmCancelMembership = async (password: string) => {
     setIsCancelling(true);
+    setCancelError('');
     try {
       await axiosClient.post('/membership/cancel', { password });
       await refreshUser();
@@ -214,6 +224,7 @@ const MemberProfile: React.FC = () => {
     } catch (error: any) {
       console.error(error);
       const msg = error.response?.data?.message || 'Failed to cancel membership.';
+      setCancelError(msg);
       toast.error(msg);
     } finally {
       setIsCancelling(false);
@@ -238,6 +249,23 @@ const MemberProfile: React.FC = () => {
     toast.success('Welcome to the Super Fan Club!');
     await refreshUser();
     setIsPaymentModalOpen(false);
+  };
+
+  const confirmReactivate = async (password: string) => {
+    setIsResubscribing(true);
+    try {
+      await axiosClient.post('/membership/reactivate', { password });
+      
+      await refreshUser();
+      toast.success('Subscription reactivated! Auto-renewal is now ON.');
+      setIsReactivateModalOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      const msg = error.response?.data?.message || 'Failed to reactivate. Please contact support.';
+      toast.error(msg);
+    } finally {
+      setIsResubscribing(false);
+    }
   };
 
   return (
@@ -304,6 +332,8 @@ const MemberProfile: React.FC = () => {
             isPremium={isPremium}
             onUpgradeClick={handleUpgradeClick}
             onCancelClick={handleCancelClick}
+            onResubscribeClick={() => setIsReactivateModalOpen(true)}
+            isResubscribing={isResubscribing}
           />
         </div>
 
@@ -370,6 +400,14 @@ const MemberProfile: React.FC = () => {
         onClose={() => setIsCancelModalOpen(false)}
         onConfirm={confirmCancelMembership}
         isLoading={isCancelling}
+        error={cancelError}
+      />
+
+      <MembershipReactivateModal
+        isOpen={isReactivateModalOpen}
+        onClose={() => setIsReactivateModalOpen(false)}
+        onConfirm={confirmReactivate}
+        isLoading={isResubscribing}
       />
 
       <DeleteAccountModal 

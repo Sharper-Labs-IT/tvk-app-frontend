@@ -1,5 +1,5 @@
 // components/MembershipCancelModal.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { AlertCircle, X, Loader } from 'lucide-react';
 
@@ -8,6 +8,7 @@ interface MembershipCancelModalProps {
   onClose: () => void;
   onConfirm: (password: string) => Promise<void>;
   isLoading?: boolean;
+  error?: string;
 }
 
 const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
@@ -15,14 +16,26 @@ const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
   onClose,
   onConfirm,
   isLoading = false,
+  error,
 }) => {
   const [password, setPassword] = useState('');
+  const [confirmText, setConfirmText] = useState('');
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setPassword('');
+      setConfirmText('');
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
+  const isConfirmed = confirmText === 'CANCEL' && password.length > 0;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password) {
+    if (isConfirmed) {
       await onConfirm(password);
     }
   };
@@ -54,10 +67,25 @@ const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
 
         <p className="mb-6 text-center text-sm leading-relaxed text-slate-300">
           You will lose access to premium features at the end of your billing period. 
-          Please confirm your password to proceed.
+          Please type <span className="font-bold text-white">CANCEL</span> and confirm your password to proceed.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase ml-1">
+              Type "CANCEL"
+            </label>
+            <input
+              type="text"
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
+              className="w-full bg-[#13172d] border border-slate-700 text-white px-4 py-3 rounded-xl focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none transition placeholder-slate-600"
+              placeholder="Type CANCEL"
+              autoComplete="off"
+            />
+          </div>
+
           <div>
             <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase ml-1">
               Verify Password
@@ -72,6 +100,12 @@ const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
             />
           </div>
 
+          {error && (
+            <div className="text-red-400 text-sm bg-red-500/10 p-2 rounded-lg text-center border border-red-500/20">
+              {error}
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -83,8 +117,8 @@ const MembershipCancelModal: React.FC<MembershipCancelModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={!password || isLoading}
-              className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition shadow-lg shadow-red-900/20 flex items-center justify-center gap-2"
+              disabled={!isConfirmed || isLoading}
+              className="flex-1 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition shadow-lg shadow-red-900/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
