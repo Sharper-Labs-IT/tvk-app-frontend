@@ -4,10 +4,11 @@ import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-hot-toast';
-import { Mail, Phone, Calendar, AlertTriangle, Trash2 } from 'lucide-react';
+import { Mail, Phone, Calendar, AlertTriangle, Trash2, Edit2 } from 'lucide-react';
 
 
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
+import EmailChangeModal from '../../components/EmailChangeModal';
 import NicknameConfirmModal from '../../components/dashboard/NicknameConfirmModal';
 import DeleteAccountModal from '../../components/dashboard/DeleteAccountModal';
 import ProfileHeader from '../../components/dashboard/ProfileHeader';
@@ -28,6 +29,7 @@ const MemberProfile: React.FC = () => {
   const navigate = useNavigate();
 
   const [isResetPassOpen, setIsResetPassOpen] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const [isEditingNickname, setIsEditingNickname] = useState(false);
@@ -271,11 +273,20 @@ const MemberProfile: React.FC = () => {
               Contact Info
             </h3>
             <ul className="space-y-4 text-slate-300 text-sm">
-              <li className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
-                <Mail size={18} className="text-yellow-500 shrink-0" />
-                <span className="truncate" title={user?.email}>
-                  {user?.email}
-                </span>
+              <li className="flex items-center justify-between gap-3 p-3 bg-slate-800/50 rounded-xl">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <Mail size={18} className="text-yellow-500 shrink-0" />
+                  <span className="truncate" title={user?.email}>
+                    {user?.email}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  title="Change Email"
+                >
+                  <Edit2 size={14} />
+                </button>
               </li>
               <li className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
                 <Phone size={18} className="text-yellow-500 shrink-0" />
@@ -367,6 +378,15 @@ const MemberProfile: React.FC = () => {
         onConfirm={handleDeleteAccountConfirm}
         isLoading={isDeleting}
         error={deleteError}
+      />
+
+      <EmailChangeModal 
+        isOpen={isEmailModalOpen} 
+        onClose={() => setIsEmailModalOpen(false)} 
+        onSuccess={() => {
+          refreshUser();
+          setIsEmailModalOpen(false);
+        }}
       />
 
       <MembershipCancelledSuccessModal
