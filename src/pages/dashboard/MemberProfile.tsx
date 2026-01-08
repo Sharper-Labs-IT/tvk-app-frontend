@@ -251,19 +251,17 @@ const MemberProfile: React.FC = () => {
     setIsPaymentModalOpen(false);
   };
 
-  const confirmReactivate = async () => {
+  const confirmReactivate = async (password: string) => {
     setIsResubscribing(true);
     try {
-      // Assuming a dedicated endpoint for reactivation exists or we use update-subscription
-      // adjusting the logic to turn auto-renew back on
-      await axiosClient.post('/membership/reactivate');
+      await axiosClient.post('/membership/reactivate', { password });
       
       await refreshUser();
       toast.success('Subscription reactivated! Auto-renewal is now ON.');
       setIsReactivateModalOpen(false);
     } catch (error: any) {
       console.error(error);
-      const msg = error.response?.data?.message || 'Failed to reactivate. Please try again or contact support.';
+      const msg = error.response?.data?.message || 'Failed to reactivate. Please contact support.';
       toast.error(msg);
     } finally {
       setIsResubscribing(false);

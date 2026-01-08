@@ -35,11 +35,17 @@ const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
 
     const isPaidPlan = user.membership.plan_id !== 1;
     const isActive = user.membership.status === 'active';
-    const isAutoRenew = user.membership.auto_renew === true;
+    // Handle lax boolean (1/0/true/false)
+    const isAutoRenew = !!user.membership.auto_renew;
+    
+    // Check if subscription has not expired (even if status is 'cancelled')
+    const endDate = user.membership.end_date ? new Date(user.membership.end_date) : null;
+    const isNotExpired = endDate ? endDate > new Date() : false;
 
-    if (isPaidPlan && isActive) {
-      if (isAutoRenew) return 'active_auto_renew_on';
-      return 'active_auto_renew_off'; // Grace period after cancellation
+    // Use isNotExpired instead of just isActive to catch "cancelled but still in grace period"
+    if (isPaidPlan && (isActive || isNotExpired)) {
+      if (isAutoRenew && isActive) return 'active_auto_renew_on'; // Must be active AND auto-renew for ON state
+      return 'active_auto_renew_off'; // Grace period or manually cancelled
     }
 
     return 'free';

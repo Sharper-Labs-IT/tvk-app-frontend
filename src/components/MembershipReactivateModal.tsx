@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, X, Loader } from 'lucide-react';
 
 interface MembershipReactivateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => Promise<void>;
+  onConfirm: (password: string) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -15,6 +15,15 @@ const MembershipReactivateModal: React.FC<MembershipReactivateModalProps> = ({
   onConfirm,
   isLoading = false,
 }) => {
+  const [password, setPassword] = useState('');
+  
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setPassword('');
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -43,11 +52,24 @@ const MembershipReactivateModal: React.FC<MembershipReactivateModalProps> = ({
             Reactivate Membership?
           </h2>
 
-          <p className="mb-8 text-center text-sm leading-relaxed text-slate-300">
+          <p className="mb-6 text-center text-sm leading-relaxed text-slate-300">
             You are about to reactivate your automatic renewal. 
             <br className="hidden sm:block" />
             Billing will resume automatically on your next renewal date.
           </p>
+          
+          <div className="mb-6">
+            <label className="block text-xs font-semibold text-slate-400 mb-1.5 uppercase ml-1">
+              Verify Password to Confirm
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-[#13172d] border border-slate-700 text-white px-4 py-3 rounded-xl focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none transition placeholder-slate-600"
+              placeholder="Enter your password"
+            />
+          </div>
 
           <div className="flex gap-4">
             <button
@@ -59,9 +81,9 @@ const MembershipReactivateModal: React.FC<MembershipReactivateModalProps> = ({
             </button>
             
             <button
-              onClick={onConfirm}
-              disabled={isLoading}
-              className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-500 transition disabled:opacity-50 flex justify-center items-center gap-2 shadow-lg shadow-green-900/20"
+              onClick={() => onConfirm(password)}
+              disabled={isLoading || !password}
+              className="flex-1 py-3 px-4 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-500 transition disabled:opacity-50 flex justify-center items-center gap-2 shadow-lg shadow-green-900/20 disabled:bg-slate-700 disabled:shadow-none whitespace-nowrap"
             >
               {isLoading ? (
                 <>
