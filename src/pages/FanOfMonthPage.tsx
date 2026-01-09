@@ -4,9 +4,10 @@ import Confetti from 'react-confetti';
 import { useWindowSize } from 'react-use';
 import { Trophy, Clock, Gift } from 'lucide-react';
 import Header from '../components/Header';
-import { isLastWeekOfMonth, getTargetRevealDate, getToday } from '../utils/dateUtils';
+import { isLastWeekOfMonth, getTargetRevealDate, getToday, getPreviousMonthName } from '../utils/dateUtils';
 import { getCountryFromMobile } from '../utils/countryHelper';
 import { pointsService, type TopFan } from '../services/pointsService';
+import { getPreviousWinner, savePreviousWinner, type StoredWinner } from '../utils/winnerStorage';
 
 const CountdownTimer = () => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -58,37 +59,81 @@ const FanOfMonthPage: React.FC = () => {
   const [isRevealTime, setIsRevealTime] = useState(false);
   const [isUnboxed, setIsUnboxed] = useState(false);
   const { width, height } = useWindowSize();
-  const [winner, setWinner] = useState<TopFan | null>(null);
-  const [monthName, setMonthName] = useState<string>("");
+  const [currentTopFan, setCurrentTopFan] = useState<TopFan | null>(null);
+  const [previousWinnerData, setPreviousWinnerData] = useState<StoredWinner | null>(null);
+  const [apiMonth, setApiMonth] = useState<string>("");
+  
+  const previousMonthName = getPreviousMonthName();
 
   useEffect(() => {
-    // Check if it's the last week of the month
+    // Check if it's the last day of the month (reveal time)
     setIsRevealTime(isLastWeekOfMonth());
 
-    const fetchWinner = async () => {
+    // Load stored previous winner
+    const storedWinner = getPreviousWinner();
+    if (storedWinner) {
+      setPreviousWinnerData(storedWinner);
+    }
+
+    const fetchData = async () => {
       try {
         const response = await pointsService.getFanOfTheMonth();
-        setMonthName(response.month);
+        setApiMonth(response.month);
+        
         if (response.top_fans && response.top_fans.length > 0) {
-          setWinner(response.top_fans[0]);
+          const topFanData = response.top_fans[0];
+          setCurrentTopFan(topFanData);
+          
+          // If this is archived data from the previous month, save it as the winner
+          if (response.month === previousMonthName) {
+            const winnerToStore = {
+              name: topFanData.nickname || topFanData.name,
+              month: response.month,
+              year: response.year,
+              points: topFanData.month_points,
+              country: topFanData.country || topFanData.user?.country || 
+                      topFanData.location || topFanData.user?.location ||
+                      getCountryFromMobile(topFanData.mobile || topFanData.user?.mobile) || "Global"
+            };
+            savePreviousWinner(winnerToStore);
+            setPreviousWinnerData({ ...winnerToStore, storedAt: new Date().toISOString() });
+          }
         }
       } catch (error) {
-        console.error('Failed to fetch winner:', error);
+        console.error('Failed to fetch data:', error);
       }
     };
 
-    fetchWinner();
-  }, []);
+    fetchData();
+  }, [previousMonthName]);
 
   const handleUnbox = () => {
     setIsUnboxed(true);
   };
 
-  const winnerName = winner?.nickname || winner?.name || "Loading...";
-  const winnerPoints = winner?.month_points || 0;
-  // Force TVK logo for demo purposes as requested, ignoring backend avatar if it's random/inappropriate
-  const winnerAvatar = "/images/tvk-logo.png"; 
-  const winnerLocation = winner?.country || winner?.user?.country || winner?.location || winner?.user?.location || getCountryFromMobile(winner?.mobile || winner?.user?.mobile) || "Global";
+  // Determine what data to show based on context
+  const isShowingPreviousMonthData = apiMonth === previousMonthName;
+  
+  // For reveal mode: show the archived winner from previous month
+  // For countdown mode: show the stored previous winner as "Reigning Champion"
+  const displayWinnerName = isRevealTime 
+    ? (isShowingPreviousMonthData ? (currentTopFan?.nickname || currentTopFan?.name || "Loading...") : (previousWinnerData?.name || "TBA"))
+    : (previousWinnerData?.name || "TBA");
+  
+  const displayWinnerPoints = isRevealTime && isShowingPreviousMonthData
+    ? (currentTopFan?.month_points || 0)
+    : (previousWinnerData?.points || 0);
+  
+  const displayWinnerAvatar = "/images/tvk-logo.png";
+  
+  const displayWinnerLocation = isRevealTime && isShowingPreviousMonthData
+    ? (currentTopFan?.country || currentTopFan?.user?.country || currentTopFan?.location || currentTopFan?.user?.location || getCountryFromMobile(currentTopFan?.mobile || currentTopFan?.user?.mobile) || "Global")
+    : (previousWinnerData?.country || "Global");
+  
+  const displayMonthName = isRevealTime && isShowingPreviousMonthData
+    ? apiMonth
+    : (previousWinnerData?.month || previousMonthName);
+  
   const winnerBadge = "Super Fan"; // Static for now
 
   return (
@@ -133,7 +178,7 @@ const FanOfMonthPage: React.FC = () => {
                     The Results Are In!
                   </h1>
                   <p className="text-xl text-gray-300">
-                    The Fan of the Month for {monthName || "this month"} is ready to be crowned.
+                    The Fan of the Month for {displayMonthName || "this month"} is ready to be crowned.
                   </p>
                 </motion.div>
               ) : (
@@ -158,7 +203,7 @@ const FanOfMonthPage: React.FC = () => {
                           transition={{ delay: 0.5, type: "spring" }}
                           className="relative w-48 h-48 md:w-64 md:h-64 rounded-full border-4 border-brand-gold overflow-hidden shadow-[0_0_30px_rgba(255,215,0,0.5)]"
                         >
-                          <img src={winnerAvatar} alt={winnerName} className="w-full h-full object-cover" />
+                          <img src={displayWinnerAvatar} alt={displayWinnerName} className="w-full h-full object-cover" />
                         </motion.div>
                         <motion.div 
                           initial={{ y: 50, opacity: 0 }}
@@ -178,9 +223,9 @@ const FanOfMonthPage: React.FC = () => {
                           transition={{ delay: 0.6 }}
                         >
                           <h2 className="text-brand-gold font-bold tracking-wider uppercase mb-2">Fan of the Month</h2>
-                          <h1 className="text-4xl md:text-6xl font-bold text-white mb-2">{winnerName}</h1>
+                          <h1 className="text-4xl md:text-6xl font-bold text-white mb-2">{displayWinnerName}</h1>
                           <p className="text-xl text-gray-400 mb-6 flex items-center justify-center md:justify-start gap-2">
-                            <span className="bg-white/10 px-3 py-1 rounded-lg text-sm">{winnerLocation}</span>
+                            <span className="bg-white/10 px-3 py-1 rounded-lg text-sm">{displayWinnerLocation}</span>
                             <span className="bg-brand-gold/20 text-brand-gold px-3 py-1 rounded-lg text-sm border border-brand-gold/30">{winnerBadge}</span>
                           </p>
                         </motion.div>
@@ -193,11 +238,11 @@ const FanOfMonthPage: React.FC = () => {
                         >
                           <div className="bg-white/5 p-4 rounded-xl border border-white/10">
                             <div className="text-gray-400 text-sm">Total Points</div>
-                            <div className="text-2xl font-bold text-white">{winnerPoints.toLocaleString()}</div>
+                            <div className="text-2xl font-bold text-white">{displayWinnerPoints.toLocaleString()}</div>
                           </div>
                           <div className="bg-white/5 p-4 rounded-xl border border-white/10">
                             <div className="text-gray-400 text-sm">Month</div>
-                            <div className="text-xl font-bold text-white">{monthName || "Current"}</div>
+                            <div className="text-xl font-bold text-white">{displayMonthName || "Current"}</div>
                           </div>
                         </motion.div>
                       </div>
@@ -233,27 +278,31 @@ const FanOfMonthPage: React.FC = () => {
                 The race is on! Earn points by engaging with the community, attending events, and playing games. The top fan gets exclusive rewards.
               </p>
 
-              {/* Latest Winner Display */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 max-w-md mx-auto backdrop-blur-sm"
-              >
-                <div className="text-brand-gold text-sm font-bold uppercase tracking-wider mb-4">Reigning Champion</div>
-                <div className="flex items-center gap-4 text-left">
-                  <div className="w-16 h-16 rounded-full border-2 border-brand-gold overflow-hidden shrink-0">
-                    <img src={winnerAvatar} alt={winnerName} className="w-full h-full object-cover" />
+              {/* Latest Winner Display - Only show if we have actual winner data */}
+              {previousWinnerData && previousWinnerData.name !== "TBA" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="bg-white/5 border border-white/10 rounded-2xl p-6 max-w-md mx-auto backdrop-blur-sm"
+                >
+                  <div className="text-brand-gold text-sm font-bold uppercase tracking-wider mb-4">
+                    {previousWinnerData.month} Champion
                   </div>
-                  <div>
-                    <div className="text-2xl font-bold text-white">{winnerName}</div>
-                    <div className="text-gray-400 text-sm">{winnerLocation}</div>
+                  <div className="flex items-center gap-4 text-left">
+                    <div className="w-16 h-16 rounded-full border-2 border-brand-gold overflow-hidden shrink-0">
+                      <img src={displayWinnerAvatar} alt={displayWinnerName} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-white">{displayWinnerName}</div>
+                      <div className="text-gray-400 text-sm">{displayWinnerLocation}</div>
+                    </div>
+                    <div className="ml-auto">
+                      <Trophy className="w-8 h-8 text-brand-gold opacity-50" />
+                    </div>
                   </div>
-                  <div className="ml-auto">
-                    <Trophy className="w-8 h-8 text-brand-gold opacity-50" />
-                  </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              )}
 
               {/* <motion.button
                 whileHover={{ scale: 1.05 }}

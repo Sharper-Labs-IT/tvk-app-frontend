@@ -2,39 +2,76 @@ import React, { useEffect, useState } from 'react';
 import { Star, Gem, Zap, Trophy, ArrowRight, MessageCircle, Calendar, Gamepad2 } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { isLastWeekOfMonth, getPreviousMonthName } from '../utils/dateUtils';
+import { isLastWeekOfMonth, getPreviousMonthName, getCurrentMonthName } from '../utils/dateUtils';
 import { getCountryFromMobile } from '../utils/countryHelper';
 import { pointsService, type TopFan } from '../services/pointsService';
+import { getPreviousWinner, savePreviousWinner, type StoredWinner } from '../utils/winnerStorage';
 
 const FanOfMonth: React.FC = () => {
   const isRevealTime = isLastWeekOfMonth();
   const previousMonthName = getPreviousMonthName();
+  const currentMonthName = getCurrentMonthName();
 
   const [topFan, setTopFan] = useState<TopFan | null>(null);
+  const [previousWinnerData, setPreviousWinnerData] = useState<StoredWinner | null>(null);
+  const [apiMonth, setApiMonth] = useState<string>("");
 
   useEffect(() => {
     const fetchTopFan = async () => {
       try {
         const response = await pointsService.getFanOfTheMonth();
+        setApiMonth(response.month);
+        
         if (response.top_fans && response.top_fans.length > 0) {
-          setTopFan(response.top_fans[0]);
+          const topFanData = response.top_fans[0];
+          setTopFan(topFanData);
+          
+          // If the API returns data for the previous month (archived winner),
+          // save it as the previous winner
+          if (response.month !== currentMonthName && response.month === previousMonthName) {
+            // This is the archived winner from last month - store it
+            savePreviousWinner({
+              name: topFanData.nickname || topFanData.name,
+              month: response.month,
+              year: response.year,
+              points: topFanData.month_points,
+              country: topFanData.country || topFanData.user?.country || 
+                      topFanData.location || topFanData.user?.location ||
+                      getCountryFromMobile(topFanData.mobile || topFanData.user?.mobile) || "Global"
+            });
+          }
         }
       } catch (error) {
         console.error('Failed to fetch top fan:', error);
       }
     };
 
-    fetchTopFan();
-  }, []);
+    // Load stored previous winner
+    const storedWinner = getPreviousWinner();
+    if (storedWinner) {
+      setPreviousWinnerData(storedWinner);
+    }
 
+    fetchTopFan();
+  }, [currentMonthName, previousMonthName]);
+
+  // Determine if API data is for current month (live leaderboard) or archived winner
+  const isCurrentMonthData = apiMonth === currentMonthName || apiMonth === "";
+  
+  // Previous winner comes from stored data, NOT from current API call
   const previousWinner = {
-    name: topFan?.name || "Winner",
-    image: "/images/tvk-logo.png", // Force TVK logo
-    label: `${previousMonthName} Winner`
+    name: previousWinnerData?.name || "TBA",
+    image: "/images/tvk-logo.png",
+    label: previousWinnerData?.month ? `${previousWinnerData.month} Winner` : `${previousMonthName} Winner`
   };
 
-  const currentTopName = topFan?.nickname || topFan?.name || "Loading...";
-  const currentTopCountry = topFan?.country || topFan?.user?.country || topFan?.location || topFan?.user?.location || getCountryFromMobile(topFan?.mobile || topFan?.user?.mobile) || "Global";
+  // Current top fan is the live leader for THIS month
+  const currentTopName = isCurrentMonthData 
+    ? (topFan?.nickname || topFan?.name || "Loading...")
+    : "Competition Open";
+  const currentTopCountry = isCurrentMonthData 
+    ? (topFan?.country || topFan?.user?.country || topFan?.location || topFan?.user?.location || getCountryFromMobile(topFan?.mobile || topFan?.user?.mobile) || "Global")
+    : "Join Now";
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -155,7 +192,7 @@ const FanOfMonth: React.FC = () => {
                 to="/fan-of-the-month"
                 className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark font-bold py-3 px-8 rounded-xl hover:bg-white transition-colors shadow-lg shadow-brand-gold/20"
               >
-                {isRevealTime ? "Reveal Winner" : "View Countdown"}
+                {isRevealTime ? "Reveal Winner" : "Countdown"}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
@@ -188,7 +225,7 @@ const FanOfMonth: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400 uppercase">
-                    {isRevealTime ? "Previous Winner" : "🏆 Fan of the Month"}
+                    {isRevealTime ? "Previous Winner" : "🏆 Current Leader"}
                   </div>
                   <div className="text-white font-bold">
                     {isRevealTime ? previousWinner.name : currentTopName}
@@ -199,8 +236,8 @@ const FanOfMonth: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Previous Winner Card - Hidden during Reveal to avoid duplication */}
-              {!isRevealTime && (
+              {/* Previous Winner Card - Only show if we have actual winner data */}
+              {!isRevealTime && previousWinnerData && previousWinnerData.name !== "TBA" && (
                 <motion.div 
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
