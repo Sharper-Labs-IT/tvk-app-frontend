@@ -145,6 +145,27 @@ const Header: React.FC = () => {
               </Link>
             </motion.li>
 
+            {/* Feed link - only show when logged in */}
+            {isLoggedIn && (
+              <motion.li key="FEED" variants={majorItemVariants}>
+                <Link
+                  to="/dashboard/feed"
+                  className={`
+                    text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
+                    ${isActive('/dashboard/feed') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                  `}
+                >
+                  FEED
+                  <span
+                    className={`
+                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                      ${isActive('/dashboard/feed') ? 'w-full' : 'w-0 group-hover:w-full'}
+                    `}
+                  ></span>
+                </Link>
+              </motion.li>
+            )}
+
             {/* Play Dropdown */}
             <motion.li 
               key="PLAY" 
@@ -316,7 +337,11 @@ const Header: React.FC = () => {
       <MobileMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
-        navItems={[{ name: 'HOME', path: '/' }, ...dynamicNavItems]}
+        navItems={[
+          { name: 'HOME', path: '/' },
+          ...(isLoggedIn ? [{ name: 'FEED', path: '/dashboard/feed' }] : []),
+          ...dynamicNavItems
+        ]}
         isLoggedIn={isLoggedIn}
         user={user}
         onLogout={handleMobileLogoutTrigger}
