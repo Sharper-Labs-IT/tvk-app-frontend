@@ -25,7 +25,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   onClose,
   plan,
   currency,
-  onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
