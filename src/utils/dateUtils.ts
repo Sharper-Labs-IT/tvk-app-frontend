@@ -36,6 +36,11 @@ export const getPreviousMonthName = (): string => {
   return previousMonth.toLocaleString('en-US', { month: 'long' });
 };
 
+export const getCurrentMonthName = (): string => {
+  const today = getToday();
+  return today.toLocaleString('en-US', { month: 'long' });
+};
+
 export const isNewMonth = (winnerMonthName?: string): boolean => {
   if (!winnerMonthName) return false;
   const today = getToday();

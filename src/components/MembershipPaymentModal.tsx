@@ -25,7 +25,6 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
   onClose,
   plan,
   currency,
-  onSuccess,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -72,7 +71,8 @@ const MembershipPaymentModal: React.FC<MembershipPaymentModalProps> = ({
       });
 
       const { url } = res.data;
-      if (onSuccess) onSuccess();
+      // Don't call onSuccess here - it should only be called after successful payment
+      // The success will be handled by the success page or webhook
       window.location.href = url;
     } catch (err: any) {
       console.error('Checkout error:', err);
