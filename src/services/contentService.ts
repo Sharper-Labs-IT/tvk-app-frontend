@@ -164,7 +164,7 @@ export const contentService = {
     const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
     
     // Map backend field names to frontend expected names
-    const contents = response.data.pending_contents || response.data.contents || response.data;
+    const contents = response.data.pending_contents || response.data;
     if (contents.data && Array.isArray(contents.data)) {
       contents.data = contents.data.map((item: any) => ({
         ...item,
