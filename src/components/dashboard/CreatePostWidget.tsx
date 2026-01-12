@@ -136,7 +136,7 @@ const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPr
           </h3>
 
           <p className="text-gray-400 text-sm max-w-md mx-auto mb-4">
-            Posting content is exclusive to our Premium Members. Upgrade your plan to join the
+            Posting content is exclusive to our Premium Members (Super Fans). Upgrade your plan to join the
             conversation and share with the community!
           </p>
 

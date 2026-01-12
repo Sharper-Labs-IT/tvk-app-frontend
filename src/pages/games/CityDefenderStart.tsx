@@ -131,7 +131,7 @@ const CityDefenderStart: React.FC = () => {
           animate={{ x: 0, opacity: 1 }}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={() => navigate('/game')}
+          onClick={() => navigate('/games')}
           className="flex items-center justify-center p-3 bg-white/10 backdrop-blur-md border border-white/20 rounded-full hover:bg-white/20 transition-all shadow-lg group"
         >
           <ArrowLeft className="w-6 h-6 text-white group-hover:text-yellow-400 transition-colors" />

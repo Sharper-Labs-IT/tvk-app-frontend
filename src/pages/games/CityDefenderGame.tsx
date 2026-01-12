@@ -732,7 +732,7 @@ const CityDefenderGame: React.FC = () => {
                 <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={() => navigate('/game')}
+                    onClick={() => navigate('/games')}
                     className="mt-8 px-8 py-3 rounded-xl bg-white/10 text-white font-bold hover:bg-white/20 transition-colors flex items-center gap-2"
                 >
                     <Home className="w-5 h-5" />

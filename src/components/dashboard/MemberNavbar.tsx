@@ -12,6 +12,7 @@ import {
   ChevronDown,
   FileText,
   Home,
+  FolderOpen,
 } from 'lucide-react';
 
 const MemberNavbar: React.FC = () => {
@@ -37,9 +38,9 @@ const MemberNavbar: React.FC = () => {
   const navLinks = [
     { name: 'Home', path: '/', icon: <Home size={20} /> },
     { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    // 👇 CHECK THIS: This path MUST match the route in AppRoutes
     { name: 'Feed', path: '/dashboard/feed', icon: <FileText size={20} /> },
-    { name: 'Games', path: '/game', icon: <Gamepad2 size={20} /> },
+    { name: 'My Content', path: '/dashboard/my-content', icon: <FolderOpen size={20} /> },
+    { name: 'Games', path: '/games', icon: <Gamepad2 size={20} /> },
     { name: 'Events', path: '/events', icon: <Calendar size={20} /> },
     { name: 'Membership', path: '/membership', icon: <Crown size={20} /> },
   ];

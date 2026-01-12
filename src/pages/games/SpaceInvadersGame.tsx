@@ -890,7 +890,7 @@ const SpaceInvadersGame: React.FC = () => {
       <div className="z-20 w-full flex justify-between items-center p-2 md:p-4 text-white bg-red-900/80 backdrop-blur-sm border-b border-yellow-500/50 shadow-lg shadow-red-900/20 shrink-0">
         <div className="flex items-center gap-2 md:gap-4">
           <button
-            onClick={() => navigate('/game/protect-area')}
+            onClick={() => navigate('/games/protect-area')}
             className="p-1.5 md:p-2 hover:bg-red-800 rounded-full transition-colors"
           >
             <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
@@ -1119,7 +1119,7 @@ const SpaceInvadersGame: React.FC = () => {
                     ONCE MORE
                   </button>
                   <button
-                    onClick={() => navigate('/game/protect-area')}
+                    onClick={() => navigate('/games/protect-area')}
                     className="w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors text-sm md:text-base"
                   >
                     EXIT
@@ -1170,7 +1170,7 @@ const SpaceInvadersGame: React.FC = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => navigate('/game/protect-area')}
+                    onClick={() => navigate('/games/protect-area')}
                     className="w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors text-sm md:text-base"
                   >
                     EXIT

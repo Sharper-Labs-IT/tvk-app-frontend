@@ -83,7 +83,7 @@ const WhackAMoleStart: React.FC = () => {
     const { allowed, reason, cost } = checkAccess();
     if (allowed) {
       consumePlay(false);
-      navigate('/game/villain-hunt/start');
+      navigate('/games/villain-hunt/start');
     } else {
       if (reason === 'limit_reached' || reason === 'no_coins') {
         setAccessCost(cost);
@@ -98,7 +98,7 @@ const WhackAMoleStart: React.FC = () => {
       const success = await consumePlay(true);
       if (success) {
           setShowAccessModal(false);
-          navigate('/game/villain-hunt/start');
+          navigate('/games/villain-hunt/start');
       } else {
           alert("Not enough coins!");
       }
@@ -126,7 +126,7 @@ const WhackAMoleStart: React.FC = () => {
         <header className="flex flex-col md:flex-row justify-between items-center px-4 py-4 md:px-12 gap-4 w-full">
           <div className="w-full md:w-auto flex justify-start">
             <div
-              onClick={() => navigate('/game')}
+              onClick={() => navigate('/games')}
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div className="bg-white text-black p-1 rounded-full">
@@ -303,7 +303,7 @@ const WhackAMoleStart: React.FC = () => {
               <button
                 onClick={() => {
                   setShowModal(false);
-                  navigate('/game/villain-hunt/start');
+                  navigate('/games/villain-hunt/start');
                 }}
                 className="w-full mt-6 bg-red-600 hover:bg-red-500 text-white py-3 md:py-4 rounded-xl font-bold text-lg uppercase tracking-wider transition-all shadow-lg shrink-0"
               >

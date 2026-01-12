@@ -97,7 +97,7 @@ const TriviaGameStart: React.FC = () => {
     const { allowed, reason, cost } = checkAccess();
     if (allowed) {
       consumePlay(false);
-      navigate('/game/trivia/start');
+      navigate('/games/trivia/start');
     } else {
       if (reason === 'limit_reached' || reason === 'no_coins') {
         setAccessCost(cost);
@@ -112,7 +112,7 @@ const TriviaGameStart: React.FC = () => {
       const success = await consumePlay(true);
       if (success) {
           setShowAccessModal(false);
-          navigate('/game/trivia/start');
+          navigate('/games/trivia/start');
       } else {
           alert("Not enough coins!");
       }
@@ -157,7 +157,7 @@ const TriviaGameStart: React.FC = () => {
         {/* HEADER */}
         <header className="flex justify-between items-center px-6 py-6 md:px-12 backdrop-blur-sm border-b border-white/5">
           <div
-            onClick={() => navigate("/game")}
+            onClick={() => navigate("/games")}
             className="group flex items-center gap-3 cursor-pointer"
           >
             <div className="bg-white/10 group-hover:bg-yellow-400 text-white group-hover:text-black p-2 rounded-full transition-all duration-300 border border-white/10">

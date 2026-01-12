@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { contentService } from '../../services/contentService';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import {
   LayoutDashboard,
@@ -17,6 +18,7 @@ import {
   Calendar,
   Shield, // Added for Admins
   UserPlus, // Added for Add Admin
+  Clock, // Added for Pending Content
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -39,6 +41,7 @@ const navItems: NavItem[] = [
     icon: FileText,
     subItems: [
       { name: 'All Posts', path: '/admin/posts', icon: List },
+      { name: 'Pending Review', path: '/admin/posts/pending', icon: Clock },
       { name: 'Add New Post', path: '/admin/posts/create', icon: PlusCircle },
     ],
   },
@@ -87,6 +90,7 @@ const AdminSidebar: React.FC = () => {
 
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
 
   // Automatically open the menu if the current path matches a sub-item
   useEffect(() => {
@@ -97,6 +101,23 @@ const AdminSidebar: React.FC = () => {
       setOpenMenu(activeItem.name);
     }
   }, [location.pathname]);
+
+  // Fetch pending content count
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const paginatedData = await contentService.getPending(1);
+        setPendingCount(paginatedData?.total || 0);
+      } catch (error) {
+        // Silently fail - not critical
+      }
+    };
+
+    fetchPendingCount();
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchPendingCount, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleMenu = (name: string) => {
     setOpenMenu(openMenu === name ? null : name);
@@ -177,16 +198,24 @@ const AdminSidebar: React.FC = () => {
                   <div className="ml-4 pl-4 border-l border-white/10 space-y-1 mt-1">
                     {item.subItems.map((sub) => {
                       const isSubActive = location.pathname === sub.path;
+                      const isPendingReview = sub.path === '/admin/posts/pending';
                       return (
                         <Link
                           key={sub.path}
                           to={sub.path}
-                          className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm transition-all ${
+                          className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg text-sm transition-all ${
                             isSubActive ? 'text-gold bg-white/5' : 'text-gray-500 hover:text-white'
                           }`}
                         >
-                          <sub.icon size={16} />
-                          {sub.name}
+                          <div className="flex items-center gap-3">
+                            <sub.icon size={16} />
+                            {sub.name}
+                          </div>
+                          {isPendingReview && pendingCount > 0 && (
+                            <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-2 bg-orange-500 text-white text-xs font-bold rounded-full animate-pulse">
+                              {pendingCount}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}

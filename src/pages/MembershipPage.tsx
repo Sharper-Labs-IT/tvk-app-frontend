@@ -53,7 +53,7 @@ const hardCodedPlans: Plan[] = [
   },
   {
     id: 2,
-    name: 'Super Fan',
+    name: 'Super Fan Premium',
     description: 'Premium access (30-day subscription)',
     price: '9.99',
     duration_days: 30,
@@ -91,6 +91,7 @@ const MembershipPage: React.FC = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
+  const [isFreeMemberRequiredModalOpen, setIsFreeMemberRequiredModalOpen] = useState(false);
 
   // --- LOGIC: HELPER TO FORMAT DATE ---
   const formatDate = (dateString: string) => {
@@ -149,8 +150,15 @@ const MembershipPage: React.FC = () => {
       return;
     }
 
+    // Check if user is logged in and if they are a free member
     if (!isLoggedIn) {
-      navigate('/login', { state: { from: '/membership' } });
+      setIsFreeMemberRequiredModalOpen(true);
+      return;
+    }
+
+    // Check if user is a free member (plan_id = 1) before allowing Super Fan subscription
+    if (user?.membership?.plan_id !== 1) {
+      setIsFreeMemberRequiredModalOpen(true);
       return;
     }
 
@@ -365,6 +373,54 @@ const MembershipPage: React.FC = () => {
         currency={selectedCurrency}
         onSuccess={handlePaymentSuccess}
       />
+      
+      {/* Free Member Required Modal */}
+      {isFreeMemberRequiredModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-tvk-dark-card border border-tvk-accent-gold/30 rounded-2xl max-w-md w-full shadow-2xl shadow-gold/20 animate-fadeIn">
+            {/* Header */}
+            <div className="p-6 border-b border-white/10">
+              <div className="flex items-center gap-3 mb-2">
+                {/* <div className="w-12 h-12 bg-tvk-accent-gold/20 rounded-xl flex items-center justify-center border border-tvk-accent-gold/30">
+                  <Star className="w-6 h-6 text-tvk-accent-gold" />
+                </div> */}
+                <h2 className="text-xl font-bold text-white">Cool! We Know You're a True VJ Fan! 🎉</h2>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-gray-300 leading-relaxed">
+                We love your enthusiasm! But before you become a <span className="text-tvk-accent-gold font-bold">Super Fan</span>, 
+                you need to join as a <span className="text-green-400 font-semibold">Free Member</span> first.
+              </p>
+              <p className="text-gray-400 text-sm">
+                It only takes a minute! Create your free account and then you'll be able to upgrade to Super Fan Premium.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 p-6 border-t border-white/10 bg-white/5">
+              <button
+                onClick={() => setIsFreeMemberRequiredModalOpen(false)}
+                className="flex-1 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setIsFreeMemberRequiredModalOpen(false);
+                  navigate('/login');
+                }}
+                className="flex-1 px-6 py-2.5 bg-gradient-to-r from-tvk-accent-gold-dark to-tvk-accent-gold hover:from-tvk-accent-gold hover:to-[#FFC43A] text-black rounded-lg font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <Star className="w-4 h-4" />
+                Join Free Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
