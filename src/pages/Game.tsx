@@ -9,6 +9,7 @@ const About = React.lazy(() => import(/* webpackPrefetch: true */ '../components
 const Story = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/Story'));
 const Contact = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/Contact'));
 const Features = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/Features'));
+const TrophyGuide = React.lazy(() => import(/* webpackPrefetch: true */ '../components/game/TrophyGuide'));
 
 const Game: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const Game: React.FC = () => {
         <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader /></div>}>
           <About />
           <Features />
+          <TrophyGuide />
           <Story />
           <Contact />
         </Suspense>
