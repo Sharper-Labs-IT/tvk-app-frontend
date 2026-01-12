@@ -82,7 +82,7 @@ const SpaceInvadersTVK: React.FC = () => {
     const { allowed, reason, cost } = checkAccess();
     if (allowed) {
       consumePlay(false);
-      navigate('/game/protect-area/start');
+      navigate('/games/protect-area/start');
     } else {
       if (reason === 'limit_reached' || reason === 'no_coins') {
         setAccessCost(cost);
@@ -97,7 +97,7 @@ const SpaceInvadersTVK: React.FC = () => {
       const success = await consumePlay(true);
       if (success) {
           setShowAccessModal(false);
-          navigate('/game/protect-area/start');
+          navigate('/games/protect-area/start');
       } else {
           alert("Not enough coins!");
       }
@@ -126,7 +126,7 @@ const SpaceInvadersTVK: React.FC = () => {
         <header className="flex flex-col md:flex-row justify-between items-center px-4 py-4 md:px-12 gap-4 w-full">
           <div className="w-full md:w-auto flex justify-start">
             <div
-              onClick={() => navigate('/game')}
+              onClick={() => navigate('/games')}
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div className="bg-white text-black p-1 rounded-full">

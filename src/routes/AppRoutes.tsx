@@ -15,9 +15,10 @@ import AdminProfile from '../pages/admin/profile/AdminProfile';
 import PostListPage from '../pages/admin/posts/PostListPage';
 import PostCreatePage from '../pages/admin/posts/PostCreatePage';
 import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
+import PostEditPage from '../pages/admin/posts/PostEditPage';
+import PendingContentPage from '../pages/admin/posts/PendingContentPage';
 import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
-import PostEditPage from '../pages/admin/posts/PostEditPage';
 
 // --- NEW IMPORTS FOR MEMBER MANAGEMENT ---
 const MemberListPage = React.lazy(() => import('../pages/admin/member/MemberListPage'));
@@ -50,6 +51,7 @@ const Privacy = React.lazy(() => import('../components/common/PrivacyPolicyModal
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
 const MemberFeed = React.lazy(() => import('../pages/dashboard/MemberFeed'));
 const MemberPostEditPage = React.lazy(() => import('../pages/dashboard/MemberPostEditPage'));
+const MyContentPage = React.lazy(() => import('../pages/dashboard/MyContentPage'));
 
 // Game Pages
 const MemoryChallenge = React.lazy(() => import('../pages/games/MemoryStart'));
@@ -196,7 +198,7 @@ const AppRoutes: React.FC = () => {
           <Route path="/membership" element={<Membership />} />
           <Route path="/membership/success" element={<MembershipSuccessPage />} />
           <Route path="/fan-of-the-month" element={<FanOfMonthPage />} />
-          <Route path="/game" element={<Game />} />
+          <Route path="/games" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
 
@@ -208,6 +210,7 @@ const AppRoutes: React.FC = () => {
           {/* MEMBER DASHBOARD ROUTES (Protected) */}
           <Route path="/dashboard" element={<UserRoute element={<MemberLayout />} />}>
             <Route index element={<MemberProfile />} />
+            <Route path="my-content" element={<MyContentPage />} />
             <Route path="feed" element={<MemberFeed />} />
             <Route path="posts/edit/:id" element={<MemberPostEditPage />} />
           </Route>
@@ -226,19 +229,19 @@ const AppRoutes: React.FC = () => {
           <Route path="/leaderboard" element={<Leaderboards />} />
           <Route path="/store" element={<Store />} />
           <Route path="/events/:id" element={<EventDetailsPage />} />
-          <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
-          <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
-          <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
-          <Route path="/game/protect-area" element={<SpaceInvadersTVK />} />
-          <Route path="/game/protect-area/start" element={<SpaceInvadersGame />} />
-          <Route path="/game/villain-hunt" element={<WhackAMoleStart />} />
-          <Route path="/game/villain-hunt/start" element={<WhackAMoleGame />} />
-          <Route path="/game/trivia" element={<TriviaGameStart />} />
-          <Route path="/game/trivia/start" element={<TriviaGame />} />
-          <Route path="/game/jigsaw-puzzle" element={<JigsawPuzzleStart />} />
-          <Route path="/game/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
-          <Route path="/game/city-defender" element={<CityDefenderStart />} />
-          <Route path="/game/city-defender/start" element={<CityDefenderGame />} />
+          <Route path="/games/memory-challenge" element={<MemoryChallenge />} />
+          <Route path="/games/memory-challenge/start" element={<MemoryGame />} />
+          <Route path="/games/protect-queen" element={<ProtectQueenStart />} />
+          <Route path="/games/protect-area" element={<SpaceInvadersTVK />} />
+          <Route path="/games/protect-area/start" element={<SpaceInvadersGame />} />
+          <Route path="/games/villain-hunt" element={<WhackAMoleStart />} />
+          <Route path="/games/villain-hunt/start" element={<WhackAMoleGame />} />
+          <Route path="/games/trivia" element={<TriviaGameStart />} />
+          <Route path="/games/trivia/start" element={<TriviaGame />} />
+          <Route path="/games/jigsaw-puzzle" element={<JigsawPuzzleStart />} />
+          <Route path="/games/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
+          <Route path="/games/city-defender" element={<CityDefenderStart />} />
+          <Route path="/games/city-defender/start" element={<CityDefenderGame />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute />}>
@@ -246,6 +249,7 @@ const AppRoutes: React.FC = () => {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="posts" element={<PostListPage />} />
+            <Route path="posts/pending" element={<PendingContentPage />} />
             <Route path="posts/create" element={<PostCreatePage />} />
             <Route path="posts/:id" element={<PostDetailsPage />} />
             <Route path="posts/:id/edit" element={<PostEditPage />} />

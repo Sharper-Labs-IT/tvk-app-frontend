@@ -280,14 +280,36 @@ const Signup: React.FC = () => {
       setSuccessData(response.data);
     } catch (err: any) {
       let errorMessage = 'Registration failed. Please check your details.';
+      const errors: { [key: string]: string } = {};
+      
       if (err.response && err.response.status === 422) {
         if (err.response.data.errors) {
-          errorMessage = Object.values(err.response.data.errors).flat().join(' ');
+          const backendErrors = err.response.data.errors;
+          
+          // Handle email error
+          if (backendErrors.email) {
+            errors.email = 'This email address is already registered.';
+          }
+          
+          // Handle mobile error
+          if (backendErrors.mobile) {
+            errors.mobile = 'This mobile number is already registered.';
+          }
+          
+          // Set field errors if any
+          if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+          } else {
+            errorMessage = Object.values(backendErrors).flat().join(' ');
+            setError(errorMessage);
+          }
         }
       } else if (err.message) {
         errorMessage = `Network error: ${err.message}`;
+        setError(errorMessage);
+      } else {
+        setError(errorMessage);
       }
-      setError(errorMessage);
     } finally {
       setLoading(false);
     }

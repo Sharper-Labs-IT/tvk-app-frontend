@@ -177,14 +177,14 @@ const Header: React.FC = () => {
               <button
                 className={`
                   text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
-                  ${isActive('/game') || isActive('/leaderboard') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                  ${isActive('/games') || isActive('/leaderboard') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                 `}
               >
                 PLAY
                 <span
                   className={`
                     absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                    ${isActive('/game') || isActive('/leaderboard') ? 'w-full' : 'w-0 group-hover:w-full'}
+                    ${isActive('/games') || isActive('/leaderboard') ? 'w-full' : 'w-0 group-hover:w-full'}
                   `}
                 ></span>
               </button>
@@ -197,7 +197,7 @@ const Header: React.FC = () => {
                   className="absolute top-full left-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[140px] lg:min-w-[160px] z-50 pt-1.5"
                 >
                   <Link
-                    to="/game"
+                    to="/games"
                     className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                   >
                     GAMES

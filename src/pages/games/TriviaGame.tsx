@@ -434,7 +434,7 @@ const TriviaGame: React.FC = () => {
     frame();
     setTimeout(() => {
       setIsCollecting(false);
-      navigate('/game/trivia');
+      navigate('/games/trivia');
     }, 1500);
   };
 
@@ -504,7 +504,7 @@ const TriviaGame: React.FC = () => {
 
       {/* Top Bar - Made responsive with flex-wrap and sizing */}
       <div className="z-10 w-full max-w-7xl flex justify-between items-center mb-4 p-2 md:p-4">
-        <button onClick={() => navigate('/game/trivia')} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 shrink-0">
+        <button onClick={() => navigate('/games/trivia')} className="p-2 bg-white/5 hover:bg-white/10 rounded-full transition-colors border border-white/10 shrink-0">
           <ArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
         </button>
         

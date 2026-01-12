@@ -37,9 +37,9 @@ const MembershipPlan: React.FC = () => {
 
   return (
     // UPDATED: 'xl:pb-0' ensures the desktop image touches the very bottom edge
-    <section className="relative w-full min-h-[600px] pt-10 pb-0 xl:pt-20 xl:pb-0 overflow-hidden bg-brand-dark flex items-center justify-center">
+    <section className="relative w-full min-h-[600px] pt-10 pb-0 xl:pt-20 xl:pb-0 overflow-hidden bg-black flex items-center justify-center">
       {/* Background Image */}
-      <div
+      {/* <div
         className="absolute inset-0 z-0"
         style={{
           backgroundImage: "url('/images/MembershipPlaneBack.png')",
@@ -48,7 +48,7 @@ const MembershipPlan: React.FC = () => {
           backgroundRepeat: 'no-repeat',
         }}
       ></div>
-
+ */}
       {/* Content Container */}
       <motion.div
         className="relative z-10 container mx-auto px-4"
@@ -75,10 +75,10 @@ const MembershipPlan: React.FC = () => {
         <div className="flex flex-col xl:flex-row items-center xl:items-end justify-center gap-6 xl:gap-8">
           {/* 1. Vijay Image (Left Side - Desktop Only) */}
           {/* RESTORED: Shows in the same line on desktop */}
-          <motion.div className="hidden xl:block w-1/3 max-w-[350px] shrink-0" variants={itemVariants}>
+          <motion.div className="hidden xl:block w-1/3 max-w-[550px] shrink-0" variants={itemVariants}>
             <img
               src="/images/VijayImg1.png"
-              alt="Thalapathy Vijay"
+              alt="Thalapathy VJ"
               className="w-full h-auto object-contain drop-shadow-2xl block"
             />
           </motion.div>
@@ -165,7 +165,7 @@ const MembershipPlan: React.FC = () => {
                   {/* Title & Subtitle */}
                   <div className="text-center min-h-[60px] flex flex-col justify-start mb-4">
                     <h3 className="text-2xl font-bold text-brand-gold mb-1">
-                      Super Fan Membership
+                      Super Fan Premium Membership
                     </h3>
                     <p className="text-white/80 text-sm">
                       For fans who want the full TVK experience.

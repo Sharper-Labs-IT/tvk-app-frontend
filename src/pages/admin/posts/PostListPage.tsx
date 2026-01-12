@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { contentService } from '../../../services/contentService';
 import type { IContent } from '../../../types/content';
-import { Plus, Trash2, Eye, FileVideo, Image as ImageIcon, FileText, Lock } from 'lucide-react';
+import { Plus, Trash2, Eye, FileVideo, Image as ImageIcon, FileText, Lock, Clock, CheckCircle, XCircle } from 'lucide-react';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
 
 const PostListPage: React.FC = () => {
@@ -74,6 +74,39 @@ const PostListPage: React.FC = () => {
     }
   };
 
+  // Helper to get approval status badge
+  const getApprovalStatusBadge = (status?: string) => {
+    switch (status) {
+      case 'approved':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-500/20 text-green-300 border border-green-500/30">
+            <CheckCircle size={12} />
+            Approved
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-300 border border-red-500/30">
+            <XCircle size={12} />
+            Rejected
+          </span>
+        );
+      case 'pending':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-300 border border-orange-500/30">
+            <Clock size={12} />
+            Pending
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
+            Unknown
+          </span>
+        );
+    }
+  };
+
   if (loading) return <div className="text-white p-8 animate-pulse">Loading posts...</div>;
   if (error)
     return (
@@ -102,7 +135,8 @@ const PostListPage: React.FC = () => {
               <th className="px-6 py-4">Title</th>
               <th className="px-6 py-4">Category</th>
               <th className="px-6 py-4">Type</th>
-              <th className="px-6 py-4">Status</th>
+              <th className="px-6 py-4">Approval</th>
+              <th className="px-6 py-4">Premium</th>
               <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
@@ -141,6 +175,9 @@ const PostListPage: React.FC = () => {
                     {getTypeIcon(post.type)}
                     <span className="capitalize">{post.type}</span>
                   </div>
+                </td>
+                <td className="px-6 py-4">
+                  {getApprovalStatusBadge(post.status)}
                 </td>
                 <td className="px-6 py-4">
                   {post.is_premium ? (

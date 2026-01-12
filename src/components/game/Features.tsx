@@ -159,11 +159,11 @@ const Features = () => {
         <div className="container mx-auto px-3 md:px-10">
           <div className="px-5 py-32">
             <p className="font-circular-web text-lg text-blue-50">
-              Experience the thrill of gaming with Thalapathy Vijay like never
+              Experience the thrill of gaming with Thalapathy VJ like never
             </p>
             <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
               Dive deeper into the TVK universe with exclusive games and
-              interactive experiences that bring you closer to Thalapathy Vijay
+              interactive experiences that bring you closer to Thalapathy VJ
               than ever before.
             </p>
           </div>
@@ -178,7 +178,7 @@ const Features = () => {
               }
               description="A VJ Movie shuffle game - remix iconic scenes from Thalapathy Vijay's blockbuster movies."
               clickToPlay
-              onPlay={() => handleGameClick("/game/memory-challenge")}
+              onPlay={() => handleGameClick("/games/memory-challenge")}
             />
           </BentoTilt>
 
@@ -189,7 +189,7 @@ const Features = () => {
               <BentoCard
                 src="img/feature-2.webp"
                 title={<>VJ</>}
-                description="Thalapathy Vijay's exclusive gaming avatar - a play-to-earn gaming experience like no other."
+                description="Thalapathy VJ's exclusive gaming avatar - a play-to-earn gaming experience like no other."
                 isComingSoon
               />
             </BentoTilt>
@@ -205,7 +205,7 @@ const Features = () => {
                 }
                 description="Whack the villains and clean up the system in this fast-paced reflex game!"
                 clickToPlay
-                onPlay={() => handleGameClick("/game/villain-hunt")}
+                onPlay={() => handleGameClick("/games/villain-hunt")}
               />
             </BentoTilt>
 
@@ -220,7 +220,7 @@ const Features = () => {
                 }
                 description="Defend your territory from alien invaders in this thrilling space shooter game"
                 clickToPlay
-                onPlay={() => handleGameClick("/game/protect-area")}
+                onPlay={() => handleGameClick("/games/protect-area")}
               />
             </BentoTilt>
 
@@ -235,7 +235,7 @@ const Features = () => {
                 }
                 description="Piece together iconic moments in this timed puzzle challenge!"
                 clickToPlay
-                onPlay={() => handleGameClick("/game/jigsaw-puzzle")}
+                onPlay={() => handleGameClick("/games/jigsaw-puzzle")}
               />
             </BentoTilt>
 
@@ -250,7 +250,7 @@ const Features = () => {
                 }
                 description="Test your knowledge about Thalapathy Vijay and prove you are the biggest fan!"
                 clickToPlay
-                onPlay={() => handleGameClick("/game/trivia")}
+                onPlay={() => handleGameClick("/games/trivia")}
               />
             </BentoTilt>
           </div>
