@@ -441,7 +441,7 @@ const MemoryGame: React.FC = () => {
   
     setTimeout(() => {
       setIsCollecting(false);
-      navigate('/game/memory-challenge');
+      navigate('/games/memory-challenge');
     }, 1500);
   };
 

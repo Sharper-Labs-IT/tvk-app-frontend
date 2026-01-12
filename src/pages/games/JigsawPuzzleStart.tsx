@@ -108,7 +108,7 @@ const JigsawPuzzleStart: React.FC = () => {
       const success = await consumePlay(true);
       if (success) {
           setShowAccessModal(false);
-          navigate('/game/jigsaw-puzzle/start');
+          navigate('/games/jigsaw-puzzle/start');
       } else {
           alert("Not enough coins!");
       }
@@ -140,7 +140,7 @@ const JigsawPuzzleStart: React.FC = () => {
         {/* HEADER */}
         <header className="flex justify-between items-center px-6 py-6 md:px-12">
           <div
-            onClick={() => navigate("/game")}
+            onClick={() => navigate("/games")}
             className="group flex items-center gap-3 cursor-pointer"
           >
             <div className="bg-white/10 group-hover:bg-red-600 backdrop-blur-md p-2 rounded-lg border border-white/20 transition-all duration-300">

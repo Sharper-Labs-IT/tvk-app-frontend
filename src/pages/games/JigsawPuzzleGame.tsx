@@ -484,7 +484,7 @@ const JigsawPuzzleGame: React.FC = () => {
       {/* --- Header / HUD --- */}
       <header className="w-full max-w-6xl flex justify-between items-center mb-4 z-20">
          <button 
-            onClick={() => navigate('/game')}
+            onClick={() => navigate('/games')}
             className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all border border-white/5 backdrop-blur-md group"
          >
             <ArrowLeft className="w-6 h-6 text-white/70 group-hover:text-white" />
@@ -872,7 +872,7 @@ const JigsawPuzzleGame: React.FC = () => {
                   </button>
                 )}
                 <button
-                  onClick={() => navigate('/game')}
+                  onClick={() => navigate('/games')}
                   className="w-full py-4 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"
                 >
                   Back to Menu

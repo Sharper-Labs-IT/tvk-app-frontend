@@ -3,11 +3,12 @@ import gsap from "gsap";
 import { useWindowScroll } from "react-use";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
   { name: "Home", path: "/" },
   { name: "Membership", path: "/membership" },
-  { name: "Game", path: "/game" },
+  { name: "Games", path: "/games" },
   { name: "Events", path: "/events" },
   { name: "Leaderboard", path: "/leaderboard" },
   { name: "Store", path: "/store" },
@@ -15,6 +16,7 @@ const navItems = [
 
 const NavBar = () => {
   const location = useLocation();
+  const { isLoggedIn } = useAuth();
   const isActive = (path: string) => location.pathname === path;
 
   // audio + visual indicator toggle
@@ -108,6 +110,20 @@ const NavBar = () => {
                     {item.name}
                   </Link>
                 ))}
+                {isLoggedIn && (
+                  <Link
+                    to="/dashboard/feed"
+                    className={clsx(
+                      "nav-hover-btn !text-lg hover:text-brand-gold hover:after:bg-brand-gold",
+                      {
+                        "!text-brand-gold after:!scale-x-100 after:!bg-brand-gold":
+                          isActive("/dashboard/feed"),
+                      }
+                    )}
+                  >
+                    Feed
+                  </Link>
+                )}
               </div>
 
               {/* Mobile Menu Toggle Button */}
@@ -179,6 +195,18 @@ const NavBar = () => {
               {item.name}
             </Link>
           ))}
+          {isLoggedIn && (
+            <Link
+              to="/dashboard/feed"
+              onClick={() => setIsMenuOpen(false)}
+              className={clsx(
+                "text-2xl font-bold uppercase tracking-widest transition-colors duration-200",
+                isActive("/dashboard/feed") ? "text-brand-gold" : "text-white hover:text-brand-gold"
+              )}
+            >
+              Feed
+            </Link>
+          )}
         </div>
       </div>
     </>

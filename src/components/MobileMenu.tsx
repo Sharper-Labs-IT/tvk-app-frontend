@@ -134,11 +134,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 className="ml-4 mt-2 space-y-2"
               >
                 <Link
-                  to="/game"
+                  to="/games"
                   onClick={onClose}
                   className={`
                     block text-base font-medium p-2 transition-colors
-                    ${isActive('/game') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                    ${isActive('/games') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
                   `}
                 >
                   Games

@@ -121,7 +121,7 @@ const MemberPostEditPage: React.FC = () => {
       </button>
 
       <div className="bg-[#1E1E1E] rounded-2xl border border-white/10 p-6 md:p-8 shadow-2xl">
-        <h1 className="text-2xl font-bold text-white mb-8 font-zentry tracking-wide text-gold text-center">
+        <h1 className="text-2xl font-bold text-gold mb-8 font-zentry tracking-wide text-center">
           Edit Post
         </h1>
 

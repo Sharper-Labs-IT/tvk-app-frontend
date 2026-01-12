@@ -52,6 +52,7 @@ interface PostCardProps {
 interface AuthorProfile {
   id: number;
   name: string;
+  nickname?: string;
   avatar_url?: string;
   role?: string;
   roles?: any[];
@@ -270,7 +271,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
             </div>
             <div>
               <h4 className="text-white font-bold text-sm flex items-center gap-1">
-                {author ? author.name : 'Loading...'}
+                {author ? (author.nickname || author.name) : 'Loading...'}
                 {(author?.role === 'admin' ||
                   (author?.roles && author.roles[0]?.name === 'admin')) && (
                   <ShieldCheck size={14} className="text-gold" />
