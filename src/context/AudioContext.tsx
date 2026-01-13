@@ -21,26 +21,31 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Create audio element with first track
+    // Create audio element with current track
     const audio = new Audio(playlist[currentTrackIndex]);
     audio.volume = 0.5; // Set default volume to 50%
+    audio.muted = isMuted; // Preserve mute state when switching tracks
     audioRef.current = audio;
 
-    // Handle track ending - play next track
+    // Handle track ending - play next track only if not muted
     const handleTrackEnd = () => {
-      setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
+      if (!isMuted) {
+        setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
+      }
     };
 
     audio.addEventListener('ended', handleTrackEnd);
 
-    // Try to play audio (browsers may require user interaction first)
+    // Try to play audio only if not muted
     const playAudio = async () => {
-      try {
-        await audio.play();
-        setIsPlaying(true);
-      } catch (error) {
-        // Autoplay was prevented - this is expected in many browsers
-        console.log('Autoplay prevented. User interaction required.');
+      if (!isMuted) {
+        try {
+          await audio.play();
+          setIsPlaying(true);
+        } catch (error) {
+          // Autoplay was prevented - this is expected in many browsers
+          console.log('Autoplay prevented. User interaction required.');
+        }
       }
     };
 
@@ -54,7 +59,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         audioRef.current = null;
       }
     };
-  }, [currentTrackIndex]);
+  }, [currentTrackIndex, isMuted]);
 
   const toggleMute = () => {
     if (audioRef.current) {
