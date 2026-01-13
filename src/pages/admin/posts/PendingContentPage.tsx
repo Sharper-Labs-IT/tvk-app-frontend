@@ -41,6 +41,13 @@ const PendingContentPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      
+      const paginatedData = await contentService.getPending(currentPage);
+      
+      // Handle different response structures - getPending returns the pagination object directly
+      if (paginatedData && typeof paginatedData === 'object' && 'data' in paginatedData) {
+        const contentsList = paginatedData.data || [];
+        setContents(contentsList);
       const paginatedData = await contentService.getPending(currentPage);
       
       // Handle different response structures
@@ -54,6 +61,22 @@ const PendingContentPage: React.FC = () => {
         setTotalItems(0);
       }
     } catch (err: any) {
+      let errorMessage = 'Failed to load pending contents.';
+      
+      // More detailed error messages
+      if (err.response?.status === 401) {
+        errorMessage = 'Unauthorized. Please login again.';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Access denied. You do not have permission to view pending content.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'API endpoint not found. Please check backend configuration.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       setError(err.response?.data?.message || 'Failed to load pending contents.');
     } finally {
       setLoading(false);

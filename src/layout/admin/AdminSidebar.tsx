@@ -107,7 +107,9 @@ const AdminSidebar: React.FC = () => {
     const fetchPendingCount = async () => {
       try {
         const paginatedData = await contentService.getPending(1);
-        setPendingCount(paginatedData?.total || 0);
+        if (paginatedData && 'total' in paginatedData) {
+          setPendingCount(paginatedData.total || 0);
+        }
       } catch (error) {
         // Silently fail - not critical
       }

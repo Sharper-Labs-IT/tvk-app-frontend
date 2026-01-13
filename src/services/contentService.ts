@@ -161,6 +161,47 @@ export const contentService = {
 
   // GET /api/v1/contents/pending
   getPending: async (page = 1) => {
+    try {
+      const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
+      
+      // The actual backend returns: { contents: { data: [], ... } }
+      // not { pending_contents: { data: [], ... } }
+      const contents = response.data.contents || response.data.pending_contents || response.data;
+      
+      if (!contents) {
+        // Return empty pagination structure
+        return {
+          current_page: 1,
+          data: [],
+          first_page_url: '',
+          from: 0,
+          last_page: 1,
+          last_page_url: '',
+          next_page_url: null,
+          path: '',
+          per_page: 15,
+          prev_page_url: null,
+          to: 0,
+          total: 0,
+        };
+      }
+      
+      // Handle case where contents is already the pagination object
+      const paginationData: any = 'data' in contents ? contents : { data: [], ...contents };
+      
+      // Map backend field names to frontend expected names
+      if (paginationData.data && Array.isArray(paginationData.data)) {
+        paginationData.data = paginationData.data.map((item: any) => ({
+          ...item,
+          status: item.approval_status || item.status || 'pending',
+          reviewed_by: item.approved_by || item.reviewed_by,
+          reviewed_at: item.approved_at || item.reviewed_at,
+        }));
+      }
+      
+      return paginationData;
+    } catch (error: any) {
+      throw error;
     const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
     
     // Map backend field names to frontend expected names
