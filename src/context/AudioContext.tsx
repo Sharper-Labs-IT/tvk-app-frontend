@@ -8,58 +8,45 @@ interface AudioContextType {
 
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
-// Playlist of background music
-const playlist = [
-  '/music/jana_nayagan.mp3',
-  '/music/vj.mp3'
-];
+// Single background music track
+const musicTrack = '/music/jana_nayagan.mp3';
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(false); // Start unmuted for autoplay
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // Create audio element with current track
-    const audio = new Audio(playlist[currentTrackIndex]);
+    // Create audio element
+    const audio = new Audio(musicTrack);
     audio.volume = 0.5; // Set default volume to 50%
-    audio.muted = isMuted; // Preserve mute state when switching tracks
+    audio.loop = true; // Loop the single track
     audioRef.current = audio;
 
-    // Handle track ending - play next track only if not muted
-    const handleTrackEnd = () => {
-      if (!isMuted) {
-        setCurrentTrackIndex((prev) => (prev + 1) % playlist.length);
+    // Attempt to autoplay
+    const attemptAutoplay = async () => {
+      try {
+        await audio.play();
+        setIsPlaying(true);
+        setIsMuted(false);
+      } catch (error) {
+        // Autoplay blocked - user will need to click the button
+        console.log('Autoplay blocked. User interaction required.');
+        setIsMuted(true);
+        audio.muted = true;
       }
     };
 
-    audio.addEventListener('ended', handleTrackEnd);
-
-    // Try to play audio only if not muted
-    const playAudio = async () => {
-      if (!isMuted) {
-        try {
-          await audio.play();
-          setIsPlaying(true);
-        } catch (error) {
-          // Autoplay was prevented - this is expected in many browsers
-          console.log('Autoplay prevented. User interaction required.');
-        }
-      }
-    };
-
-    playAudio();
+    attemptAutoplay();
 
     // Cleanup on unmount
     return () => {
       if (audioRef.current) {
-        audioRef.current.removeEventListener('ended', handleTrackEnd);
         audioRef.current.pause();
         audioRef.current = null;
       }
     };
-  }, [currentTrackIndex, isMuted]);
+  }, []);
 
   const toggleMute = () => {
     if (audioRef.current) {
@@ -87,9 +74,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 export const useAudio = () => {
-  const context = useContext(AudioContext);
-  if (context === undefined) {
-    throw new Error('useAudio must be used within an AudioProvider');
-  }
-  return context;
-};
+  consconst newMutedState = !isMuted;
+      setIsMuted(newMutedState);
+      
+      if (!newMutedState) {
+        // Unmuting - start playing
+        audioRef.current.muted = false;
+        audioRef.current.play().then(() => {
+          setIsPlaying(true);
+        }).catch((error) => {
+          console.log('Playback failed:', error);
+        });
+      } else {
+        // Muting - pause the audio
+        audioRef.current.muted = true;
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
