@@ -12,28 +12,57 @@ const AudioContext = createContext<AudioContextType | undefined>(undefined);
 const musicTrack = '/music/jana_nayagan.mp3';
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isMuted, setIsMuted] = useState(false); // Start unmuted for autoplay
+  const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const autoplayAttempted = useRef(false);
 
   useEffect(() => {
     // Create audio element
     const audio = new Audio(musicTrack);
-    audio.volume = 0.5; // Set default volume to 50%
-    audio.loop = true; // Loop the single track
+    audio.volume = 0.5;
+    audio.loop = true;
     audioRef.current = audio;
 
-    // Attempt to autoplay
+    // Attempt to autoplay with sound
     const attemptAutoplay = async () => {
       try {
+        // First try: play with sound
         await audio.play();
         setIsPlaying(true);
         setIsMuted(false);
+        console.log('Autoplay successful with sound');
       } catch (error) {
-        // Autoplay blocked - user will need to click the button
-        console.log('Autoplay blocked. User interaction required.');
-        setIsMuted(true);
-        audio.muted = true;
+        console.log('Autoplay with sound blocked, trying muted...');
+        
+        // Second try: play muted
+        try {
+          audio.muted = true;
+          await audio.play();
+          setIsPlaying(true);
+          setIsMuted(true);
+          
+          // Auto-unmute on first user interaction
+          const autoUnmute = () => {
+            if (audioRef.current && !autoplayAttempted.current) {
+              audioRef.current.muted = false;
+              setIsMuted(false);
+              autoplayAttempted.current = true;
+              console.log('Auto-unmuted on user interaction');
+              // Remove listeners after first interaction
+              document.removeEventListener('click', autoUnmute);
+              document.removeEventListener('keydown', autoUnmute);
+              document.removeEventListener('touchstart', autoUnmute);
+            }
+          };
+          
+          document.addEventListener('click', autoUnmute);
+          document.addEventListener('keydown', autoUnmute);
+          document.addEventListener('touchstart', autoUnmute);
+        } catch (mutedError) {
+          console.log('Autoplay completely blocked');
+          setIsMuted(true);
+        }
       }
     };
 
