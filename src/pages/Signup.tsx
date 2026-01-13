@@ -941,8 +941,8 @@ const Signup: React.FC = () => {
 
       <MessageModal
         isOpen={showRestrictedModal}
-        title="Service Not Available"
-        message="We are sorry, but the TVK Membership Programme is currently not available for users inside India."
+        title="Service Unavailable in Your Region"
+        message="We’re sorry, but the TVK Membership Programme is currently not available in India.We appreciate your interest and thank you for your understanding"
         type="error"
         onClose={() => setShowRestrictedModal(false)}
         autoCloseDelay={null}
