@@ -161,50 +161,20 @@ export const contentService = {
 
   // GET /api/v1/contents/pending
   getPending: async (page = 1) => {
-    try {
-      const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
-      
-      console.log('getPending API Response:', response.data);
-      
-      // The actual backend returns: { contents: { data: [], ... } }
-      // not { pending_contents: { data: [], ... } }
-      const contents = response.data.contents || response.data.pending_contents;
-      
-      if (!contents) {
-        console.error('No contents or pending_contents found in response:', response.data);
-        // Return empty pagination structure
-        return {
-          current_page: 1,
-          data: [],
-          first_page_url: '',
-          from: 0,
-          last_page: 1,
-          last_page_url: '',
-          next_page_url: null,
-          path: '',
-          per_page: 15,
-          prev_page_url: null,
-          to: 0,
-          total: 0,
-        };
-      }
-      
-      // Map backend field names to frontend expected names
-      if (contents.data && Array.isArray(contents.data)) {
-        contents.data = contents.data.map((item: any) => ({
-          ...item,
-          status: item.approval_status || item.status || 'pending',
-          reviewed_by: item.approved_by || item.reviewed_by,
-          reviewed_at: item.approved_at || item.reviewed_at,
-        }));
-      }
-      
-      return contents;
-    } catch (error: any) {
-      console.error('getPending Error:', error);
-      console.error('Error Response:', error.response?.data);
-      throw error;
+    const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
+    
+    // Map backend field names to frontend expected names
+    const contents = response.data.pending_contents || response.data;
+    if (contents.data && Array.isArray(contents.data)) {
+      contents.data = contents.data.map((item: any) => ({
+        ...item,
+        status: item.approval_status || item.status || 'pending',
+        reviewed_by: item.approved_by || item.reviewed_by,
+        reviewed_at: item.approved_at || item.reviewed_at,
+      }));
     }
+    
+    return contents;
   },
 
   // POST /api/v1/contents/{id}/approve
