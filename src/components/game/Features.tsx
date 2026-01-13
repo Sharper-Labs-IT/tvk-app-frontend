@@ -155,20 +155,28 @@ const Features = () => {
 
   return (
     <>
-      <section id="features-section" className="bg-black pb-52">
-        <div className="container mx-auto px-3 md:px-10">
+      <section id="features-section" className="bg-black pb-52 relative">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 opacity-[0.02] bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')]"></div>
+        
+        <div className="container mx-auto px-3 md:px-10 relative z-10">
           <div className="px-5 py-32">
-            <p className="font-circular-web text-lg text-blue-50">
-              Experience the thrill of gaming with Thalapathy VJ like never
+            <div className="inline-block mb-6">
+              <span className="px-4 py-2 rounded-full bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-sm uppercase tracking-wider font-semibold">
+                🎮 Featured Games
+              </span>
+            </div>
+            <p className="font-circular-web text-2xl md:text-3xl text-blue-50 font-bold mb-4 leading-tight">
+              Experience the thrill of gaming with Thalapathy VJ like never before
             </p>
-            <p className="max-w-md font-circular-web text-lg text-blue-50 opacity-50">
+            <p className="max-w-2xl font-circular-web text-base md:text-lg text-blue-50/70 leading-relaxed">
               Dive deeper into the TVK universe with exclusive games and
               interactive experiences that bring you closer to Thalapathy VJ
               than ever before.
             </p>
           </div>
 
-          <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
+          <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-2xl md:h-[65vh] shadow-2xl ring-1 ring-yellow-500/20 hover:ring-yellow-500/40 transition-all">
             <BentoCard
               src="img/memory.webp"
               title={
@@ -185,7 +193,7 @@ const Features = () => {
           <div className="flex flex-col gap-7 w-full md:grid md:grid-cols-2 md:grid-rows-4 md:h-[180vh]">
             
             {/* VJ Avatar */}
-            <BentoTilt className="bento-tilt_1 h-96 md:h-auto md:row-span-2 md:col-span-1">
+            <BentoTilt className="bento-tilt_1 h-96 md:h-auto md:row-span-2 md:col-span-1 rounded-2xl shadow-xl ring-1 ring-white/10 hover:ring-white/20 transition-all">
               <BentoCard
                 src="img/feature-2.webp"
                 title={<>VJ</>}
@@ -195,7 +203,7 @@ const Features = () => {
             </BentoTilt>
 
             {/* Villain Hunt */}
-            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1">
+            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1 rounded-2xl shadow-xl ring-1 ring-white/10 hover:ring-white/20 transition-all">
               <BentoCard
                 src="img/game-1.webp" 
                 title={
@@ -210,7 +218,7 @@ const Features = () => {
             </BentoTilt>
 
             {/* Protect Galaxy */}
-            <BentoTilt className="bento-tilt_1 h-96 md:h-auto md:row-span-1 md:col-span-1 md:me-0">
+            <BentoTilt className="bento-tilt_1 h-96 md:h-auto md:row-span-1 md:col-span-1 md:me-0 rounded-2xl shadow-xl ring-1 ring-white/10 hover:ring-white/20 transition-all">
               <BentoCard
                 src="img/game-3.webp"
                 title={
@@ -225,7 +233,7 @@ const Features = () => {
             </BentoTilt>
 
             {/* Jigsaw */}
-            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1">
+            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1 rounded-2xl shadow-xl ring-1 ring-white/10 hover:ring-white/20 transition-all">
               <BentoCard
                 src="img/jigsaw.webp" 
                 title={
@@ -240,7 +248,7 @@ const Features = () => {
             </BentoTilt>
 
             {/* Trivia */}
-            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1">
+            <BentoTilt className="bento-tilt_2 h-96 md:h-auto md:row-span-1 md:col-span-1 rounded-2xl shadow-xl ring-1 ring-white/10 hover:ring-white/20 transition-all">
               <BentoCard
                 src="img/trivia.webp" 
                 title={
@@ -257,19 +265,19 @@ const Features = () => {
         </div>
       </section>
 
-      {/* --- SUBSCRIPTION MODAL --- */}
+      {/* --- ENHANCED SUBSCRIPTION MODAL --- */}
       {showModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 animate-fadeIn">
         
           <div 
-            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/90 backdrop-blur-md"
             onClick={() => setShowModal(false)}
           />
-          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-brand-dark rounded-3xl shadow-2xl border border-white/10">
+          <div className="relative w-full max-w-4xl max-h-[90vh] overflow-y-auto bg-brand-dark rounded-3xl shadow-2xl border border-yellow-500/20 ring-2 ring-yellow-500/10 animate-slideUp custom-scrollbar">
     
             <button 
               onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 z-50 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors"
+              className="absolute top-4 right-4 z-50 p-2 bg-black/70 hover:bg-black rounded-full text-white transition-all hover:scale-110 hover:rotate-90"
             >
               <X size={24} />
             </button>

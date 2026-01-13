@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
+import { useAudio } from '../context/AudioContext';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const headerContainerVariants: Variants = {
@@ -39,6 +40,7 @@ const Header: React.FC = () => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   const { isLoggedIn, user, logout } = useAuth();
+  const { isMuted, toggleMute } = useAudio();
 
   const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
@@ -240,6 +242,56 @@ const Header: React.FC = () => {
           variants={majorItemVariants}
           className="flex-shrink-0 flex items-center space-x-4 ml-auto"
         >
+          {/* Audio Control Button - Show on main pages */}
+          {(location.pathname === '/' || 
+            location.pathname === '/membership' || 
+            location.pathname === '/store' || 
+            location.pathname === '/events' ||
+            location.pathname === '/games' ||
+            location.pathname === '/leaderboard') && (
+            <button
+              onClick={toggleMute}
+              className="p-2 transition-colors hover:text-brand-gold"
+              aria-label={isMuted ? "Unmute music" : "Mute music"}
+            >
+              {isMuted ? (
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" 
+                  />
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" 
+                  />
+                </svg>
+              ) : (
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" 
+                  />
+                </svg>
+              )}
+            </button>
+          )}
+          
           <div className="hidden md:block">
             {isLoggedIn ? (
               <div 

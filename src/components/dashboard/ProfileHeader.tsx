@@ -5,10 +5,6 @@ import { getCountryFromMobile } from '../../utils/countryHelper';
 interface ProfileHeaderProps {
   user: any;
   isPremium: boolean;
-  isUploadingAvatar: boolean;
-  // --- FIX 1: Allow null in the ref type ---
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
-  handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleAvatarClick: () => void;
 
   isEditingNickname: boolean;
@@ -26,9 +22,6 @@ interface ProfileHeaderProps {
 const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   user,
   isPremium,
-  isUploadingAvatar,
-  fileInputRef,
-  handleFileChange,
   handleAvatarClick,
   isEditingNickname,
   nicknameInput,
@@ -61,27 +54,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   }&background=E6C65B&color=000&size=128`
                 }
                 alt="Profile"
-                className={`w-full h-full rounded-full object-cover border-4 border-yellow-500 shadow-lg bg-black ${
-                  isUploadingAvatar ? 'opacity-50' : ''
-                }`}
+                className="w-full h-full rounded-full object-cover border-4 border-yellow-500 shadow-lg bg-black"
               />
-              {isUploadingAvatar && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                </div>
-              )}
             </div>
-            {/* Input uses the fixed ref type */}
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              accept="image/*"
-            />
             <button
               onClick={handleAvatarClick}
-              disabled={isUploadingAvatar}
               className="absolute bottom-2 right-2 bg-yellow-500 text-black p-2.5 rounded-full hover:bg-white hover:scale-110 transition shadow-lg border-2 border-[#1E1E1E]"
             >
               <Camera size={18} />
