@@ -82,7 +82,7 @@ const PendingContentPage: React.FC = () => {
 
     try {
       setProcessingId(id);
-      const result = await contentService.approve(id);
+      await contentService.approve(id);
       setContents(contents.filter((c) => c.id !== id));
       setTotalItems((prev) => prev - 1);
       alert('Content approved successfully!');
@@ -103,7 +103,7 @@ const PendingContentPage: React.FC = () => {
 
     try {
       setProcessingId(selectedContent.id);
-      const result = await contentService.reject(selectedContent.id, { reason });
+      await contentService.reject(selectedContent.id, { reason });
       setContents(contents.filter((c) => c.id !== selectedContent.id));
       setTotalItems((prev) => prev - 1);
       setRejectModalOpen(false);
