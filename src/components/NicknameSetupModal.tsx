@@ -116,8 +116,7 @@ const NicknameSetupModal: React.FC<NicknameSetupModalProps> = ({
         <h2 className="mb-3 text-center text-2xl font-bold text-white">Set Your Nickname</h2>
 
         <p className="mb-8 text-center text-sm text-slate-300">
-          Pick a nickname to show your identity. This is how other members will see you in the “VJ
-          Kudumbam”
+          Choose how you'll appear in the TVK Kudumbam community.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-5">

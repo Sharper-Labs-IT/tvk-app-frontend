@@ -41,30 +41,20 @@ const PendingContentPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      console.log('Fetching pending contents for page:', currentPage);
       const paginatedData = await contentService.getPending(currentPage);
-      console.log('Received paginated data:', paginatedData);
       
       // Handle different response structures
       if (paginatedData && typeof paginatedData === 'object') {
-        console.log('Setting contents:', paginatedData.data);
-        console.log('Total pages:', paginatedData.last_page);
-        console.log('Total items:', paginatedData.total);
-        
         setContents(paginatedData.data || []);
         setTotalPages(paginatedData.last_page || 1);
         setTotalItems(paginatedData.total || 0);
       } else {
-        console.warn('Unexpected paginated data structure:', paginatedData);
         setContents([]);
         setTotalPages(1);
         setTotalItems(0);
       }
     } catch (err: any) {
-      console.error('Error fetching pending contents:', err);
-      console.error('Error response:', err.response);
-      setError(err.response?.data?.message || err.message || 'Failed to load pending contents.');
+      setError(err.response?.data?.message || 'Failed to load pending contents.');
     } finally {
       setLoading(false);
     }

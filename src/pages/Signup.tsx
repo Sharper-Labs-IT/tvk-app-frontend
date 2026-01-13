@@ -16,17 +16,17 @@ import { COUNTRIES } from '../constants/countries';
 import { PHONE_CODES } from '../constants/phoneCodes';
 
 const TITLE_OPTIONS = [
-  'Mr',
-  'Mrs',
-  'Ms',
-  'Miss',
-  'Mx',
-  'Dr',
-  'Prof',
-  'Rev',
-  'Sir',
-  'Dame',
-  'Prefer not to say',
+  "Mr",
+  "Mrs",
+  "Ms",
+  "Miss",
+  "Mx",
+  "Dr",
+  "Prof",
+  "Rev",
+  "Sir",
+  "Dame",
+  "Prefer not to say"
 ];
 
 const Signup: React.FC = () => {
@@ -54,7 +54,7 @@ const Signup: React.FC = () => {
   // --- MODAL STATES ---
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-
+  
   const [successMessage, setSuccessMessage] = useState('');
   const [showRestrictedModal, setShowRestrictedModal] = useState(false);
 
@@ -101,9 +101,9 @@ const Signup: React.FC = () => {
       sessionStorage.setItem('temp_signup_email', formData.email);
       sessionStorage.setItem('temp_signup_name', `${formData.first_name} ${formData.surname}`);
       setSuccessMessage(
-        'We’ve sent a One-Time Password (OTP) to your email.' +
-          'Please verify your account to continue.<br /><br />' +
-          'Tap ‘Close’ to go to the OTP verification screen.'
+        "We’ve sent a One-Time Password (OTP) to your email." +
+      "Please verify your account to continue.<br /><br />" +
+      "Tap ‘Close’ to go to the OTP verification screen."
       );
       setShowSuccessModal(true);
     }
@@ -281,21 +281,21 @@ const Signup: React.FC = () => {
     } catch (err: any) {
       let errorMessage = 'Registration failed. Please check your details.';
       const errors: { [key: string]: string } = {};
-
+      
       if (err.response && err.response.status === 422) {
         if (err.response.data.errors) {
           const backendErrors = err.response.data.errors;
-
+          
           // Handle email error
           if (backendErrors.email) {
             errors.email = 'This email address is already registered.';
           }
-
+          
           // Handle mobile error
           if (backendErrors.mobile) {
             errors.mobile = 'This mobile number is already registered.';
           }
-
+          
           // Set field errors if any
           if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
@@ -458,12 +458,9 @@ const Signup: React.FC = () => {
               ) : detectedCountryCode === 'IN' ? (
                 <div className="text-center py-10">
                   <div className="text-red-500 text-5xl mb-4">🚫</div>
-                  <h3 className="text-xl font-bold text-white mb-2">
-                    Service Unavailable in Your Region
-                  </h3>
+                  <h3 className="text-xl font-bold text-white mb-2">Service Not Available</h3>
                   <p className="text-gray-400">
-                    We're sorry, but the TVK Membership Programme is currently not available in
-                    India. We appreciate your interest and thank you for your understanding
+                    We are sorry, but registration is currently not available for users in India.
                   </p>
                   <div className="mt-6">
                     <Link to="/" className="text-tvk-accent-gold hover:underline">
@@ -558,10 +555,10 @@ const Signup: React.FC = () => {
                       We’ll auto-generate a display name for you.
                     </p>
                     <p className="text-gray-400 text-xs lg:text-sm leading-relaxed mt-1">
-                      This name will be shown publicly in games, leaderboards, and winner
-                      announcements. You can change it later in your profile dashboard.
+                      This name will be shown publicly in games, leaderboards, and winner announcements. You can change it later in your profile dashboard.
                     </p>
                   </div>
+
 
                   {/* Country Selection Dropdown */}
                   <div>
