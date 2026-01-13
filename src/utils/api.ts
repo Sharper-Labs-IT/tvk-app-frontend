@@ -33,9 +33,50 @@ api.interceptors.request.use(
       config.headers['Authorization'] = `Bearer ${token}`;
     }
 
+    console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
     return config;
   },
   (error) => {
+    console.error('Request Interceptor Error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Response Interceptor: Handle common response errors
+api.interceptors.response.use(
+  (response) => {
+    console.log(`API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.status);
+    return response;
+  },
+  (error) => {
+    console.error('API Response Error:', error);
+    
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      console.error('Error Status:', error.response.status);
+      console.error('Error Data:', error.response.data);
+      
+      // Handle specific error codes
+      if (error.response.status === 401) {
+        console.error('Unauthorized - Token may be invalid or expired');
+        // You could redirect to login here if needed
+      } else if (error.response.status === 403) {
+        console.error('Forbidden - User does not have permission');
+      } else if (error.response.status === 404) {
+        console.error('Not Found - Endpoint does not exist');
+      } else if (error.response.status === 500) {
+        console.error('Internal Server Error');
+      }
+    } else if (error.request) {
+      // The request was made but no response was received
+      console.error('No response received from server');
+      console.error('Request:', error.request);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      console.error('Error setting up request:', error.message);
+    }
+    
     return Promise.reject(error);
   }
 );
