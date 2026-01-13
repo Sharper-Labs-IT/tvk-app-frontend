@@ -168,7 +168,7 @@ const MembershipPlan: React.FC = () => {
                       Super Fan Premium Membership
                     </h3>
                     <p className="text-white/80 text-sm">
-                      For fans who want the full TVK experience.
+                      The ultimate experience for true TVK fans
                     </p>
                   </div>
 
