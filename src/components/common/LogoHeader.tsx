@@ -22,13 +22,13 @@ const LogoHeader: React.FC<LogoHeaderProps> = ({ isVisible = true, delayClass = 
     <div className={`flex justify-between items-center p-6 sm:p-8 z-10 w-full ${animationClass}`}>
       {/* Left Side: Logo */}
       <div className="flex items-center gap-2 sm:gap-3 select-none">
-        <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-12 sm:h-14 w-auto object-contain" />
+        <img src="/images/tvk-logo.png" alt="TVK Logo" className="h-8 sm:h-10 w-auto object-contain" />
         <span className="text-white font-bold tracking-wider uppercase text-[10px] sm:text-sm md:text-base lg:text-lg xl:text-xl leading-tight">
           {text ? (
             text
           ) : (
             <>
-              
+              TVK <span className="text-tvk-accent-gold">MEMBERSHIP</span>
             </>
           )}
         </span>

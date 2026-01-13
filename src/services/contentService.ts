@@ -202,7 +202,20 @@ export const contentService = {
       return paginationData;
     } catch (error: any) {
       throw error;
+    const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
+    
+    // Map backend field names to frontend expected names
+    const contents = response.data.pending_contents || response.data;
+    if (contents.data && Array.isArray(contents.data)) {
+      contents.data = contents.data.map((item: any) => ({
+        ...item,
+        status: item.approval_status || item.status || 'pending',
+        reviewed_by: item.approved_by || item.reviewed_by,
+        reviewed_at: item.approved_at || item.reviewed_at,
+      }));
     }
+    
+    return contents;
   },
 
   // POST /api/v1/contents/{id}/approve
