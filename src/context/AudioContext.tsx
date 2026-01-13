@@ -15,7 +15,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const autoplayAttempted = useRef(false);
+  const listenersAttached = useRef(false);
 
   useEffect(() => {
     // Create audio element
@@ -23,6 +23,20 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     audio.volume = 0.5;
     audio.loop = true;
     audioRef.current = audio;
+
+    // Auto-unmute handler
+    const autoUnmute = () => {
+      if (audioRef.current && listenersAttached.current) {
+        audioRef.current.muted = false;
+        setIsMuted(false);
+        console.log('Auto-unmuted on user interaction');
+        // Remove listeners after first interaction
+        document.removeEventListener('click', autoUnmute, true);
+        document.removeEventListener('keydown', autoUnmute, true);
+        document.removeEventListener('touchstart', autoUnmute, true);
+        listenersAttached.current = false;
+      }
+    };
 
     // Attempt to autoplay with sound
     const attemptAutoplay = async () => {
@@ -33,34 +47,26 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsMuted(false);
         console.log('Autoplay successful with sound');
       } catch (error) {
-        console.log('Autoplay with sound blocked, trying muted...');
+        console.log('Autoplay with sound blocked, starting muted...');
         
-        // Second try: play muted
+        // Start muted and play
+        audio.muted = true;
+        setIsMuted(true);
+        
         try {
-          audio.muted = true;
           await audio.play();
           setIsPlaying(true);
-          setIsMuted(true);
+          console.log('Playing muted, will unmute on user interaction');
           
-          // Auto-unmute on first user interaction
-          const autoUnmute = () => {
-            if (audioRef.current && !autoplayAttempted.current) {
-              audioRef.current.muted = false;
-              setIsMuted(false);
-              autoplayAttempted.current = true;
-              console.log('Auto-unmuted on user interaction');
-              // Remove listeners after first interaction
-              document.removeEventListener('click', autoUnmute);
-              document.removeEventListener('keydown', autoUnmute);
-              document.removeEventListener('touchstart', autoUnmute);
-            }
-          };
-          
-          document.addEventListener('click', autoUnmute);
-          document.addEventListener('keydown', autoUnmute);
-          document.addEventListener('touchstart', autoUnmute);
+          // Attach event listeners for auto-unmute
+          if (!listenersAttached.current) {
+            document.addEventListener('click', autoUnmute, true);
+            document.addEventListener('keydown', autoUnmute, true);
+            document.addEventListener('touchstart', autoUnmute, true);
+            listenersAttached.current = true;
+          }
         } catch (mutedError) {
-          console.log('Autoplay completely blocked');
+          console.log('Autoplay completely blocked:', mutedError);
           setIsMuted(true);
         }
       }
@@ -70,6 +76,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     // Cleanup on unmount
     return () => {
+      if (listenersAttached.current) {
+        document.removeEventListener('click', autoUnmute, true);
+        document.removeEventListener('keydown', autoUnmute, true);
+        document.removeEventListener('touchstart', autoUnmute, true);
+      }
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
