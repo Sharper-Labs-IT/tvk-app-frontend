@@ -164,14 +164,11 @@ export const contentService = {
     try {
       const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
       
-      console.log('getPending API Response:', response.data);
-      
       // The actual backend returns: { contents: { data: [], ... } }
       // not { pending_contents: { data: [], ... } }
-      const contents = response.data.contents || response.data.pending_contents;
+      const contents = response.data.contents || response.data.pending_contents || response.data;
       
       if (!contents) {
-        console.error('No contents or pending_contents found in response:', response.data);
         // Return empty pagination structure
         return {
           current_page: 1,
@@ -189,9 +186,12 @@ export const contentService = {
         };
       }
       
+      // Handle case where contents is already the pagination object
+      const paginationData: any = 'data' in contents ? contents : { data: [], ...contents };
+      
       // Map backend field names to frontend expected names
-      if (contents.data && Array.isArray(contents.data)) {
-        contents.data = contents.data.map((item: any) => ({
+      if (paginationData.data && Array.isArray(paginationData.data)) {
+        paginationData.data = paginationData.data.map((item: any) => ({
           ...item,
           status: item.approval_status || item.status || 'pending',
           reviewed_by: item.approved_by || item.reviewed_by,
@@ -199,10 +199,8 @@ export const contentService = {
         }));
       }
       
-      return contents;
+      return paginationData;
     } catch (error: any) {
-      console.error('getPending Error:', error);
-      console.error('Error Response:', error.response?.data);
       throw error;
     }
   },

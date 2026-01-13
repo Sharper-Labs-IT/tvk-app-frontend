@@ -42,29 +42,36 @@ const PendingContentPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      console.log('Fetching pending contents for page:', currentPage);
       const paginatedData = await contentService.getPending(currentPage);
-      console.log('Received paginated data:', paginatedData);
       
-      // Handle different response structures
-      if (paginatedData && typeof paginatedData === 'object') {
-        console.log('Setting contents:', paginatedData.data);
-        console.log('Total pages:', paginatedData.last_page);
-        console.log('Total items:', paginatedData.total);
-        
-        setContents(paginatedData.data || []);
+      // Handle different response structures - getPending returns the pagination object directly
+      if (paginatedData && typeof paginatedData === 'object' && 'data' in paginatedData) {
+        const contentsList = paginatedData.data || [];
+        setContents(contentsList);
         setTotalPages(paginatedData.last_page || 1);
         setTotalItems(paginatedData.total || 0);
       } else {
-        console.warn('Unexpected paginated data structure:', paginatedData);
         setContents([]);
         setTotalPages(1);
         setTotalItems(0);
       }
     } catch (err: any) {
-      console.error('Error fetching pending contents:', err);
-      console.error('Error response:', err.response);
-      setError(err.response?.data?.message || err.message || 'Failed to load pending contents.');
+      let errorMessage = 'Failed to load pending contents.';
+      
+      // More detailed error messages
+      if (err.response?.status === 401) {
+        errorMessage = 'Unauthorized. Please login again.';
+      } else if (err.response?.status === 403) {
+        errorMessage = 'Access denied. You do not have permission to view pending content.';
+      } else if (err.response?.status === 404) {
+        errorMessage = 'API endpoint not found. Please check backend configuration.';
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
