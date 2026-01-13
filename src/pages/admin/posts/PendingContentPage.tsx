@@ -42,43 +42,20 @@ const PendingContentPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔍 Fetching pending contents for page:', currentPage);
-      console.log('🌐 Environment:', import.meta.env.MODE);
-      console.log('🔗 API Base URL:', import.meta.env.VITE_API_BASE_URL);
-      
       const paginatedData = await contentService.getPending(currentPage);
-      console.log('✅ Received paginated data:', paginatedData);
       
-      // Handle different response structures
-      if (paginatedData && typeof paginatedData === 'object') {
-        console.log('📝 Setting contents:', paginatedData.data);
-        console.log('📄 Total pages:', paginatedData.last_page);
-        console.log('🔢 Total items:', paginatedData.total);
-        
+      // Handle different response structures - getPending returns the pagination object directly
+      if (paginatedData && typeof paginatedData === 'object' && 'data' in paginatedData) {
         const contentsList = paginatedData.data || [];
         setContents(contentsList);
         setTotalPages(paginatedData.last_page || 1);
         setTotalItems(paginatedData.total || 0);
-        
-        // Additional logging for empty results
-        if (contentsList.length === 0) {
-          console.warn('⚠️ No pending contents found. This could mean:');
-          console.warn('  1. All content has been reviewed');
-          console.warn('  2. Backend returned empty data');
-          console.warn('  3. Authorization issue (user might not have proper role)');
-        }
       } else {
-        console.warn('⚠️ Unexpected paginated data structure:', paginatedData);
         setContents([]);
         setTotalPages(1);
         setTotalItems(0);
       }
     } catch (err: any) {
-      console.error('❌ Error fetching pending contents:', err);
-      console.error('❌ Error response data:', err.response?.data);
-      console.error('❌ Error status:', err.response?.status);
-      console.error('❌ Error message:', err.message);
-      
       let errorMessage = 'Failed to load pending contents.';
       
       // More detailed error messages
