@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from "./context/AuthContext.tsx";
+import { AudioProvider } from "./context/AudioContext.tsx";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import App from './App.tsx';
@@ -17,9 +18,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BrowserRouter>
       <AuthProvider>
-        <Elements stripe={stripePromise}>
-          <App />
-        </Elements>
+        <AudioProvider>
+          <Elements stripe={stripePromise}>
+            <App />
+          </Elements>
+        </AudioProvider>
       </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>,

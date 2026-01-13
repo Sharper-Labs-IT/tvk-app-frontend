@@ -1,10 +1,10 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-hot-toast';
-import { Mail, Phone, Calendar, AlertTriangle, Trash2, Edit2 } from 'lucide-react';
+import { Mail, Phone, Calendar, AlertTriangle, Trash2, Edit2, Camera } from 'lucide-react';
 
 
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
@@ -26,12 +26,11 @@ import type { Plan } from '../../types/plan';
 const SYSTEM_TITLE_PREFIXES = ['mr', 'mrs', 'ms', 'miss', 'mx', 'dr', 'prof', 'rev', 'sir', 'dame'];
 
 const MemberProfile: React.FC = () => {
-  const { user, login, token, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [isResetPassOpen, setIsResetPassOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(user?.nickname || '');
@@ -54,8 +53,7 @@ const MemberProfile: React.FC = () => {
   // --- RESUBSCRIBE STATE ---
   const [isReactivateModalOpen, setIsReactivateModalOpen] = useState(false);
   const [isResubscribing, setIsResubscribing] = useState(false);
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isComingSoonModalOpen, setIsComingSoonModalOpen] = useState(false);
 
   // --- Robust Date Formatter ---
   const formatDate = (dateString?: string) => {
@@ -98,38 +96,7 @@ const MemberProfile: React.FC = () => {
     return isSystemPattern;
   }, [user?.nickname]);
 
-  const handleAvatarClick = () => fileInputRef.current?.click();
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    // 🛡️ Security: Client-side Rate Limiting (60s cooldown)
-    const lastUpload = localStorage.getItem('last_avatar_update');
-    if (lastUpload) {
-      const remaining = 60000 - (Date.now() - Number(lastUpload));
-      if (remaining > 0) {
-        toast.error(`Please wait ${Math.ceil(remaining / 1000)}s before uploading again.`);
-        return;
-      }
-    }
-
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setIsUploadingAvatar(true);
-    try {
-      const response = await userService.updateAvatar(file);
-      
-      localStorage.setItem('last_avatar_update', Date.now().toString()); // Set cooldown
-
-      if (token && user) {
-        login(token, { ...user, avatar_url: response.avatar_url });
-        await refreshUser();
-      }
-      toast.success('Profile picture updated!');
-    } catch (error) {
-      toast.error('Failed to update profile picture.');
-    } finally {
-      setIsUploadingAvatar(false);
-    }
-  };
+  const handleAvatarClick = () => setIsComingSoonModalOpen(true);
 
   const handleNicknameUpdate = () => {
     if (!nicknameInput.trim()) {
@@ -273,9 +240,6 @@ const MemberProfile: React.FC = () => {
       <ProfileHeader
         user={user}
         isPremium={isPremium}
-        isUploadingAvatar={isUploadingAvatar}
-        fileInputRef={fileInputRef}
-        handleFileChange={handleFileChange}
         handleAvatarClick={handleAvatarClick}
         isEditingNickname={isEditingNickname}
         nicknameInput={nicknameInput}
@@ -431,6 +395,33 @@ const MemberProfile: React.FC = () => {
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
       />
+
+      {/* Coming Soon Modal */}
+      {isComingSoonModalOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsComingSoonModalOpen(false)}
+          />
+          <div className="relative bg-slate-900 rounded-2xl shadow-2xl border border-yellow-500/30 max-w-md w-full p-8 text-center">
+            <div className="mb-6">
+              <div className="w-20 h-20 mx-auto mb-4 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                <Camera size={40} className="text-yellow-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Coming Soon!</h2>
+              <p className="text-slate-400">
+                Profile picture upload feature is currently under development. Stay tuned for updates!
+              </p>
+            </div>
+            <button
+              onClick={() => setIsComingSoonModalOpen(false)}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
