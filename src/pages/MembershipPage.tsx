@@ -385,7 +385,7 @@ const MembershipPage: React.FC = () => {
                   <Star className="w-6 h-6 text-tvk-accent-gold" />
                 </div> */}
                 <h2 className="text-xl font-bold text-white">
-                  You're Almost There, True VJ Fan! 🎉
+                  You’re Almost There, True VJ Fan! 🎉
                 </h2>
               </div>
             </div>
