@@ -74,20 +74,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 };
 
 export const useAudio = () => {
-  consconst newMutedState = !isMuted;
-      setIsMuted(newMutedState);
-      
-      if (!newMutedState) {
-        // Unmuting - start playing
-        audioRef.current.muted = false;
-        audioRef.current.play().then(() => {
-          setIsPlaying(true);
-        }).catch((error) => {
-          console.log('Playback failed:', error);
-        });
-      } else {
-        // Muting - pause the audio
-        audioRef.current.muted = true;
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+  const context = useContext(AudioContext);
+  if (context === undefined) {
+    throw new Error('useAudio must be used within an AudioProvider');
+  }
+  return context;
+};
