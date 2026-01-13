@@ -92,7 +92,23 @@ export interface IContentResponse {
 
 // 8. Pending Contents Response (Admin)
 export interface IPendingContentResponse {
-  pending_contents: {
+  // Backend returns 'contents' not 'pending_contents'
+  contents?: {
+    current_page: number;
+    data: IContent[];
+    first_page_url: string;
+    from: number;
+    last_page: number;
+    last_page_url: string;
+    next_page_url: string | null;
+    path: string;
+    per_page: number;
+    prev_page_url: string | null;
+    to: number;
+    total: number;
+  };
+  // Fallback for documented structure
+  pending_contents?: {
     current_page: number;
     data: IContent[];
     first_page_url: string;
