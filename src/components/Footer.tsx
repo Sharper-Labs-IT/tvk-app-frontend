@@ -125,7 +125,7 @@ const Footer: React.FC = () => {
             <div className="flex space-x-6 text-2xl">
               {/* Facebook */}
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/profile.php?id=61585391693093"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
@@ -134,7 +134,7 @@ const Footer: React.FC = () => {
               </a>
               {/* Instagram */}
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/tvk_members/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
