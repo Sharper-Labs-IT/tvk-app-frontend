@@ -164,6 +164,7 @@ export const contentService = {
     try {
       const response = await api.get<IPendingContentResponse>(`/v1/contents/pending?page=${page}`);
       
+      
       // The actual backend returns: { contents: { data: [], ... } }
       // not { pending_contents: { data: [], ... } }
       const contents = response.data.contents || response.data.pending_contents || response.data;
