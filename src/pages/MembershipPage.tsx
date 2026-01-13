@@ -373,7 +373,7 @@ const MembershipPage: React.FC = () => {
         currency={selectedCurrency}
         onSuccess={handlePaymentSuccess}
       />
-
+      
       {/* Free Member Required Modal */}
       {isFreeMemberRequiredModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -384,24 +384,18 @@ const MembershipPage: React.FC = () => {
                 {/* <div className="w-12 h-12 bg-tvk-accent-gold/20 rounded-xl flex items-center justify-center border border-tvk-accent-gold/30">
                   <Star className="w-6 h-6 text-tvk-accent-gold" />
                 </div> */}
-                <h2 className="text-xl font-bold text-white">
-                  You're Almost There, True VJ Fan! 🎉
-                </h2>
+                <h2 className="text-xl font-bold text-white">Cool! We Know You're a True VJ Fan! 🎉</h2>
               </div>
             </div>
 
             {/* Content */}
             <div className="p-6 space-y-4">
               <p className="text-gray-300 leading-relaxed">
-                We love your enthusiasm! To unlock the full{' '}
-                <span className="text-tvk-accent-gold font-bold">Super Fan</span>, experience,
-                you’ll first need to join as a{' '}
-                <span className="text-green-400 font-semibold">Free Member</span>
+                We love your enthusiasm! But before you become a <span className="text-tvk-accent-gold font-bold">Super Fan</span>, 
+                you need to join as a <span className="text-green-400 font-semibold">Free Member</span> first.
               </p>
               <p className="text-gray-400 text-sm">
-                It only takes a minute to create your free account. Once you’re in, you can
-                instantly upgrade to Super Fan Premium and enjoy exclusive content, priority access,
-                and special fan privileges
+                It only takes a minute! Create your free account and then you'll be able to upgrade to Super Fan Premium.
               </p>
             </div>
 
