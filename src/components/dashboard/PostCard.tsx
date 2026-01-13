@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import CommentSection from './CommentSection';
 import ConfirmModal from './ConfirmModal';
 import ShareModal from './ShareModal';
+import { linkifyText } from '../../utils/linkify';
 
 import {
   MessageCircle,
@@ -328,7 +329,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
           {post.description && (
             <div className={isLocked ? 'blur-sm select-none opacity-50' : ''}>
               <p className="text-gray-300 text-sm whitespace-pre-wrap leading-relaxed">
-                {post.description}
+                {linkifyText(post.description)}
               </p>
             </div>
           )}
