@@ -187,7 +187,7 @@ export const contentService = {
       }
       
       // Handle case where contents is already the pagination object
-      const paginationData = contents.data ? contents : { data: [], ...contents };
+      const paginationData: any = 'data' in contents ? contents : { data: [], ...contents };
       
       // Map backend field names to frontend expected names
       if (paginationData.data && Array.isArray(paginationData.data)) {
