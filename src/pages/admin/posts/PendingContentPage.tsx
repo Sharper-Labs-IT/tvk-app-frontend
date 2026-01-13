@@ -85,6 +85,7 @@ const PendingContentPage: React.FC = () => {
       await contentService.approve(id);
       setContents(contents.filter((c) => c.id !== id));
       setTotalItems((prev) => prev - 1);
+      alert('Content approved successfully!');
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to approve content.');
     } finally {
@@ -107,6 +108,7 @@ const PendingContentPage: React.FC = () => {
       setTotalItems((prev) => prev - 1);
       setRejectModalOpen(false);
       setSelectedContent(null);
+      alert('Content rejected successfully!');
     } catch (err: any) {
       alert(err.response?.data?.message || 'Failed to reject content.');
     } finally {

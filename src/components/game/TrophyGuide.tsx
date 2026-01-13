@@ -180,7 +180,7 @@ const TrophyGuide: React.FC = () => {
             Trophy Tiers
           </h3>
           <p className="text-gray-400 text-center mb-10 max-w-2xl mx-auto">
-            Each game has four trophy tiers based on your score. Click on a tier to see the requirements.
+            Each game has four trophy tiers based on your score. Click on a tier to see the requirements
           </p>
 
           {/* Tier Selector */}
