@@ -109,8 +109,8 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/global-map" className="hover:text-brand-gold transition-colors">
-                  Global Map
+                <Link to="/leaderboard" className="hover:text-brand-gold transition-colors">
+                  Leaderboard
                 </Link>
               </li>
             </ul>
