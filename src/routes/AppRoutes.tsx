@@ -78,6 +78,8 @@ const EventListPage = React.lazy(() => import('../pages/admin/events/EventListPa
 const CreateEventPage = React.lazy(() => import('../pages/admin/events/CreateEventPage'));
 const EditEventPage = React.lazy(() => import('../pages/admin/events/EditEventPage'));
 
+const AnalyticsReportPage = React.lazy(() => import('../pages/admin/reports/AnalyticsReportPage'));
+
 /**
  * Helper to safely get role name string
  */
@@ -269,6 +271,9 @@ const AppRoutes: React.FC = () => {
             <Route path="members/admins" element={<AdminListPage />} />
             <Route path="members/admins/create" element={<CreateAdminPage />} />
             <Route path="members/admins/edit/:id" element={<EditAdminPage />} />
+
+            {/* ANALYTICS REPORT ROUTE */}
+            <Route path="reports/analytics" element={<AnalyticsReportPage />} />
 
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
