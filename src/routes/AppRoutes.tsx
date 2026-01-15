@@ -273,7 +273,7 @@ const AppRoutes: React.FC = () => {
             <Route path="members/admins/edit/:id" element={<EditAdminPage />} />
 
             {/* ANALYTICS REPORT ROUTE */}
-            <Route path="reports/analytics" element={<AnalyticsReportPage />} />
+            <Route path="reports/analytics" element={<AnalyticsReportPage />}/>
 
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>
