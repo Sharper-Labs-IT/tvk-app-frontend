@@ -35,7 +35,6 @@ vitest.config.ts
 setupTests.ts
 App.test.tsx
 
-reports/
 countdown.test.tsx
 store.test.tsx
 eventService.test.ts
