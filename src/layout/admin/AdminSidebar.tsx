@@ -19,6 +19,7 @@ import {
   Shield, // Added for Admins
   UserPlus, // Added for Add Admin
   Clock, // Added for Pending Content
+  BarChart3, // Added for Analytics Report
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -80,6 +81,7 @@ const navItems: NavItem[] = [
     ],
   },
   // --------------------------------
+  { name: 'Analytics Report', path: '/admin/reports/analytics', icon: BarChart3 },
   { name: 'Settings', path: '/admin/settings', icon: Settings },
 ];
 
