@@ -2,24 +2,30 @@ import React, { useEffect, useState } from 'react';
 import { adminMemberService } from '../../../services/adminMemberService';
 import type { User } from '../../../types/user';
 import Loader from '../../../components/Loader';
-import { CheckCircle, Trash2, Ban } from 'lucide-react';
+import { CheckCircle, Trash2, Ban, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const MemberListPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState<User[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalMembers, setTotalMembers] = useState(0);
 
   // Function to fetch members (defined outside useEffect so we can reuse it)
-  const fetchMembers = async () => {
+  const fetchMembers = async (page: number = 1) => {
     try {
       setLoading(true);
-      const data = await adminMemberService.getUsers(1);
+      const data = await adminMemberService.getUsers(page);
 
       // Filter for regular members (users who do NOT have admin/moderator roles)
       const filteredMembers = data.users.data.filter(
         (user) => !user.roles.some((r) => r.name === 'admin' || r.name === 'moderator')
       );
       setMembers(filteredMembers);
+      setCurrentPage(data.users.current_page);
+      setTotalPages(data.users.last_page);
+      setTotalMembers(data.users.total);
     } catch (error) {
       console.error(error);
       toast.error('Failed to load members');
@@ -29,7 +35,7 @@ const MemberListPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchMembers();
+    fetchMembers(currentPage);
   }, []);
 
   // Handle Ban / Activate Logic
@@ -49,12 +55,48 @@ const MemberListPage: React.FC = () => {
         toast.success('Member has been activated.');
       }
       // Refresh the list to show new status
-      fetchMembers();
+      fetchMembers(currentPage);
     } catch (error: any) {
       console.error(error);
       const msg = error.response?.data?.error || 'Action failed';
       toast.error(msg);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      fetchMembers(page);
+    }
+  };
+
+  const renderPageNumbers = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+            i === currentPage
+              ? 'bg-tvk-blue text-white'
+              : 'text-gray-400 hover:bg-white/5 hover:text-white'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return pages;
   };
 
   if (loading) return <Loader />;
@@ -67,7 +109,7 @@ const MemberListPage: React.FC = () => {
           <p className="text-gray-400">View and manage registered members</p>
         </div>
         <div className="bg-white/5 px-4 py-2 rounded-lg border border-white/10 text-sm text-gray-400">
-          Total Members: <span className="text-white font-bold">{members.length}</span>
+          Total Members: <span className="text-white font-bold">{totalMembers}</span>
         </div>
       </div>
 
@@ -152,6 +194,68 @@ const MemberListPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between bg-tvk-dark-card rounded-xl border border-white/10 p-4">
+          <div className="text-sm text-gray-400">
+            Showing <span className="text-white font-medium">{members.length}</span> of{' '}
+            <span className="text-white font-medium">{totalMembers}</span> members
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Previous page"
+            >
+              <ChevronLeft size={20} />
+            </button>
+
+            <div className="flex items-center gap-1">
+              {currentPage > 3 && (
+                <>
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    className="px-3 py-1 rounded-lg text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
+                  >
+                    1
+                  </button>
+                  {currentPage > 4 && (
+                    <span className="px-2 text-gray-500">...</span>
+                  )}
+                </>
+              )}
+              
+              {renderPageNumbers()}
+              
+              {currentPage < totalPages - 2 && (
+                <>
+                  {currentPage < totalPages - 3 && (
+                    <span className="px-2 text-gray-500">...</span>
+                  )}
+                  <button
+                    onClick={() => handlePageChange(totalPages)}
+                    className="px-3 py-1 rounded-lg text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-white transition-colors"
+                  >
+                    {totalPages}
+                  </button>
+                </>
+              )}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              title="Next page"
+            >
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
