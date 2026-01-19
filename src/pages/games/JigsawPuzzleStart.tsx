@@ -93,7 +93,7 @@ const JigsawPuzzleStart: React.FC = () => {
     const { allowed, reason, cost } = checkAccess();
     if (allowed) {
       consumePlay(false);
-      navigate('/game/jigsaw-puzzle/start');
+      navigate('/games/jigsaw-puzzle/start');
     } else {
       if (reason === 'limit_reached' || reason === 'no_coins') {
         setAccessCost(cost);
