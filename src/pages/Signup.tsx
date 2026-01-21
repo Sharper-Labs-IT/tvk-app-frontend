@@ -17,17 +17,17 @@ import { COUNTRIES } from '../constants/countries';
 import { PHONE_CODES } from '../constants/phoneCodes';
 
 const TITLE_OPTIONS = [
-  "Mr",
-  "Mrs",
-  "Ms",
-  "Miss",
-  "Mx",
-  "Dr",
-  "Prof",
-  "Rev",
-  "Sir",
-  "Dame",
-  "Prefer not to say"
+  'Mr',
+  'Mrs',
+  'Ms',
+  'Miss',
+  'Mx',
+  'Dr',
+  'Prof',
+  'Rev',
+  'Sir',
+  'Dame',
+  'Prefer not to say',
 ];
 
 const Signup: React.FC = () => {
@@ -56,7 +56,7 @@ const Signup: React.FC = () => {
   // --- MODAL STATES ---
   const [successData, setSuccessData] = useState<ISignupResponse | null>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  
+
   const [successMessage, setSuccessMessage] = useState('');
   const [showRestrictedModal, setShowRestrictedModal] = useState(false);
 
@@ -103,9 +103,9 @@ const Signup: React.FC = () => {
       sessionStorage.setItem('temp_signup_email', formData.email);
       sessionStorage.setItem('temp_signup_name', `${formData.first_name} ${formData.surname}`);
       setSuccessMessage(
-        "We’ve sent a One-Time Password (OTP) to your email." +
-      "Please verify your account to continue.<br /><br />" +
-      "Tap ‘Close’ to go to the OTP verification screen."
+        'We’ve sent a One-Time Password (OTP) to your email.' +
+          'Please verify your account to continue.<br /><br />' +
+          'Tap ‘Close’ to go to the OTP verification screen.'
       );
       setShowSuccessModal(true);
     }
@@ -304,25 +304,13 @@ const Signup: React.FC = () => {
       // ... existing error handling
       let errorMessage = 'Registration failed. Please check your details.';
       const errors: { [key: string]: string } = {};
-      
+
       if (err.response && err.response.status === 422) {
         if (err.response.data.errors) {
           const backendErrors = err.response.data.errors;
           if (backendErrors.email) errors.email = 'This email address is already registered.';
           if (backendErrors.mobile) errors.mobile = 'This mobile number is already registered.';
           
-          
-          // Handle email error
-          if (backendErrors.email) {
-            errors.email = 'This email address is already registered.';
-          }
-          
-          // Handle mobile error
-          if (backendErrors.mobile) {
-            errors.mobile = 'This mobile number is already registered.';
-          }
-          
-          // Set field errors if any
           if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
             // Move back to relevant step if error is from previous steps
@@ -504,160 +492,6 @@ const Signup: React.FC = () => {
                 {geoLoading ? (
                     <div className="flex justify-center py-10">
                         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-tvk-accent-gold"></div>
-              {geoLoading ? (
-                <div className="flex justify-center py-10">
-                  <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-tvk-accent-gold"></div>
-                </div>
-              ) : detectedCountryCode === 'IN' ? (
-                <div className="text-center py-10">
-                  <div className="text-red-500 text-5xl mb-4">🚫</div>
-                  <h3 className="text-xl font-bold text-white mb-2">Service Not Available</h3>
-                  <p className="text-gray-400">
-                    We are sorry, but registration is currently not available for users in India.
-                  </p>
-                  <div className="mt-6">
-                    <Link to="/" className="text-tvk-accent-gold hover:underline">
-                      Return to Home
-                    </Link>
-                  </div>
-                </div>
-              ) : (
-                <form
-                  className={`space-y-5 ${getAnimationClass('delay-[300ms]')}`}
-                  onSubmit={handleSubmit}
-                >
-                  {/* Title Dropdown */}
-                  <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">
-                      How should we address you?
-                    </label>
-                    <div className="relative flex rounded-lg shadow-sm">
-                      <select
-                        name="title"
-                        id="title"
-                        value={formData.title || ''}
-                        onChange={handleInputChange}
-                        className="block w-full px-3 py-3 border border-gray-600 rounded-lg bg-[#2C2C2C] text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="" disabled>
-                          Select Title
-                        </option>
-                        {TITLE_OPTIONS.map((title) => (
-                          <option key={title} value={title}>
-                            {title}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Arrow Icon for Select */}
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg
-                          className="h-4 w-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 9l-7 7-7-7"
-                          ></path>
-                        </svg>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* First Name & Surname Split */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <InputField
-                        label="First Name"
-                        id="first_name"
-                        name="first_name"
-                        type="text"
-                        required
-                        value={formData.first_name}
-                        onChange={handleInputChange}
-                        placeholder="Enter First Name"
-                        icon={UserIcon}
-                      />
-                      {fieldErrors.first_name && (
-                        <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.first_name}</p>
-                      )}
-                    </div>
-                    <div>
-                      <InputField
-                        label="Surname"
-                        id="surname"
-                        name="surname"
-                        type="text"
-                        required
-                        value={formData.surname}
-                        onChange={handleInputChange}
-                        placeholder="Enter Surname"
-                        icon={UserIcon}
-                      />
-                      {fieldErrors.surname && (
-                        <p className="text-red-400 text-xs mt-1 ml-1">{fieldErrors.surname}</p>
-                      )}
-                    </div>
-                  </div>
-                  {/*Add description*/}
-                  <div className="mt-3 px-1">
-                    <p className="text-gray-400 text-xs lg:text-sm leading-relaxed">
-                      We’ll auto-generate a display name for you.
-                    </p>
-                    <p className="text-gray-400 text-xs lg:text-sm leading-relaxed mt-1">
-                      This name will be shown publicly in games, leaderboards, and winner announcements. You can change it later in your profile dashboard.
-                    </p>
-                  </div>
-
-
-                  {/* Country Selection Dropdown */}
-                  <div>
-                    <label
-                      htmlFor="country"
-                      className="block text-sm font-medium text-gray-300 mb-1"
-                    >
-                      Country
-                    </label>
-                    <div className="relative flex rounded-lg shadow-sm">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                        {GlobeIcon}
-                      </div>
-                      <select
-                        name="country"
-                        id="country"
-                        required
-                        value={formData.country}
-                        onChange={handleInputChange}
-                        className="block w-full pl-10 pr-3 py-3 border border-gray-600 rounded-lg bg-[#2C2C2C] text-gray-200 focus:outline-none focus:ring-1 focus:ring-tvk-accent-gold focus:border-tvk-accent-gold sm:text-sm appearance-none cursor-pointer"
-                      >
-                        <option value="" disabled>
-                          Select your country
-                        </option>
-                        {COUNTRIES.map((countryName) => (
-                          <option key={countryName} value={countryName}>
-                            {countryName}
-                          </option>
-                        ))}
-                      </select>
-                      {/* Arrow Icon for Select */}
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <svg
-                          className="h-4 w-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 9l-7 7-7-7"
-                          ></path>
-                        </svg>
-                      </div>
                     </div>
                 ) : detectedCountryCode === 'IN' ? (
                     <div className="text-center py-10">
