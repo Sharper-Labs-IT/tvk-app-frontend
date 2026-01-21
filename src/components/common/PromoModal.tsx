@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 interface PromoModalProps {
   isOpen: boolean;
   onClose: () => void;
+  isLoggedIn?: boolean;
 }
 
 const benefits = [
@@ -14,7 +15,7 @@ const benefits = [
   "Join the VIP community"
 ];
 
-const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
+const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose, isLoggedIn = true }) => {
   const navigate = useNavigate();
 
   // If not open, don't render at all
@@ -79,12 +80,12 @@ const PromoModal: React.FC<PromoModalProps> = ({ isOpen, onClose }) => {
           <button
             onClick={() => {
               onClose();
-              navigate('/membership');
+              navigate(isLoggedIn ? '/membership' : '/signup');
             }}
             className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#d4af37] to-[#f7c948] py-4 px-8 font-bold text-black shadow-lg shadow-[#d4af37]/20 transition-all hover:shadow-[#d4af37]/40 hover:scale-[1.02] active:scale-[0.98]"
           >
             <span className="relative z-10 flex items-center justify-center gap-2">
-              Get Membership
+              {isLoggedIn ? 'Get Membership' : 'Sign Up Now'}
             </span>
             <div className="absolute inset-0 z-0 bg-white/20 opacity-0 transition-opacity group-hover:opacity-100" />
           </button>

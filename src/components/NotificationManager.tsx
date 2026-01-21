@@ -59,13 +59,16 @@ export const NotificationManager: React.FC = () => {
     // Skip on auth pages
     if (isAuthPage) return;
 
+    // Only show for logged-in users
+    if (!isLoggedIn) return;
+
     // Check if user has active membership
     const status1 = user?.membership?.status;
     const status2 = user?.subscription?.status;
     const isActive = status1 === 'active' || status2 === 'active';
     
     // Strict Check: active members should NEVER see this
-    if (isLoggedIn && isActive) return;
+    if (isActive) return;
 
     // If modal is NOT currently showing, schedule the next appearance
     if (!showPromo) {
@@ -96,7 +99,7 @@ export const NotificationManager: React.FC = () => {
   return (
     <>
       <Toaster position="top-center" reverseOrder={false} />
-      <PromoModal isOpen={showPromo} onClose={() => setShowPromo(false)} />
+      <PromoModal isOpen={showPromo} onClose={() => setShowPromo(false)} isLoggedIn={isLoggedIn} />
     </>
   );
 };

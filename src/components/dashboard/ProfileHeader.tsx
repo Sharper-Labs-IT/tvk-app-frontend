@@ -149,7 +149,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   title="Start Tour"
                 >
                   <HelpCircle size={18} />
-                  <span className="sr-only sm:not-sr-only">Tour</span>
+                  <span>Tour</span>
                 </button>
                 <button
                   onClick={onResetPassword}
