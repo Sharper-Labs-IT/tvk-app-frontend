@@ -295,11 +295,13 @@ const Header: React.FC = () => {
           <div className="hidden md:block">
             {isLoggedIn ? (
               <div 
+                id="tour-profile-menu-container"
                 className="relative"
                 onMouseEnter={() => setProfileDropdownOpen(true)}
                 onMouseLeave={() => setProfileDropdownOpen(false)}
               >
                 <button
+                  id="tour-profile-btn"
                   className="bg-brand-goldDark text-white font-bold px-3 lg:px-4 py-2 rounded-lg text-sm transition-opacity hover:opacity-90 whitespace-nowrap flex items-center gap-1 lg:gap-2"
                 >
                   <svg 
@@ -326,6 +328,7 @@ const Header: React.FC = () => {
                     className="absolute top-full right-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[140px] lg:min-w-[160px] z-50 pt-1.5"
                   >
                     <Link
+                      id="tour-dashboard-link"
                       to={getDashboardPath()}
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                     >

@@ -29,7 +29,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (audioRef.current && listenersAttached.current) {
         audioRef.current.muted = false;
         setIsMuted(false);
-        console.log('Auto-unmuted on user interaction');
         // Remove listeners after first interaction
         document.removeEventListener('click', autoUnmute, true);
         document.removeEventListener('keydown', autoUnmute, true);
@@ -45,9 +44,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await audio.play();
         setIsPlaying(true);
         setIsMuted(false);
-        console.log('Autoplay successful with sound');
       } catch (error) {
-        console.log('Autoplay with sound blocked, starting muted...');
         
         // Start muted and play
         audio.muted = true;
@@ -56,7 +53,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         try {
           await audio.play();
           setIsPlaying(true);
-          console.log('Playing muted, will unmute on user interaction');
           
           // Attach event listeners for auto-unmute
           if (!listenersAttached.current) {
@@ -66,7 +62,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             listenersAttached.current = true;
           }
         } catch (mutedError) {
-          console.log('Autoplay completely blocked:', mutedError);
           setIsMuted(true);
         }
       }
