@@ -189,7 +189,6 @@ const MemberProfile: React.FC = () => {
       setIsSuccessModalOpen(true);
       setIsCancelModalOpen(false);
     } catch (error: any) {
-      console.error(error);
       const msg = error.response?.data?.message || 'Failed to cancel membership.';
       setCancelError(msg);
       toast.error(msg);
@@ -227,7 +226,6 @@ const MemberProfile: React.FC = () => {
       toast.success('Subscription reactivated! Auto-renewal is now ON.');
       setIsReactivateModalOpen(false);
     } catch (error: any) {
-      console.error(error);
       const msg = error.response?.data?.message || 'Failed to reactivate. Please contact support.';
       toast.error(msg);
     } finally {
