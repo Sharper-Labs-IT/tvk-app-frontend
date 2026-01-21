@@ -210,7 +210,6 @@ const UserTour: React.FC = () => {
       spotlightPadding={4}
       floaterProps={{
         hideArrow: false,
-        disableAnimation: false,
       }}
       styles={{
         options: {
