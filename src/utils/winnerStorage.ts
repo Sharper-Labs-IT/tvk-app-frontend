@@ -49,7 +49,6 @@ export const savePreviousWinner = (winner: Omit<StoredWinner, 'storedAt'>): void
         storedAt: new Date().toISOString()
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
-      console.log('Saved new winner:', dataToStore);
     }
   } catch (error) {
     console.error('Failed to save winner:', error);

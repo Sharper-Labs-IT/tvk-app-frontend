@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, User, Edit, Check, X, MapPin} from 'lucide-react';
+import { Camera, User, Edit, Check, X, MapPin, HelpCircle } from 'lucide-react';
 import { getCountryFromMobile } from '../../utils/countryHelper';
 
 interface ProfileHeaderProps {
@@ -91,6 +91,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         @{user?.nickname || 'No nickname set'}
                       </span>
                       <button
+                        id="tour-edit-nickname-btn"
                         onClick={() => {
                           setIsEditingNickname(true);
                           setNicknameInput(user?.nickname || '');
@@ -139,6 +140,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0 w-full sm:w-auto">
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('dashboard_tour_v1');
+                    window.dispatchEvent(new Event('start-tour'));
+                  }}
+                  className="px-4 py-2.5 bg-yellow-500/10 hover:bg-yellow-500 text-yellow-500 hover:text-black border border-yellow-500 rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap"
+                  title="Start Tour"
+                >
+                  <HelpCircle size={18} />
+                  <span className="sr-only sm:not-sr-only">Tour</span>
+                </button>
                 <button
                   onClick={onResetPassword}
                   className="px-6 py-2.5 bg-white/5 hover:bg-yellow-500 hover:text-black border border-white/10 hover:border-yellow-500 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 whitespace-nowrap"

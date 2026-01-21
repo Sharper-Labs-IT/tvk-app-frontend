@@ -73,6 +73,7 @@ const MemberNavbar: React.FC = () => {
                 <Link
                   key={link.name}
                   to={link.path}
+                  id={`tour-nav-${link.name.toLowerCase().replace(' ', '-')}`}
                   className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 
                   ${
                     isActive(link.path)
