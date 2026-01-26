@@ -130,9 +130,13 @@ const CommentItem = ({
           {/* Floating Reaction Count */}
           {reactionCount > 0 && (
             <div className="absolute -bottom-2 -right-2 bg-[#333] border border-white/10 rounded-full px-1.5 py-0.5 flex items-center gap-1 shadow-lg">
-              <div className="flex -space-x-1">
-                <ThumbsUp size={10} className="text-blue-400 fill-blue-400" />
-                <Heart size={10} className="text-red-400 fill-red-400" />
+              <div className="flex items-center gap-0.5">
+                {(reactionCount > 1 || userReaction === 'like' || (reactionCount === 1 && !userReaction)) && (
+                  <ThumbsUp size={10} className="text-blue-400 fill-blue-400" />
+                )}
+                {(reactionCount > 1 || userReaction === 'heart') && (
+                  <Heart size={10} className="text-red-400 fill-red-400" />
+                )}
               </div>
               <span className="text-[10px] text-gray-300 font-bold">{reactionCount}</span>
             </div>
