@@ -126,7 +126,7 @@ const FanOfMonth: React.FC = () => {
               <p className="text-base lg:text-lg text-white font-semibold mb-3">
                 Step into the spotlight and prove your passion.
               </p>
-              <p className="text-xs lg:text-sm text-gray-300 font-medium max-w-lg leading-relaxed">
+              <p className="text-xs lg:text-sm text-gray-300 font-medium max-w-lg leading-relaxed text-justify">
                 Compete with fans from around the world, earn points through games, events, and community engagement, and climb the leaderboard to be crowned Top Fan of the Month. Each month, the most active and dedicated fan will be recognised with exclusive digital rewards, a special Top Fan badge, and a featured shoutout visible across the platform. It's not just about winning it's about showing up, staying engaged, and representing your fandom with pride.
               </p>
             </motion.div>
