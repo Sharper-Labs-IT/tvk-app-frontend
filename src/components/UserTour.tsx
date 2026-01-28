@@ -43,15 +43,15 @@ const UserTour: React.FC = () => {
         placement: 'bottom',
       },
       {
-        target: '#tour-nav-my-content',
-        title: 'Your Creative Hub',
-        content: 'Track and manage your personal posts, comments, and interactions. This is your personal creative hub!',
-        placement: 'bottom',
-      },
-      {
         target: '#tour-nav-games',
         title: 'Play & Earn',
         content: 'Play exclusive games to earn coins and check the Leaderboard!',
+        placement: 'bottom',
+      },
+      {
+        target: '#tour-nav-studio',
+        title: 'Creative Studio',
+        content: 'Hover over Studio to access Story Creation and view all Stories from the community.',
         placement: 'bottom',
       },
       {
@@ -64,6 +64,12 @@ const UserTour: React.FC = () => {
         target: '#tour-nav-membership',
         title: 'Unlock More',
         content: 'Manage your subscription or upgrade to higher tiers for more benefits.',
+        placement: 'bottom',
+      },
+      {
+        target: '#tour-profile-menu',
+        title: 'Quick Access Menu',
+        content: 'Click your profile to access My Content, My Orders, and quick settings.',
         placement: 'bottom',
       },
     ];
@@ -116,12 +122,22 @@ const UserTour: React.FC = () => {
       const position = calculateTooltipPosition(targetElement, step.placement);
       setTooltipPosition(position);
       
-      // Scroll element into view
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Scroll element into view with a small delay to ensure DOM is ready
+      setTimeout(() => {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
     } else {
-      // If target not found, end tour
-      console.warn(`Tour target not found: ${step.target}`);
-      endTour();
+      // If target not found, retry after a short delay before ending tour
+      console.warn(`Tour target not found: ${step.target}, retrying...`);
+      setTimeout(() => {
+        const retryElement = document.querySelector(step.target) as HTMLElement;
+        if (retryElement) {
+          updateTooltipPosition();
+        } else {
+          console.error(`Tour target still not found after retry: ${step.target}`);
+          endTour();
+        }
+      }, 300);
     }
   };
 
@@ -182,7 +198,6 @@ const UserTour: React.FC = () => {
         // Add small delay to ensure DOM is ready
         setTimeout(() => {
           const tourSteps = getDashboardSteps();
-          console.log('Starting tour with steps:', tourSteps);
           startTour(tourSteps, key);
         }, 300);
       }

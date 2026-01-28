@@ -88,7 +88,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onClick={onCancel}
             disabled={isConfirming}
             // Ensuring it takes full width when stacked
-            className="w-full px-6 py-3 text-gray-300 bg-gray-800 rounded-lg font-semibold border border-gray-700 hover:bg-gray-700 transition duration-150 shadow-inner shadow-black/50 transform hover:scale-[1.005] transition-transform"
+            className="w-full px-6 py-3 text-gray-300 bg-gray-800 rounded-lg font-semibold border border-gray-700 hover:bg-gray-700 duration-150 shadow-inner shadow-black/50 transform hover:scale-[1.005] transition-transform"
           >
             {cancelText}
           </button>

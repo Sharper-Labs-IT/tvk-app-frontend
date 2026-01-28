@@ -1,9 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
+import { ShoppingCart, Heart } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const headerContainerVariants: Variants = {
@@ -38,21 +41,31 @@ const Header: React.FC = () => {
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [playDropdownOpen, setPlayDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  // Removed unused dropdowns: storeDropdownOpen, studioDropdownOpen
 
   const { isLoggedIn, user, logout } = useAuth();
   const { isMuted, toggleMute } = useAudio();
+  const { cartCount, setIsCartOpen } = useCart();
+  const { wishlistCount } = useWishlist();
 
   const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
 
   // --- DYNAMIC NAVIGATION LOGIC ---
   const dynamicNavItems = useMemo(() => {
-    return [
+    const items = [
       { name: 'MEMBERSHIP', path: '/membership' },
       { name: 'STORE', path: '/store' },
       { name: 'EVENTS', path: '/events' },
     ];
-  }, []);
+    
+    // Story Studio removed - still in development
+    // if (isLoggedIn) {
+    //   items.splice(1, 0, { name: 'STUDIO', path: null });
+    // }
+    
+    return items;
+  }, [isLoggedIn]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -215,23 +228,24 @@ const Header: React.FC = () => {
             </motion.li>
 
             {dynamicNavItems.map((item) => (
-              <motion.li key={item.name} variants={majorItemVariants}>
-                <Link
-                  to={item.path}
-                  className={`
-                    text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
-                    ${isActive(item.path) ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
-                  `}
-                >
-                  {item.name}
-                  <span
+              // Regular nav item
+                <motion.li key={item.name} variants={majorItemVariants}>
+                  <Link
+                    to={item.path}
                     className={`
-                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                      ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
+                      text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
+                      ${isActive(item.path) ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                     `}
-                  ></span>
-                </Link>
-              </motion.li>
+                  >
+                    {item.name}
+                    <span
+                      className={`
+                        absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                        ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
+                      `}
+                    ></span>
+                  </Link>
+                </motion.li>
             ))}
           </motion.ul>
         </motion.nav>
@@ -240,7 +254,7 @@ const Header: React.FC = () => {
         {/* ADDED ml-auto HERE to force this container to the right on mobile */}
         <motion.div
           variants={majorItemVariants}
-          className="flex-shrink-0 flex items-center space-x-4 ml-auto"
+          className="flex-shrink-0 flex items-center space-x-2 lg:space-x-4 ml-auto"
         >
           {/* Audio Control Button - Show on main pages */}
           {(location.pathname === '/' || 
@@ -291,6 +305,34 @@ const Header: React.FC = () => {
               )}
             </button>
           )}
+
+          {/* Wishlist Link */}
+          <button 
+           onClick={() => navigate('/wishlist')}
+            className="relative p-2 transition-colors hover:text-brand-gold group"
+            aria-label="Wishlist"
+          >
+            <Heart size={22} className={wishlistCount > 0 ? "fill-brand-gold text-brand-gold" : "text-white"} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-brand-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                {wishlistCount > 9 ? '9+' : wishlistCount}
+              </span>
+            )}
+          </button>
+
+          {/* Cart Icon replaced with CartDrawer Toggle */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative p-2 transition-colors hover:text-brand-gold group"
+            aria-label="Cart"
+          >
+            <ShoppingCart className="w-6 h-6" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-brand-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
+          </button>
           
           <div className="hidden md:block">
             {isLoggedIn ? (
@@ -333,6 +375,20 @@ const Header: React.FC = () => {
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                     >
                       DASHBOARD
+                    </Link>
+                    <Link
+                      to="/dashboard/my-content"
+                      id="tour-my-content-link"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      MY CONTENT
+                    </Link>
+                    <Link
+                      to="/orders"
+                      id="tour-my-orders-link"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      MY ORDERS
                     </Link>
                     <button
                       onClick={() => {

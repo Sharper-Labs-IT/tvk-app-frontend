@@ -39,7 +39,7 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         serif: ['Playfair Display', 'serif'],
-        zentry: ['Zentry', 'system-ui', 'sans-serif'],
+        zentry: ['Zentry', 'Rajdhani', 'system-ui', 'sans-serif'],
       },
 
       // Custom gradient for the submit button

@@ -20,6 +20,9 @@ import {
   UserPlus, // Added for Add Admin
   Clock, // Added for Pending Content
   BarChart3, // Added for Analytics Report
+  Package, // Added for Products
+  ShoppingBag, // Added for Orders
+  ArrowRightLeft, // Added for Refunds
 } from 'lucide-react';
 
 interface SubNavItem {
@@ -59,7 +62,23 @@ const navItems: NavItem[] = [
     icon: Calendar,
     subItems: [
       { name: 'All Events', path: '/admin/events', icon: List },
-      { name: 'Create Event', path: '/admin/events/create', icon: PlusCircle },
+      { name: 'Add New Event', path: '/admin/events/create', icon: PlusCircle },
+    ],
+  },
+  {
+    name: 'Product Management',
+    icon: Package,
+    subItems: [
+      { name: 'All Products', path: '/admin/products', icon: List },
+      { name: 'Add Product', path: '/admin/products/create', icon: PlusCircle },
+    ],
+  },
+  {
+    name: 'Order Management',
+    icon: ShoppingBag,
+    subItems: [
+      { name: 'All Orders', path: '/admin/orders', icon: List },
+      { name: 'Refund Requests', path: '/admin/refunds', icon: ArrowRightLeft },
     ],
   },
   {

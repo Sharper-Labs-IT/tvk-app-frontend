@@ -69,6 +69,7 @@ const MemberFeed: React.FC = () => {
       setContents([]); // Clear list for better UX while loading
 
       let response;
+      const postId = searchParams.get('post');
 
       // Logic: If category ID exists in URL, use the Filter Endpoint
       if (categoryFilter) {
@@ -80,15 +81,57 @@ const MemberFeed: React.FC = () => {
         response = await api.get<IContentResponse>('/v1/contents');
       }
 
+      let fetchedContents: IContent[] = [];
+
       if (response.data?.contents?.data) {
-        // Filter to show only approved content (backend should handle this, but add client-side filtering as safety)
-        const approvedContent = response.data.contents.data.filter(
-          (post) => post.status === 'approved' || !post.status // Show posts without status for backward compatibility
+        // Filter to show only approved content
+        fetchedContents = response.data.contents.data.filter(
+          (post) => post.status === 'approved' || !post.status
         );
-        setContents(approvedContent);
-      } else {
-        setContents([]);
       }
+
+      // Handle Linked Post from Share URL
+      if (postId) {
+        const targetId = parseInt(postId);
+        // Check if it's already in the fetched list
+        const exists = fetchedContents.find((c) => c.id === targetId);
+
+        if (!exists) {
+          try {
+            // Fetch single post
+            const singleRes = await api.get(`/v1/contents/${targetId}`);
+            const singlePost = singleRes.data.content || singleRes.data;
+
+            if (singlePost) {
+              const status = singlePost.status || singlePost.approval_status;
+              // Only add if approved or status undefined
+              if (!status || status === 'approved') {
+                fetchedContents.unshift(singlePost);
+              }
+            }
+          } catch (e) {
+            console.error('Failed to load shared post', e);
+          }
+        }
+      }
+
+      setContents(fetchedContents);
+
+      // Scroll to the post if postId param exists
+      if (postId) {
+        setTimeout(() => {
+          const el = document.getElementById(`post-${postId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add highlight visual cue
+            el.classList.add('ring-2', 'ring-gold', 'ring-offset-2', 'ring-offset-[#121212]', 'rounded-2xl');
+            setTimeout(() => {
+              el.classList.remove('ring-2', 'ring-gold', 'ring-offset-2', 'ring-offset-[#121212]');
+            }, 2500);
+          }
+        }, 800);
+      }
+
     } catch (err) {
       setError('Failed to load feed.');
     } finally {
@@ -192,12 +235,13 @@ const MemberFeed: React.FC = () => {
         <div className="space-y-6">
           {contents.length > 0 ? (
             contents.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                isPremiumUser={isPremiumUser}
-                onPostDeleted={fetchFeed} // Refreshes list after a successful delete
-              />
+              <div key={post.id} id={`post-${post.id}`} className="transition-all duration-300">
+                <PostCard
+                  post={post}
+                  isPremiumUser={isPremiumUser}
+                  onPostDeleted={fetchFeed} // Refreshes list after a successful delete
+                />
+              </div>
             ))
           ) : (
             /* Empty State when no posts match */

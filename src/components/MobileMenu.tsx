@@ -218,6 +218,20 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     >
                       Dashboard
                     </Link>
+                    <Link
+                      to="/dashboard/my-content"
+                      onClick={onClose}
+                      className="block text-base font-medium p-2 text-gray-300 hover:text-brand-gold transition-colors rounded hover:bg-brand-gold/10"
+                    >
+                      My Content
+                    </Link>
+                    <Link
+                      to="/orders"
+                      onClick={onClose}
+                      className="block text-base font-medium p-2 text-gray-300 hover:text-brand-gold transition-colors rounded hover:bg-brand-gold/10"
+                    >
+                      My Orders
+                    </Link>
                     <button
                       onClick={() => {
                         onClose();
