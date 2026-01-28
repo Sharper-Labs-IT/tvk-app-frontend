@@ -15,8 +15,34 @@ import {
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { storeService } from '../services/storeService';
-import type { CoinPackage, MerchItem } from '../services/storeService';
+// import type { CoinPackage, MerchItem } from '../services/storeService'; // Types not exported
 import { useAuth } from '../context/AuthContext';
+
+// Define types locally since they're not exported from storeService
+interface CoinPackage {
+  id: number;
+  amount: number;
+  price: string;
+  bonus: string | null;
+  popular: boolean;
+  color: string;
+  image: string;
+}
+
+interface MerchItem {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  image: string;
+  rarity: string;
+  description?: string;
+  variants?: {
+    colorName: string;
+    colorHex: string;
+    images: string[];
+  }[];
+}
 
 const MerchCard = ({ item, index }: { item: any; index: number }) => {
   // State to track which color is currently selected
