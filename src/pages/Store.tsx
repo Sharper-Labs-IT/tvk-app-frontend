@@ -475,10 +475,16 @@ const Store: React.FC = () => {
                     className="flex flex-col items-center justify-center py-32 border border-white/5 rounded-3xl bg-white/[0.02]"
                 >
                     <div className="bg-white/5 p-6 rounded-full mb-6">
-                        <Search size={40} className="text-white/20" />
+                        <ShoppingBag size={40} className="text-white/20" />
                     </div>
-                    <h3 className="text-2xl font-zentry font-bold text-white mb-2">NO SIGNALS FOUND</h3>
-                    <p className="text-neutral-500">Adjust your scanners and try again.</p>
+                    <h3 className="text-2xl font-zentry font-bold text-white mb-2">
+                        {searchQuery ? 'NO PRODUCTS FOUND' : 'PRODUCTS COMING SOON'}
+                    </h3>
+                    <p className="text-neutral-500">
+                        {searchQuery 
+                            ? 'Try adjusting your search or check back later.' 
+                            : 'Exciting new products are on their way to the TVK Store. Stay tuned!'}
+                    </p>
                 </motion.div>
             )}
         </AnimatePresence>
