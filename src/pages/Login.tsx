@@ -100,7 +100,7 @@ const Login: React.FC = () => {
           context: 'verification',
         },
       });
-    } catch (err: any) {
+    } catch {
       setError('Failed to send OTP. Please try again.');
     } finally {
       setLoading(false);
@@ -138,13 +138,15 @@ const Login: React.FC = () => {
           setShowWelcomeModal(true);
         }
       }
-    } catch (err: any) {
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = err as any;
       let errorMessage = 'Login failed. Please try again.';
 
       // --- CATCH 403 ERROR (User Not Verified) ---
-      if (err.response && err.response.status === 403) {
+      if (error.response && error.response.status === 403) {
         // The backend now sends 'user_id' in the error response!
-        const backendData = err.response.data;
+        const backendData = error.response.data;
 
         // Check if we received the user_id
         if (backendData.user_id) {
@@ -158,11 +160,11 @@ const Login: React.FC = () => {
         }
       }
 
-      if (err.response) {
-        if (err.response.data.error) {
-          errorMessage = err.response.data.error;
-        } else if (err.response.data.errors) {
-          errorMessage = Object.values(err.response.data.errors).flat().join(' ');
+      if (error.response) {
+        if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.data.errors) {
+          errorMessage = Object.values(error.response.data.errors).flat().join(' ');
         }
       }
       setError(errorMessage);
@@ -245,7 +247,7 @@ const Login: React.FC = () => {
                   Welcome Back
                 </h2>
                 <p className="text-gray-400 text-sm lg:text-base">
-                  Sign in to your TVK Membership Dashboard
+                  Sign in to your VJ Fans Hub Dashboard
                 </p>
               </div>
 
@@ -268,7 +270,7 @@ const Login: React.FC = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="member@tvk.com"
+                  placeholder="member@vjfanshub.com"
                   icon={MailIcon}
                 />
 

@@ -390,8 +390,8 @@ const Store: React.FC = () => {
                 transition={{ duration: 0.8 }}
                 className="mb-8"
             >
-                <h1 className="text-7xl md:text-9xl font-zentry font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 mb-2">
-                    TVK STORE
+                <h1 className="text-5xl md:text-8xl font-zentry font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 mb-2">
+                    VJ FANS HUB STORE
                 </h1>
                 <p className="text-xl md:text-2xl text-brand-gold font-bold tracking-[0.5em] uppercase">
                     Official Merch
@@ -483,7 +483,7 @@ const Store: React.FC = () => {
                     <p className="text-neutral-500">
                         {searchQuery 
                             ? 'Try adjusting your search or check back later.' 
-                            : 'Exciting new products are on their way to the TVK Store. Stay tuned!'}
+                            : 'Exciting new products are on their way to the VJ Fans Hub Store. Stay tuned!'}
                     </p>
                 </motion.div>
             )}

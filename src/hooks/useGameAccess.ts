@@ -45,6 +45,7 @@ export const useGameAccess = () => {
       const today = new Date().toISOString().split('T')[0];
       const key = `daily_plays_${today}_${user.id}`;
       const savedPlays = localStorage.getItem(key);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDailyPlays(savedPlays ? parseInt(savedPlays) : 0);
     }
   }, [user]);

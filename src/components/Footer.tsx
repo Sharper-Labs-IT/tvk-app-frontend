@@ -45,7 +45,7 @@ const Footer: React.FC = () => {
             <Link to="/">
               <img
                 src="/images/tvk-logo.png"
-                alt="TVK Logo"
+                alt="VJ Fans Hub Logo"
                 className="h-20 w-auto object-contain hover:scale-105 transition-transform duration-300"
               />
             </Link>
@@ -69,8 +69,8 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/community" className="hover:text-brand-gold transition-colors">
-                  Community
+                <Link to="/about" className="hover:text-brand-gold transition-colors">
+                  About Us
                 </Link>
               </li>
               <li>
