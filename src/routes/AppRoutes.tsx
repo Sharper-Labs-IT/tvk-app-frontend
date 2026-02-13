@@ -53,6 +53,7 @@ const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const CookiePolicy = React.lazy(() => import('../pages/CookiePolicy'));
 const Terms = React.lazy(() => import('../components/common/TermsModal'));
 const Privacy = React.lazy(() => import('../components/common/PrivacyPolicyModal'));
+const AboutUs = React.lazy(() => import('../pages/AboutUs'));
 
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
@@ -100,11 +101,11 @@ const RefundDetailsPage = React.lazy(() => import('../pages/admin/refunds/Refund
 
 const AnalyticsReportPage = React.lazy(() => import('../pages/admin/reports/AnalyticsReportPage'));
 
-// Story Feature Pages - COMMENTED OUT (Still in development)
-// const StoryStudio = React.lazy(() => import('../pages/StoryStudio'));
-// const StoryCreate = React.lazy(() => import('../pages/StoryCreate'));
-// const StoryView = React.lazy(() => import('../pages/StoryView'));
-// const StoryFeed = React.lazy(() => import('../pages/StoryFeed'));
+// Story Feature Pages
+const StoryStudioPage = React.lazy(() => import('../pages/StoryStudioPage'));
+const StoryDetailPage = React.lazy(() => import('../pages/StoryDetailPage'));
+const MyStoriesPage = React.lazy(() => import('../pages/MyStoriesPage'));
+const StoryFeed = React.lazy(() => import('../components/story/StoryFeed'));
 
 /**
  * Helper to safely get role name string
@@ -229,12 +230,13 @@ const AppRoutes: React.FC = () => {
           <Route path="/games" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/about" element={<AboutUs />} />
           
-          {/* Story Feature Routes - COMMENTED OUT (Still in development) */}
-          {/* <Route path="/story-feed" element={<StoryFeed />} /> */}
-          {/* <Route path="/story/:storyId" element={<StoryView />} /> */}
-          {/* <Route path="/story-studio" element={<UserRoute element={<StoryStudio />} />} /> */}
-          {/* <Route path="/story-studio/create" element={<UserRoute element={<StoryCreate />} />} /> */}
+          {/* Story Feature Routes */}
+          <Route path="/stories/create" element={<UserRoute element={<StoryStudioPage />} />} />
+          <Route path="/stories/my-stories" element={<UserRoute element={<MyStoriesPage />} />} />
+          <Route path="/stories/:id" element={<UserRoute element={<StoryDetailPage />} />} />
+          <Route path="/stories" element={<UserRoute element={<StoryFeed />} />} />
 
           {/* Resolved Conflict: Merged these three routes */}
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
