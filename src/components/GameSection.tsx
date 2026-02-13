@@ -42,7 +42,7 @@ const GameSection: React.FC = () => {
             }`}
           >
             <h2 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold text-white leading-tight font-sans">
-              Play TVK Games <br />
+              Play VJ Games <br />
               <span className="text-gray-200">Earn Rewards</span>
             </h2>
             <p className="text-gray-300 text-lg md:text-xl lg:text-2xl xl:text-3xl font-medium tracking-wide">

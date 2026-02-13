@@ -60,7 +60,7 @@ const MembershipPlan: React.FC = () => {
         {/* Section Header */}
         <motion.div className="text-center mb-8 xl:mb-12" variants={itemVariants}>
           <h2 className="text-3xl md:text-4xl font-bold text-brand-gold mb-3">
-            Join the TVK Global Fan Community
+            Join the VJ Fans Hub Community
           </h2>
           <p className="text-white/90 text-lg md:text-xl max-w-3xl mx-auto mb-2">
             Connect with fans worldwide. Discover exclusive content, events, and experiences all in one place
@@ -161,6 +161,14 @@ const MembershipPlan: React.FC = () => {
             >
               {/* Card */}
               <div className="w-full h-full min-h-[380px] bg-black border-2 border-brand-gold rounded-3xl p-1 relative shadow-[0_0_30px_rgba(182,141,64,0.3)] flex flex-col">
+                
+                {/* Badge */}
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                    <span className="bg-red-600 text-white text-xs md:text-sm font-extrabold px-4 py-1.5 rounded-full whitespace-nowrap shadow-lg border border-red-400">
+                      First 100 Users Only!
+                    </span>
+                </div>
+
                 <div className="bg-black rounded-[20px] p-6 xl:p-8 pt-8 xl:pt-10 w-full h-full flex flex-col justify-between">
                   {/* Title & Subtitle */}
                   <div className="text-center min-h-[60px] flex flex-col justify-start mb-4">
@@ -174,9 +182,19 @@ const MembershipPlan: React.FC = () => {
 
                   {/* Price Display */}
                   <div className="flex flex-col items-center mb-6">
+                    {/* Original Price Strikethrough */}
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg text-slate-500 line-through decoration-red-500 decoration-2">
+                            £9.99
+                        </span>
+                        <span className="text-xs text-brand-gold font-bold bg-brand-gold/10 px-2 py-0.5 rounded-full border border-brand-gold/20">
+                            Limited Time
+                        </span>
+                    </div>
+
                     <div className="flex items-baseline gap-1">
                       <span className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-brand-gold to-brand-goldDark drop-shadow-sm">
-                        £9.99
+                        £2.99
                       </span>
                       <span className="text-lg font-medium text-white/60">/month</span>
                     </div>

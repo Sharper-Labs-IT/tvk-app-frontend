@@ -74,7 +74,7 @@ const Signup: React.FC = () => {
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
 
-  const { countryCode: detectedCountryCode, loading: geoLoading } = useGeoLocation();
+  const { loading: geoLoading } = useGeoLocation();
 
   // --- PASSWORD LOGIC ---
   const [passwordCriteria, setPasswordCriteria] = useState({
@@ -113,7 +113,7 @@ const Signup: React.FC = () => {
 
   // --- SMART COUNTRY SYNC ---
   useEffect(() => {
-    if (formData.country && formData.country !== 'India') {
+    if (formData.country) {
       const foundCode = PHONE_CODES.find((c) => c.country === formData.country);
       if (foundCode) {
         setMobileCountryCode(foundCode.code);
@@ -165,21 +165,9 @@ const Signup: React.FC = () => {
     }
 
     if (name === 'mobileCountryCode') {
-      // 1. STRICT INDIA CHECK FOR MOBILE CODE
-      if (value === '+91') {
-        setShowRestrictedModal(true);
-        setMobileCountryCode(''); // Reset to placeholder
-      } else {
-        setMobileCountryCode(value);
-      }
+      setMobileCountryCode(value);
     } else if (name === 'country') {
-      // 2. STRICT INDIA CHECK FOR COUNTRY
-      if (value === 'India') {
-        setShowRestrictedModal(true);
-        setFormData((prev) => ({ ...prev, country: '' }));
-      } else {
-        setFormData((prev) => ({ ...prev, [name]: value }));
-      }
+      setFormData((prev) => ({ ...prev, [name]: value }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -208,11 +196,6 @@ const Signup: React.FC = () => {
     if (currentStep === 2) {
        // Step 2: Contact (Country, Mobile, Email)
        if (!formData.country) newErrors.country = 'Please select your country';
-       if (formData.country === 'India') {
-          setShowRestrictedModal(true);
-          setFormData((prev) => ({ ...prev, country: '' }));
-          isValid = false;
-        }
 
         if (!mobileCountryCode) {
             newErrors.mobile = 'Select code';
@@ -276,13 +259,6 @@ const Signup: React.FC = () => {
     setLoading(true);
     setError(null);
     setSuccessData(null);
-
-    // Initial India Check again just in case
-    if (detectedCountryCode === 'IN') {
-      setShowRestrictedModal(true);
-      setLoading(false);
-      return;
-    }
     
     // Validate final step
     if (!validateStep(4)) {
@@ -328,6 +304,23 @@ const Signup: React.FC = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      const response = await api.get('/v1/auth/google');
+      if (response.data && response.data.url) {
+        window.location.href = response.data.url;
+      } else if (typeof response.data === 'string' && response.data.startsWith('http')) {
+         window.location.href = response.data;
+      } else {
+        console.error("Invalid Google Auth URL received", response.data);
+        setError("Unable to initiate Google Sign Up. Please try again.");
+      }
+    } catch (err) {
+      console.error("Google signup failed", err);
+      setError("Google Sign Up failed. Please try again.");
     }
   };
 
@@ -493,28 +486,31 @@ const Signup: React.FC = () => {
                     <div className="flex justify-center py-10">
                         <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-tvk-accent-gold"></div>
                     </div>
-                ) : detectedCountryCode === 'IN' ? (
-                    <div className="text-center py-10">
-                        <div className="text-red-500 text-5xl mb-4">🚫</div>
-                        <h3 className="text-xl font-bold text-white mb-2">
-                            Service Unavailable in Your Region
-                        </h3>
-                        <p className="text-gray-400">
-                            We're sorry, but the TVK Membership Programme is currently not available in
-                            India.
-                        </p>
-                        <div className="mt-6">
-                            <Link to="/" className="text-tvk-accent-gold hover:underline">
-                            Return to Home
-                            </Link>
-                        </div>
-                    </div>
                 ) : (
                     <form className={`space-y-5 ${getAnimationClass('delay-[300ms]')}`} onSubmit={handleSubmit}>
                     
                     {/* STEP 1: PERSONAL DETAILS */}
                     {step === 1 && (
                         <div className="space-y-5 animate-fade-in">
+                            {/* GOOGLE SIGN UP BUTTON */}
+                            <button
+                                type="button"
+                                onClick={handleGoogleSignup}
+                                className="w-full bg-white text-gray-700 font-semibold py-3 px-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-100 transition-colors border border-gray-300 shadow-sm"
+                            >
+                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.24.81-.6z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                </svg>
+                                Sign up with Google
+                            </button>
+
+                            <div className="relative flex items-center justify-center my-4">
+                                <div className="border-t border-gray-600 w-full"></div>
+                                <span className="absolute bg-[#121212] sm:bg-[#1E1E1E] px-3 text-sm text-gray-500">OR</span>
+                            </div>
                             {/* Title Dropdown */}
                             <div>
                                 <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">

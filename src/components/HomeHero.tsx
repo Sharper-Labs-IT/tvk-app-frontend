@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { useGeoLocation } from '../hooks/useGeoLocation';
+import { useAuth } from '../context/AuthContext';
+// import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const HomeHero: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   const navigate = useNavigate();
   const { user, isLoggedIn } = useAuth();
-  const { countryCode: detectedCountryCode } = useGeoLocation();
+  // const { countryCode: detectedCountryCode } = useGeoLocation();
   const isSuperFan = user?.membership_tier === 'super_fan' || user?.membership_tier === 'Super Fan';
-  const isIndia = detectedCountryCode === 'IN';
+  // const isIndia = detectedCountryCode === 'IN';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -55,7 +55,7 @@ const HomeHero: React.FC = () => {
                 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]
               "
             >
-              TVK MEMBERS
+                  VJ FANS HUB
             </span>
           </h1>
 
@@ -69,9 +69,9 @@ const HomeHero: React.FC = () => {
             className={`text-base lg:text-lg 2xl:text-2xl text-gray-300 font-medium ${getAnimClass('delay-[400ms]')}`}
           >
             <p>One World. One Thalapathy Family.</p>
-            <p className="mt-2 text-sm text-gray-400 2xl:text-lg">
+            {/* <p className="mt-2 text-sm text-gray-400 2xl:text-lg">
               Membership is currently available to fans outside India only
-            </p>
+            </p> */}
           </div>
 
           <div className="flex flex-col items-start gap-4 pt-4">
@@ -79,11 +79,7 @@ const HomeHero: React.FC = () => {
               className={`flex flex-row justify-start gap-4 ${getAnimClass('delay-[600ms]')}`}
             >
               {/* Your existing button logic here - unchanged */}
-              {isIndia ? (
-                <button disabled className="px-6 py-3 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-sm border border-gray-700">
-                  Not Available in India
-                </button>
-              ) : isLoggedIn && isSuperFan ? (
+              {isLoggedIn && isSuperFan ? (
                 <button onClick={() => navigate('/membership')} className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm 2xl:px-8 2xl:py-4 2xl:text-base">
                   Manage Membership
                 </button>
@@ -101,16 +97,19 @@ const HomeHero: React.FC = () => {
 
                   <button
                     onClick={() => navigate('/membership')}
-                    className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap 2xl:px-8 2xl:py-4 2xl:text-base"
+                    className="relative px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap 2xl:px-8 2xl:py-4 2xl:text-base group"
                   >
-                    Become a Super Fan £9.99
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                      First 100 Users Only!
+                    </span>
+                    Become a Super Fan £2.99
                   </button>
                 </>
               )}
             </div>
 
             <p className={`text-sm text-gray-500 font-light italic max-w-md 2xl:max-w-xl 2xl:text-base ${getAnimClass('delay-[700ms]')}`}>
-              This is an independent global fan platform created to celebrate actor Vijay’s legacy following his final film. It is not officially affiliated with or endorsed by Thalapathy Vijay or his representatives.
+              This is an independent global fan platform created to celebrate actor VJ’s legacy. It is not affiliated with any political party, organization, or Thalapathy VJ personally.
             </p>
           </div>
         </div>
@@ -151,7 +150,7 @@ const HomeHero: React.FC = () => {
                   drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]
                 "
                 >
-                  TVK MEMBERS
+                  VJ FANS HUB
                 </span>
               </h1>
 
@@ -175,23 +174,12 @@ const HomeHero: React.FC = () => {
                 One World. One Thalapathy Family.
               </p>
               
-              <p className={`mt-3 text-sm font-medium text-gray-400 ${getAnimClass('delay-[500ms]')}`}>
-                 Membership is currently available to fans outside India only
-              </p>
-
               <div className="h-8" />
 
               <div
                 className={`flex flex-row justify-center gap-4 ${getAnimClass('delay-[600ms]')}`}
               >
-                {isIndia ? (
-                  <button
-                    disabled
-                    className="px-7 py-3.5 bg-gray-800 text-gray-500 font-bold rounded-md shadow-lg cursor-not-allowed uppercase tracking-wide text-sm whitespace-nowrap border border-gray-700"
-                  >
-                    Not Available in India
-                  </button>
-                ) : isLoggedIn && isSuperFan ? (
+                {isLoggedIn && isSuperFan ? (
                   <button
                     onClick={() => navigate('/membership')}
                     className="px-7 py-3.5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
@@ -214,9 +202,12 @@ const HomeHero: React.FC = () => {
 
                     <button
                       onClick={() => navigate('/membership')}
-                      className="px-7 py-3.5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
+                      className="relative px-7 py-3.5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
                     >
-                      Become a Super Fan £9.99
+                      <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                        First 100 Users Only!
+                      </span>
+                      Become a Super Fan £2.99
                     </button>
                   </>
                 )}
@@ -224,7 +215,7 @@ const HomeHero: React.FC = () => {
 
               {/* Tablet Disclaimer - Added 'italic' */}
               <p className={`mt-6 text-xs text-gray-500 font-light italic max-w-lg mx-auto ${getAnimClass('delay-[700ms]')}`}>
-                This is an independent global fan platform created to celebrate actor Vijay’s legacy following his final film. It is not officially affiliated with or endorsed by Thalapathy Vijay or his representatives.
+                This is an independent global fan platform created to celebrate actor Vijay’s legacy. It is not affiliated with any political party, organization, or Thalapathy Vijay personally.
               </p>
             </div>
 
@@ -262,7 +253,7 @@ const HomeHero: React.FC = () => {
                 drop-shadow-sm
               "
               >
-                TVK Members
+                VJ FANS HUB
               </span>
             </h1>
 
@@ -285,29 +276,11 @@ const HomeHero: React.FC = () => {
             >
               One World. One Thalapathy Family.
             </p>
-            
-            <p className={`mt-3 px-4 text-xs sm:text-sm font-medium text-gray-400 ${getAnimClass('delay-[500ms]')}`}>
-               Membership is currently available to fans outside India only
-            </p>
 
             <div className="h-8" />
 
             <div className={`flex flex-col w-full max-w-sm gap-3 ${getAnimClass('delay-[600ms]')}`}>
-              {isIndia ? (
-                <button
-                  disabled
-                  className="w-full px-8 py-3.5 bg-gray-800 text-gray-500 font-bold rounded shadow cursor-not-allowed uppercase tracking-wide text-sm border border-gray-700"
-                >
-                  Not Available in India
-                </button>
-              ) : isLoggedIn && isSuperFan ? (
-                <button
-                  onClick={() => navigate('/membership')}
-                  className="w-full px-8 py-3.5 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark active:bg-yellow-600 transition-colors duration-200 uppercase tracking-wide text-sm"
-                >
-                  Manage Membership
-                </button>
-              ) : (
+              {(
                 <>
                   <button
                     onClick={() => !isLoggedIn && navigate('/signup')}
@@ -323,9 +296,12 @@ const HomeHero: React.FC = () => {
 
                   <button
                     onClick={() => navigate('/membership')}
-                    className="w-full px-8 py-3.5 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark active:bg-yellow-600 transition-colors duration-200 uppercase tracking-wide text-sm"
+                    className="relative w-full px-8 py-3.5 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark active:bg-yellow-600 transition-colors duration-200 uppercase tracking-wide text-sm"
                   >
-                    Become a Super Fan £9.99
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
+                      First 100 Users Only!
+                    </span>
+                    Become a Super Fan £2.99
                   </button>
                 </>
               )}
@@ -333,7 +309,7 @@ const HomeHero: React.FC = () => {
 
             {/* Mobile Disclaimer - Added 'italic' */}
             <p className={`mt-6 px-2 text-[10px] text-gray-500 font-light italic leading-tight max-w-xs mx-auto ${getAnimClass('delay-[700ms]')}`}>
-              This is an independent global fan platform created to celebrate actor Vijay’s legacy following his final film. It is not officially affiliated with or endorsed by Thalapathy Vijay or his representatives.
+              This is an independent global fan platform created to celebrate actor Vijay’s legacy. It is not affiliated with any political party, organization, or Thalapathy Vijay personally.
             </p>
           </div>
 
