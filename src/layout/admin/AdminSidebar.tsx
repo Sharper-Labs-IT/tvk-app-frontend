@@ -119,6 +119,7 @@ const AdminSidebar: React.FC = () => {
       item.subItems?.some((sub) => location.pathname.startsWith(sub.path))
     );
     if (activeItem) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOpenMenu(activeItem.name);
     }
   }, [location.pathname]);
@@ -131,7 +132,7 @@ const AdminSidebar: React.FC = () => {
         if (paginatedData && 'total' in paginatedData) {
           setPendingCount(paginatedData.total || 0);
         }
-      } catch (error) {
+      } catch {
         // Silently fail - not critical
       }
     };

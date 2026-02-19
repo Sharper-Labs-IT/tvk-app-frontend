@@ -11,13 +11,16 @@ import {
   Trash2
 } from 'lucide-react';
 import { 
-  getStoryById, 
+  getStoryById 
+} from '../services/storyService';
+import { getStoryImageUrl, refreshStory } from '../utils/storyUtils';
+import { 
   toggleLikeStory, 
   addComment, 
   deleteComment,
   incrementViews,
   shareStory 
-} from '../services/storyService';
+} from '../services/storyInteractionService';
 import type { Story } from '../types/story';
 import { useAuth } from '../context/AuthContext';
 
@@ -41,9 +44,28 @@ const StoryView = () => {
   const loadStory = async () => {
     try {
       setLoading(true);
-      const data = await getStoryById(storyId!);
+      let data = await getStoryById(storyId!);
+      
+      // 🔍 DEBUG: Check received URLs
+      console.log('=== STORY LOADED ===');
+      console.log('Story ID:', data.id);
+      console.log('Cover Image URL:', data.cover_image_url || data.cover_image);
+      if (data.scenes && data.scenes.length > 0) {
+        console.log('First Scene Image URL:', data.scenes[0].image_url || data.scenes[0].imageUrl);
+        // Check if URL has AWS signature
+        const sceneUrl = data.scenes[0].image_url || data.scenes[0].imageUrl;
+        if (sceneUrl && sceneUrl.includes('X-Amz-Date')) {
+          const match = sceneUrl.match(/X-Amz-Date=(\d{8}T\d{6}Z)/);
+          if (match) {
+            console.log('🕐 URL Signed Date:', match[1], '(Expected: 20260218 for today)');
+          }
+        }
+      }
+      
+      // Refresh images if needed (backend must regenerate expired signed URLs)
+      data = await refreshStory(data);
       setStory(data);
-      setIsLiked(data.likedBy.includes(user?.id?.toString() || ''));
+      setIsLiked(data.liked_by_user || false);
       // Increment view count
       await incrementViews(storyId!);
     } catch (error) {
@@ -61,7 +83,7 @@ const StoryView = () => {
     try {
       const updated = await toggleLikeStory(storyId!);
       setStory(updated);
-      setIsLiked(updated.likedBy.includes(user?.id?.toString() || ''));
+      setIsLiked(updated.liked_by_user || false);
     } catch (error) {
       console.error('Failed to like story:', error);
     }
@@ -105,7 +127,7 @@ const StoryView = () => {
       await deleteComment(storyId!, commentId);
       setStory(prev => prev ? {
         ...prev,
-        comments: prev.comments.filter(c => c._id !== commentId)
+        comments: prev.comments.filter(c => c.id !== commentId)
       } : null);
     } catch (error) {
       console.error('Failed to delete comment:', error);
@@ -114,22 +136,22 @@ const StoryView = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent"></div>
+      <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-brand-gold border-t-transparent shadow-[0_0_20px_rgba(230,198,91,0.3)]"></div>
       </div>
     );
   }
 
   if (!story) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+      <div className="min-h-screen bg-brand-dark flex items-center justify-center">
+        <div className="text-center p-8 bg-tvk-dark-card rounded-2xl border border-white/5 shadow-2xl">
+          <h2 className="text-3xl font-zentry text-white mb-4">
             Story not found
           </h2>
           <button
             onClick={() => navigate('/story-studio')}
-            className="px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all"
+            className="px-8 py-3 bg-brand-gold text-brand-dark font-bold text-lg rounded-xl hover:shadow-[0_0_20px_rgba(230,198,91,0.4)] transition-all uppercase tracking-wide"
           >
             Back to Story Studio
           </button>
@@ -141,13 +163,13 @@ const StoryView = () => {
   const readTime = Math.ceil(story.content.split(' ').length / 200);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900 dark:to-gray-900">
+    <div className="min-h-screen bg-brand-dark text-white">
       {/* Header */}
-      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg border-b border-purple-200 dark:border-purple-800 sticky top-0 z-10">
+      <div className="bg-brand-dark/95 backdrop-blur-lg border-b border-brand-gold/20 sticky top-0 z-50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate('/story-studio')}
-            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+            className="flex items-center gap-2 text-gray-400 hover:text-brand-gold transition-colors font-bold uppercase tracking-wide text-sm"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to Stories
@@ -158,146 +180,181 @@ const StoryView = () => {
       {/* Story Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Cover Image */}
-        {story.coverImage && (
-          <div className="mb-8 rounded-2xl overflow-hidden shadow-2xl">
-            <img
-              src={story.coverImage}
-              alt={story.title}
-              className="w-full h-96 object-cover"
-            />
-          </div>
-        )}
+        {(() => {
+          // Prioritize signed URL from backend over S3 key
+          const coverImageUrl = story.cover_image_url || 
+                                story.coverImage?.previewUrl || 
+                                story.coverImage?.path || 
+                                story.cover_image;
+          return coverImageUrl ? (
+            <div className="mb-8 rounded-2xl overflow-hidden shadow-2xl border-4 border-brand-dark ring-1 ring-white/10">
+              <img
+                src={getStoryImageUrl(coverImageUrl) || ''}
+                alt={story.title}
+                className="w-full h-64 md:h-96 object-cover"
+              />
+            </div>
+          ) : null;
+        })()}
 
         {/* Main Story Card */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-6">
+        <div className="bg-tvk-dark-card rounded-2xl shadow-xl p-8 mb-6 border border-white/5">
           {/* Meta */}
-          <div className="flex items-center gap-3 mb-4">
-            <span className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-semibold">
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <span className="px-4 py-1.5 bg-brand-dark border border-brand-gold/30 text-brand-gold rounded-full text-xs font-bold uppercase tracking-wider">
               {story.genre}
             </span>
-            <span className="px-4 py-2 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full text-sm font-semibold">
+            <span className="px-4 py-1.5 bg-brand-dark border border-brand-gold/30 text-brand-gold rounded-full text-xs font-bold uppercase tracking-wider">
               {story.mood}
             </span>
-            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-              <Clock className="w-4 h-4" />
+            <div className="flex items-center gap-1 text-sm text-gray-400 font-medium ml-auto">
+              <Clock className="w-4 h-4 text-brand-gold" />
               {readTime} min read
             </div>
-            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-              <Eye className="w-4 h-4" />
+            <div className="flex items-center gap-1 text-sm text-gray-400 font-medium">
+              <Eye className="w-4 h-4 text-brand-gold" />
               {story.views}
             </div>
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-6">
+          <h1 className="text-5xl font-zentry text-brand-gold mb-8 leading-tight drop-shadow-md">
             {story.title}
           </h1>
 
           {/* Author & Character */}
-          <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-lg">
-                {story.characterName.charAt(0)}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-8 pb-6 border-b border-white/5">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-brand-gold flex items-center justify-center text-brand-dark font-black text-xl shadow-lg shadow-brand-gold/20">
+                {story.character_name.charAt(0)}
               </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">Featuring</p>
-                <p className="font-bold text-gray-900 dark:text-white">{story.characterName}</p>
+                <p className="text-xs text-brand-gold/70 uppercase tracking-widest font-bold mb-0.5">Featuring</p>
+                <p className="font-bold text-white text-lg">{story.character_name}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">Created by</p>
-              <p className="font-semibold text-gray-900 dark:text-white">{story.userName}</p>
+            <div className="flex items-center gap-3 text-left sm:text-right">
+              <div>
+                <p className="text-xs text-brand-gold/70 uppercase tracking-widest font-bold mb-0.5">Created by</p>
+                <p className="font-bold text-white text-lg">{story.userName}</p>
+              </div>
             </div>
           </div>
 
           {/* Story Content */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
+          <div className="prose prose-invert max-w-none mb-10 [&_p]:text-justify">
             {story.content.split('\n\n').map((paragraph, index) => (
-              <p key={index} className="mb-6 text-gray-700 dark:text-gray-300 leading-relaxed text-lg">
+              <p key={index} className="mb-6 text-gray-300 text-lg leading-relaxed font-light !text-justify">
                 {paragraph}
               </p>
             ))}
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6 border-t border-white/5">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all font-semibold ${
+              className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl transition-all font-bold uppercase tracking-wide text-sm ${
                 isLiked
-                  ? 'bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400'
-                  : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-pink-100 hover:text-pink-600'
+                  ? 'bg-brand-gold text-brand-dark shadow-[0_0_15px_rgba(230,198,91,0.3)]'
+                  : 'bg-brand-dark text-gray-400 hover:text-brand-gold border border-white/5 hover:border-brand-gold/30'
               }`}
             >
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-              {story.likes} Likes
+              {story.likes_count} Likes
             </button>
             <button
               onClick={handleShare}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400 hover:bg-blue-100 hover:text-blue-600 transition-all font-semibold"
+              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-dark text-gray-400 hover:text-brand-gold border border-white/5 hover:border-brand-gold/30 transition-all font-bold uppercase tracking-wide text-sm"
             >
               <Share2 className="w-5 h-5" />
               Share
             </button>
-            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-              <MessageCircle className="w-5 h-5" />
-              <span className="font-semibold">{story.comments.length} Comments</span>
+            <div className="flex items-center justify-center gap-2 text-gray-400 sm:ml-auto font-medium py-2 sm:py-0">
+              <MessageCircle className="w-5 h-5 text-brand-gold" />
+              <span>{story.comments.length} Comments</span>
             </div>
           </div>
         </div>
 
         {/* Scenes */}
-        {story.scenes && story.scenes.length > 0 && (
-          <div className="space-y-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Story Scenes</h2>
-            {story.scenes.map((scene) => (
+        {((story.scenes_with_urls && story.scenes_with_urls.length > 0) || (story.scenes && story.scenes.length > 0)) && (
+          <div className="space-y-8 mb-12">
+            <div className="flex items-center gap-4 my-8">
+             <div className="h-px bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent flex-1" />
+             <span className="font-zentry text-2xl text-white uppercase tracking-wider">Scenes</span>
+             <div className="h-px bg-gradient-to-r from-transparent via-brand-gold/50 to-transparent flex-1" />
+            </div>
+
+            {/* Use scenes_with_urls if available (has full AWS URLs), otherwise use scenes */}
+            {(story.scenes_with_urls || story.scenes || []).map((scene, index) => {
+              // Support nested image object and legacy fields
+              const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
+              const sceneNumber = scene.sceneNumber || scene.scene_number;
+              
+              return (
               <div
                 key={scene.id}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden"
+                className="bg-tvk-dark-card rounded-2xl overflow-hidden border border-white/5 hover:border-brand-gold/30 transition-all duration-300"
               >
-                {scene.imageUrl && (
-                  <div className="h-64">
+                {imageUrl ? (
+                  <div className="h-72 relative">
                     <img
-                      src={scene.imageUrl}
+                      src={getStoryImageUrl(imageUrl) || ''}
                       alt={scene.title}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error(`Failed to load image for scene ${index}:`, getStoryImageUrl(imageUrl));
+                        // Show fallback
+                        e.currentTarget.parentElement!.innerHTML = `
+                          <div class="w-full h-full bg-gradient-to-br from-brand-goldDark/20 via-brand-gold/10 to-brand-goldDark/20 flex items-center justify-center">
+                            <div class="text-6xl">🎬</div>
+                          </div>
+                        `;
+                      }}
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-tvk-dark-card to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-72 relative bg-gradient-to-br from-brand-goldDark/20 via-brand-gold/10 to-brand-goldDark/20 flex items-center justify-center">
+                    <div className="text-6xl">🎬</div>
                   </div>
                 )}
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                    Scene {scene.sceneNumber}: {scene.title}
+                <div className="p-8">
+                  <h3 className="text-2xl font-zentry text-brand-gold mb-4">
+                    Scene {sceneNumber}: {scene.title}
                   </h3>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <p className="text-gray-300 leading-relaxed text-lg font-light text-justify">
                     {scene.content}
                   </p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
         {/* Comments Section */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+        <div className="bg-tvk-dark-card rounded-2xl shadow-xl p-8 border border-white/5">
+          <h2 className="text-3xl font-zentry text-brand-gold mb-8">
             Comments ({story.comments.length})
           </h2>
 
           {/* Add Comment */}
           {isLoggedIn ? (
-            <div className="mb-8">
+            <div className="mb-10">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Share your thoughts about this story..."
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
+                className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-brand-dark text-white focus:ring-2 focus:ring-brand-gold focus:border-transparent resize-none placeholder-gray-600"
               />
               <div className="flex justify-end mt-3">
                 <button
                   onClick={handleAddComment}
                   disabled={submittingComment || !newComment.trim()}
-                  className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-3 bg-brand-gold text-brand-dark font-bold uppercase tracking-wide text-sm rounded-xl hover:shadow-[0_0_15px_rgba(230,198,91,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send className="w-4 h-4" />
                   Post Comment
@@ -305,9 +362,9 @@ const StoryView = () => {
               </div>
             </div>
           ) : (
-            <div className="mb-8 p-4 bg-purple-50 dark:bg-purple-900/30 rounded-xl text-center">
-              <p className="text-gray-700 dark:text-gray-300">
-                Please <button onClick={() => navigate('/login')} className="text-purple-600 dark:text-purple-400 font-semibold hover:underline">login</button> to comment
+            <div className="mb-8 p-6 bg-brand-dark/50 rounded-xl text-center border border-white/5">
+              <p className="text-gray-400">
+                Please <button onClick={() => navigate('/login')} className="text-brand-gold font-bold hover:underline">login</button> to comment
               </p>
             </div>
           )}
@@ -317,39 +374,39 @@ const StoryView = () => {
             {story.comments.length > 0 ? (
               story.comments.map((comment) => (
                 <div
-                  key={comment._id}
-                  className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl"
+                  key={comment.id}
+                  className="p-6 bg-brand-dark rounded-xl border border-white/5"
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-400 flex items-center justify-center text-white font-bold">
-                        {comment.userName.charAt(0)}
+                      <div className="w-10 h-10 rounded-full bg-tvk-dark-card border border-brand-gold/30 flex items-center justify-center text-brand-gold font-bold">
+                        {comment.user_name.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-semibold text-gray-900 dark:text-white">
-                          {comment.userName}
+                        <p className="font-bold text-white">
+                          {comment.user_name}
                         </p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(comment.createdAt).toLocaleDateString()}
+                        <p className="text-xs text-brand-gold/60 uppercase tracking-widest font-bold">
+                          {new Date(comment.created_at).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
-                    {user?.id?.toString() === comment.userId && (
+                    {user?.id?.toString() === comment.user_id && (
                       <button
-                        onClick={() => handleDeleteComment(comment._id)}
-                        className="p-2 text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-all"
+                        onClick={() => handleDeleteComment(comment.id)}
+                        className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition-all"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     )}
                   </div>
-                  <p className="text-gray-700 dark:text-gray-300 ml-13">
+                  <p className="text-gray-300 ml-13 leading-relaxed">
                     {comment.content}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+              <p className="text-center text-gray-500 py-8 italic">
                 No comments yet. Be the first to share your thoughts!
               </p>
             )}

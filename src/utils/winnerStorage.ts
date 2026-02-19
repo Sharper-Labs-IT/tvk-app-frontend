@@ -1,7 +1,8 @@
-// Utility for storing and retrieving the previous month's winner
-// This ensures the winner name stays consistent and doesn't change
+// Utility for storing and retrieving multiple historical winners
+// This ensures winner data persists and displays in Hall of Fame
 
-const STORAGE_KEY = 'tvk_previous_winner';
+const STORAGE_KEY = 'tvk_winners_history';
+const MAX_WINNERS = 12; // Store up to 12 months of winners
 
 export interface StoredWinner {
   name: string;
@@ -9,46 +10,63 @@ export interface StoredWinner {
   year: number;
   points: number;
   country: string;
+  avatar_url?: string;
   storedAt: string; // ISO date string when this was stored
 }
 
 /**
- * Get the stored previous month winner from localStorage
+ * Get all stored historical winners from localStorage
  */
-export const getPreviousWinner = (): StoredWinner | null => {
+export const getAllWinners = (): StoredWinner[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (!stored) return null;
+    if (!stored) return [];
     
-    const winner: StoredWinner = JSON.parse(stored);
+    const winners: StoredWinner[] = JSON.parse(stored);
     
-    // Validate the stored data has all required fields
-    if (!winner.name || !winner.month) {
-      return null;
-    }
-    
-    return winner;
+    // Sort by year and month (most recent first)
+    return winners.sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      const monthOrder = ['January', 'February', 'March', 'April', 'May', 'June', 
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+      return monthOrder.indexOf(b.month) - monthOrder.indexOf(a.month);
+    });
   } catch (error) {
-    console.error('Failed to parse stored winner:', error);
-    return null;
+    console.error('Failed to parse stored winners:', error);
+    return [];
   }
 };
 
 /**
- * Save the previous month winner to localStorage
- * Only saves if this is a new winner (different month/year or first time)
+ * Get the stored previous month winner from localStorage (for backward compatibility)
+ */
+export const getPreviousWinner = (): StoredWinner | null => {
+  const winners = getAllWinners();
+  return winners.length > 0 ? winners[0] : null;
+};
+
+/**
+ * Save a winner to localStorage
+ * Prevents duplicates and maintains a maximum number of winners
  */
 export const savePreviousWinner = (winner: Omit<StoredWinner, 'storedAt'>): void => {
   try {
-    const existing = getPreviousWinner();
+    const existingWinners = getAllWinners();
     
-    // Only update if it's a different month/year or if we don't have data yet
-    if (!existing || existing.month !== winner.month || existing.year !== winner.year) {
+    // Check if this winner already exists (same month and year)
+    const isDuplicate = existingWinners.some(
+      w => w.month === winner.month && w.year === winner.year
+    );
+    
+    if (!isDuplicate) {
       const dataToStore: StoredWinner = {
         ...winner,
         storedAt: new Date().toISOString()
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToStore));
+      
+      // Add new winner and limit to MAX_WINNERS
+      const updatedWinners = [dataToStore, ...existingWinners].slice(0, MAX_WINNERS);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedWinners));
     }
   } catch (error) {
     console.error('Failed to save winner:', error);

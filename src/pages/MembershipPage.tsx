@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -17,8 +17,8 @@ import MembershipCancelModal from '../components/MembershipCancelModal';
 import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
 import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
 import { toast } from 'react-hot-toast';
-import { getCountryFromMobile } from '../utils/countryHelper';
-import { useGeoLocation } from '../hooks/useGeoLocation';
+// import { getCountryFromMobile } from '../utils/countryHelper';
+// import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const benefitsContainerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -55,7 +55,7 @@ const hardCodedPlans: Plan[] = [
     id: 2,
     name: 'Super Fan Premium',
     description: 'Premium access (30-day subscription)',
-    price: '9.99',
+    price: '2.99',
     duration_days: 30,
     status: 1,
     benefits: [
@@ -78,11 +78,11 @@ const hardCodedPlans: Plan[] = [
 const MembershipPage: React.FC = () => {
   const { isLoggedIn, user, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const { countryCode: detectedCountryCode } = useGeoLocation();
+  // const { countryCode: detectedCountryCode } = useGeoLocation();
 
   const [selectedCurrency, setSelectedCurrency] = useState<'GBP' | 'USD' | 'EUR'>('GBP');
-  const [planPrices, setPlanPrices] = useState<Record<number, string>>({});
-  const [pricesLoading, setPricesLoading] = useState(false);
+  // const [planPrices, setPlanPrices] = useState<Record<number, string>>({});
+  // const [pricesLoading, setPricesLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   // Modals
@@ -118,6 +118,7 @@ const MembershipPage: React.FC = () => {
     return 'free';
   }, [isLoggedIn, user]);
 
+  /*
   useEffect(() => {
     const fetchPrices = async () => {
       setPricesLoading(true);
@@ -143,10 +144,15 @@ const MembershipPage: React.FC = () => {
     };
     fetchPrices();
   }, [selectedCurrency]);
+  */
 
   const handleSubscribeClick = (plan: Plan) => {
     if (plan.id === 1) {
-      isLoggedIn ? navigate('/') : navigate('/login');
+      if (isLoggedIn) {
+        navigate('/');
+      } else {
+        navigate('/login');
+      }
       return;
     }
 
@@ -162,13 +168,13 @@ const MembershipPage: React.FC = () => {
       return;
     }
 
-    const isIndia = user?.mobile
-      ? getCountryFromMobile(user.mobile) === 'India'
-      : detectedCountryCode === 'IN';
-    if (isIndia) {
-      toast.error('Membership purchase is not available for users in India.');
-      return;
-    }
+    // const isIndia = user?.mobile
+    //   ? getCountryFromMobile(user.mobile) === 'India'
+    //   : detectedCountryCode === 'IN';
+    // if (isIndia) {
+    //   toast.error('Membership purchase is not available for users in India.');
+    //   return;
+    // }
 
     // Handle clicking a paid plan card when already subscribed
     if (membershipStatus === 'active_auto_renew_on') {
@@ -190,7 +196,7 @@ const MembershipPage: React.FC = () => {
       setIsCancelModalOpen(false);
       setIsSuccessModalOpen(true);
       toast.success('Auto-renewal cancelled successfully.');
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to cancel membership.');
     }
   };
@@ -241,11 +247,11 @@ const MembershipPage: React.FC = () => {
           {hardCodedPlans.map((plan) => {
             const isPlanFree = plan.id === 1;
             const isPlanPaid = plan.id !== 1;
-            const isIndia = detectedCountryCode === 'IN';
+            // const isIndia = detectedCountryCode === 'IN';
 
             // --- REFINED BUTTON LOGIC ---
             const buttonText = (() => {
-              if (isIndia) return 'Not Available';
+              // if (isIndia) return 'Not Available';
 
               if (isPlanPaid) {
                 if (membershipStatus === 'active_auto_renew_on') return 'Cancel Auto-Renewal';
@@ -268,26 +274,48 @@ const MembershipPage: React.FC = () => {
             // 2. Free card and user is already logged in (Free or Paid)
             // 3. Paid card and user already cancelled auto-renew but plan is still running (grace period)
             const buttonDisabled =
-              isIndia ||
               (isPlanFree && isLoggedIn) ||
               (isPlanPaid && membershipStatus === 'active_auto_renew_off');
 
             const symbol =
               selectedCurrency === 'GBP' ? '£' : selectedCurrency === 'EUR' ? '€' : '$';
-            const priceLabel = isPlanFree
-              ? 'Free'
-              : `${symbol}${planPrices[plan.id] || plan.price}`;
+            
+            // Override or use fetched price. Ideally backend should be updated, but for frontend change:
+            // We use the fetched price if available, but if we changed the base to 2.99 and backend returns 9.99, we might want to override.
+            // For now, let's assume we display what we have or a hardcoded override if needed.
+            // User asked to CHANGE price to 2.99.
+            // st displayPrice = isPlanPaid ? '2.99' : plan.price; // Force 2.99 for paid plan display
+            
+            // To handle currency correctly without backend:
+            const priceValue = (() => {
+                if (isPlanFree) return '0.00';
+                if (selectedCurrency === 'GBP') return '2.99';
+                if (selectedCurrency === 'USD') return '3.99';
+                if (selectedCurrency === 'EUR') return '3.49';
+                return '2.99';
+            })();
+
+            const originalPriceValue = (() => {
+                if (selectedCurrency === 'GBP') return '9.99';
+                if (selectedCurrency === 'USD') return '12.99';
+                if (selectedCurrency === 'EUR') return '11.99';
+                return '9.99';
+            })();
+
+            const priceLabel = isPlanFree ? 'Free' : `${symbol}${priceValue}`;
+            const originalPriceLabel = isPlanPaid ? `${symbol}${originalPriceValue}` : undefined;
 
             return (
               <MembershipTireCard
                 key={plan.id}
                 name={plan.name}
                 tagline={plan.description}
-                priceLabel={pricesLoading && !isPlanFree ? '...' : priceLabel}
+                priceLabel={priceLabel}
+                originalPriceLabel={originalPriceLabel}
                 priceSuffix={isPlanFree ? '/ Lifetime' : `/ Monthly (${selectedCurrency})`}
                 features={(plan.benefits || []).map((b) => ({ label: b, available: true }))}
                 highlight={isPlanPaid}
-                badgeLabel={isPlanPaid ? 'Most Popular' : undefined}
+                badgeLabel={isPlanPaid ? 'First 100 Users Only!' : undefined}
                 onSubscribe={() => handleSubscribeClick(plan)}
                 buttonText={buttonText}
                 buttonDisabled={buttonDisabled}

@@ -1,194 +1,134 @@
 import axiosClient from '../api/axiosClient';
 import type {
   Story,
-  GenerateStoryRequest,
-  GenerateStoryResponse,
+  SaveStoryRequest,
+  SaveStoryResponse,
   StoryFeedFilter,
-  StoryTemplate,
-  StoryComment,
+  StoryFeedResponse,
   StoryStats,
 } from '../types/story';
 
-// Import mock data
-import { 
-  mockStories, 
-  mockStats, 
-  mockTemplates, 
-  generateMockStory,
-  delay 
-} from './mockStoryData';
-
 /**
- * Story Service - Handles all story-related API calls
+ * Story Service - Main CRUD operations for stories
  * 
- * Set USE_MOCK_DATA=true in localStorage or .env to use mock data for testing
+ * This service handles:
+ * - Saving stories after generation
+ * - Fetching story feeds
+ * - Managing user stories
+ * - Updating and deleting stories
  */
 
-// Check if using mock data
-const USE_MOCK_DATA = 
-  localStorage.getItem('USE_MOCK_DATA') === 'true' || 
-  import.meta.env.VITE_USE_MOCK_DATA === 'true';
+// =================================
+// Story CRUD Operations
+// =================================
 
-// Generate AI story
-export const generateStory = async (
-  request: GenerateStoryRequest
-): Promise<GenerateStoryResponse> => {
-  if (USE_MOCK_DATA) {
-    await delay(3000); // Simulate AI generation time
-    return generateMockStory(
-      request.characterName,
-      request.prompt.genre,
-      request.prompt.mood
-    );
-  }
-  const response = await axiosClient.post('/api/stories/generate', request);
+/**
+ * Save story (Step 2 after generation)
+ * This publishes or drafts a generated story to the database
+ */
+export const saveStory = async (storyData: SaveStoryRequest): Promise<SaveStoryResponse> => {
+  const response = await axiosClient.post('/stories/', storyData);
+  // Ensure we return the full response body as expected by the type
   return response.data;
 };
 
-// Save story (draft or publish)
-export const saveStory = async (story: Partial<Story>): Promise<Story> => {
-  const response = await axiosClient.post('/api/stories', story);
-  return response.data;
-};
-
-// Get story by ID
+/**
+ * Get story by ID
+ * Fetches fresh data including updated image URLs
+ */
 export const getStoryById = async (storyId: string): Promise<Story> => {
-  const response = await axiosClient.get(`/api/stories/${storyId}`);
-  return response.data;
+  const response = await axiosClient.get(`/stories/${storyId}`);
+  // Robustly handle different response structures (unwrapped vs wrapped in data/story)
+  const story = response.data?.data || response.data?.story || response.data;
+  
+  if (!story) {
+    throw new Error('Story could not be found');
+  }
+  return story;
 };
 
-// Get user's stories
+/**
+ * Get user's stories (both drafts and published)
+ */
 export const getUserStories = async (userId?: string): Promise<Story[]> => {
-  if (USE_MOCK_DATA) {
-    await delay(500);
-    return mockStories;
-  }
-  const endpoint = userId ? `/api/stories/user/${userId}` : '/api/stories/my-stories';
+  const endpoint = userId ? `/stories/user/${userId}` : '/stories/my-stories';
   const response = await axiosClient.get(endpoint);
-  return response.data;
+  // Robustly handle different response structures
+  return response.data?.data || response.data?.stories || response.data || [];
 };
 
-// Get story feed
-export const getStoryFeed = async (
-  filter?: StoryFeedFilter,
-  page: number = 1,
-  limit: number = 10
-): Promise<{ stories: Story[]; total: number; page: number; totalPages: number }> => {
-  if (USE_MOCK_DATA) {
-    await delay(500);
-    return {
-      stories: mockStories,
-      total: mockStories.length,
-      page: 1,
-      totalPages: 1
-    };
-  }
-  const response = await axiosClient.get('/api/stories/feed', {
-    params: { ...filter, page, limit },
-  });
-  return response.data;
-};
-
-// Get featured stories
-export const getFeaturedStories = async (): Promise<Story[]> => {
-  if (USE_MOCK_DATA) {
-    await delay(300);
-    return mockStories.filter(s => s.isFeatured);
-  }
-  const response = await axiosClient.get('/api/stories/featured');
-  return response.data;
-};
-
-// Get story templates
-export const getStoryTemplates = async (): Promise<StoryTemplate[]> => {
-  if (USE_MOCK_DATA) {
-    await delay(300);
-    return mockTemplates;
-  }
-  const response = await axiosClient.get('/api/stories/templates');
-  return response.data;
-};
-
-// Update story
+/**
+ * Update an existing story
+ */
 export const updateStory = async (
   storyId: string,
-  updates: Partial<Story>
+  updates: Partial<SaveStoryRequest>
 ): Promise<Story> => {
-  const response = await axiosClient.put(`/api/stories/${storyId}`, updates);
-  return response.data;
+  const response = await axiosClient.put(`/stories/${storyId}`, updates);
+  return response.data.data;
 };
 
-// Delete story
+/**
+ * Delete a story
+ */
 export const deleteStory = async (storyId: string): Promise<void> => {
-  await axiosClient.delete(`/api/stories/${storyId}`);
+  await axiosClient.delete(`/stories/${storyId}`);
 };
 
-// Like/unlike story
-export const toggleLikeStory = async (storyId: string): Promise<Story> => {
-  const response = await axiosClient.post(`/api/stories/${storyId}/like`);
-  return response.data;
-};
 
-// Add comment to story
-export const addComment = async (
-  storyId: string,
-  content: string
-): Promise<StoryComment> => {
-  const response = await axiosClient.post(`/api/stories/${storyId}/comments`, {
-    content,
+
+// =================================
+// Story Feed & Discovery
+// =================================
+
+/**
+ * Get story feed with filtering and pagination
+ */
+export const getStoryFeed = async (
+  filter?: StoryFeedFilter
+): Promise<StoryFeedResponse> => {
+  const response = await axiosClient.get('/stories/feed', {
+    params: {
+      genre: filter?.genre,
+      sort_by: filter?.sort_by || 'recent',
+      search: filter?.search,
+      user_id: filter?.user_id,
+      page: filter?.page || 1,
+      limit: filter?.limit || 10,
+    },
   });
   return response.data;
 };
 
-// Delete comment
-export const deleteComment = async (
-  storyId: string,
-  commentId: string
-): Promise<void> => {
-  await axiosClient.delete(`/api/stories/${storyId}/comments/${commentId}`);
+/**
+ * Get featured stories
+ */
+export const getFeaturedStories = async (): Promise<Story[]> => {
+  const response = await axiosClient.get('/stories/featured');
+  return response.data.data;
 };
 
-// Increment view count
-export const incrementViews = async (storyId: string): Promise<void> => {
-  await axiosClient.post(`/api/stories/${storyId}/view`);
-};
+// =================================
+// User Statistics
+// =================================
 
-// Share story
-export const shareStory = async (storyId: string): Promise<void> => {
-  await axiosClient.post(`/api/stories/${storyId}/share`);
-};
-
-// Get user story stats
+/**
+ * Get user's story statistics including quota information
+ */
 export const getUserStoryStats = async (): Promise<StoryStats> => {
-  if (USE_MOCK_DATA) {
-    await delay(300);
-    return mockStats;
-  }
-  const response = await axiosClient.get('/api/stories/stats');
+  const response = await axiosClient.get('/stories/stats');
+  // API returns raw JSON object, not wrapped in data property
   return response.data;
 };
 
-// Generate story image (AI)
-export const generateStoryImage = async (
-  prompt: string,
-  style?: string
-): Promise<{ imageUrl: string }> => {
-  const response = await axiosClient.post('/api/stories/generate-image', {
-    prompt,
-    style,
-  });
-  return response.data;
-};
+// =================================
+// Image URL Refresh
+// =================================
 
-// Regenerate story section
-export const regenerateSection = async (
-  storyId: string,
-  sectionIndex: number,
-  prompt?: string
-): Promise<{ content: string }> => {
-  const response = await axiosClient.post(`/api/stories/${storyId}/regenerate`, {
-    sectionIndex,
-    prompt,
-  });
-  return response.data;
+/**
+ * Refresh image URLs for a story (handles S3 URL expiry)
+ * Call this when displaying stories older than 5 hours
+ */
+export const refreshStoryImages = async (storyId: string): Promise<Story> => {
+  return getStoryById(storyId); // Backend returns fresh signed URLs
 };

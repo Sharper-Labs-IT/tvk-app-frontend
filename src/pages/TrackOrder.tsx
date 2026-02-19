@@ -59,11 +59,11 @@ const TrackOrder = () => {
 
   // Mock tracking data
   const [trackingInfo] = useState<TrackingInfo | null>({
-    orderNumber: orderNumber || 'TVK-2026-001234',
+    orderNumber: orderNumber || 'VJF-2026-001234',
     trackingNumber: 'TRK123456789',
     currentStatus: 'In Transit',
     estimatedDelivery: '2026-01-25',
-    carrier: 'TVK Express Shipping',
+    carrier: 'VJ Fans Hub Express',
     shippingMethod: 'Standard Delivery',
     events: [
       {
@@ -212,7 +212,7 @@ const TrackOrder = () => {
                     value={trackingNumberInput}
                     onChange={(e) => setTrackingNumberInput(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleTrackOrder()}
-                    placeholder="e.g., TVK-2026-001234 or TRK123456789"
+                    placeholder="e.g., VJF-2026-001234 or TRK123456789"
                     className="w-full px-4 py-3 sm:py-4 bg-black/30 border border-white/10 rounded-xl text-white text-sm sm:text-base placeholder-white/30 focus:outline-none focus:border-[#FFD700]/50 text-center font-mono touch-manipulation"
                   />
                 </div>

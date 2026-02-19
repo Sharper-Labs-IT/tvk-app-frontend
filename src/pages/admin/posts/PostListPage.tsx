@@ -4,6 +4,7 @@ import { contentService } from '../../../services/contentService';
 import type { IContent } from '../../../types/content';
 import { Plus, Trash2, Eye, FileVideo, Image as ImageIcon, FileText, Lock, Clock, CheckCircle, XCircle } from 'lucide-react';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
+import toast from 'react-hot-toast';
 
 const PostListPage: React.FC = () => {
   const [contents, setContents] = useState<IContent[]>([]);
@@ -51,7 +52,7 @@ const PostListPage: React.FC = () => {
       setIsDeleteModalOpen(false);
       setPostToDelete(null);
     } catch (err) {
-      alert('Failed to delete post');
+      toast.error('Failed to delete post');
     } finally {
       setIsDeleting(false);
     }

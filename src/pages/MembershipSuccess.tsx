@@ -22,56 +22,58 @@ const MembershipSuccess: React.FC = () => {
       return;
     }
 
+    const verifySession = async (sid: string) => {
+      try {
+        const res = await axiosClient.post('/payments/verify-checkout-session', {
+          session_id: sid,
+        });
+
+        if (res.data.success) {
+          // Trigger confetti
+          const end = Date.now() + 2000;
+          const colors = ['#E6C65B', '#ffffff', '#F6A800'];
+          (function frame() {
+            confetti({
+              particleCount: 3,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: colors,
+            });
+            confetti({
+              particleCount: 3,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: colors,
+            });
+            if (Date.now() < end) requestAnimationFrame(frame);
+          })();
+
+          setVerifying(false);
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 5000);
+        } else {
+          throw new Error('Payment verification returned unsuccessful status');
+        }
+      } catch (err) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const error = err as any;
+        console.error('Verification error:', error);
+        // Even if verification fails, if we have a session_id, it might be a false positive due to network or backend sync.
+        // We can fallback to asking the user to check their dashboard or contact support, rather than a hard red "Fail".
+        const errorMessage = error?.response?.data?.message || 'We could not verify the payment automatically.';
+        setError(errorMessage);
+        setVerifying(false);
+      }
+    };
+
     if (!verificationAttempted.current) {
       verificationAttempted.current = true;
       verifySession(sessionId);
     }
   }, [searchParams, navigate]);
-
-  const verifySession = async (sessionId: string) => {
-    try {
-      const res = await axiosClient.post('/payments/verify-checkout-session', {
-        session_id: sessionId,
-      });
-
-      if (res.data.success) {
-        // Trigger confetti
-        const end = Date.now() + 2000;
-        const colors = ['#E6C65B', '#ffffff', '#F6A800'];
-        (function frame() {
-          confetti({
-            particleCount: 3,
-            angle: 60,
-            spread: 55,
-            origin: { x: 0 },
-            colors: colors,
-          });
-          confetti({
-            particleCount: 3,
-            angle: 120,
-            spread: 55,
-            origin: { x: 1 },
-            colors: colors,
-          });
-          if (Date.now() < end) requestAnimationFrame(frame);
-        })();
-
-        setVerifying(false);
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 5000);
-      } else {
-        throw new Error('Payment verification returned unsuccessful status');
-      }
-    } catch (err: any) {
-      console.error('Verification error:', err);
-      // Even if verification fails, if we have a session_id, it might be a false positive due to network or backend sync.
-      // We can fallback to asking the user to check their dashboard or contact support, rather than a hard red "Fail".
-      const errorMessage = err?.response?.data?.message || 'We could not verify the payment automatically.';
-      setError(errorMessage);
-      setVerifying(false);
-    }
-  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#121212] p-4">

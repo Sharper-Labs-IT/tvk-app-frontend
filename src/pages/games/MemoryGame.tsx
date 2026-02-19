@@ -498,13 +498,13 @@ const MemoryGame: React.FC = () => {
                 {/* Avatar Image */}
                 <img 
                   src={feedbackType === 'success' ? "/img/happy.webp" : "/img/sad.png"} 
-                  alt="Vijay Reaction" 
+                  alt="VJ Reaction" 
                   className={`w-40 sm:w-56 md:w-80 h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] filter brightness-110 relative z-10 ${
                      
                       feedbackSide === 'left' ? 'scale-x-[-1]' : ''
                   }`}
                   onError={(e) => {
-                    e.currentTarget.src = "https://placehold.co/200x300/1a1a1a/white?text=Vijay+Img";
+                    e.currentTarget.src = "https://placehold.co/200x300/1a1a1a/white?text=VJ+Img";
                   }}
                 />
 

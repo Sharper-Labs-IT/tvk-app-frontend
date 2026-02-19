@@ -20,6 +20,7 @@ import TextType from "../../components/TextType"; // Assuming this exists
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const TriviaGameStart: React.FC = () => {
   const navigate = useNavigate();
@@ -114,7 +115,7 @@ const TriviaGameStart: React.FC = () => {
           setShowAccessModal(false);
           navigate('/games/trivia/start');
       } else {
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 

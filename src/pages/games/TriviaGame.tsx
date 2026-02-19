@@ -98,7 +98,7 @@ const QUESTION_POOL: Question[] = [
   { id: 14, question: "Who played the antagonist in the movie 'Master'?", options: ["Arjun", "Sanjay Dutt", "Vijay Sethupathi", "Prakash Raj"], correctAnswer: 2 },
   { id: 15, question: "In 'Beast', what is the name of the mall hijacked by terrorists?", options: ["Express Avenue", "Phoenix Marketcity", "East Coast Mall", "Skywalk"], correctAnswer: 2 },
   { id: 16, question: "Who is the music director of 'Varisu'?", options: ["Anirudh", "Thaman S", "A.R. Rahman", "Yuvan"], correctAnswer: 1 },
-  { id: 17, question: "What is the name of the political party founded by Vijay?", options: ["Makkal Needhi Maiam", "Tamizhaga Vettri Kazhagam", "Naam Tamilar", "DMDK"], correctAnswer: 1 },
+  { id: 17, question: "What is the title given to Vijay by his fans?", options: ["Thalaivar", "Thalapathy", "Ulaganayagan", "Superstar"], correctAnswer: 1 },
   { id: 18, question: "What is the name of Vijay's father?", options: ["S.A. Chandrasekhar", "Bharathiraja", "Gangai Amaran", "T. Rajendar"], correctAnswer: 0 },
   { id: 19, question: "In which movie did Vijay's son, Jason Sanjay, make a cameo appearance?", options: ["Vettaikaran", "Villu", "Sura", "Pokkiri"], correctAnswer: 0 },
   { id: 20, question: "Which of these movies features Vijay as a football coach?", options: ["Thalaivaa", "Bigil", "Kaththi", "Jilla"], correctAnswer: 1 },

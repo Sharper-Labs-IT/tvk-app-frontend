@@ -6,18 +6,21 @@
  */
 
 import type { 
-  Story, 
   StoryStats, 
   StoryTemplate, 
   GenerateStoryResponse 
 } from '../types/story';
 
 // Mock Stories
-export const mockStories: Story[] = [
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const mockStories = [
   {
     _id: '1',
+    id: '1',
     userId: '1',
+    user_id: '1',
     userName: 'Shadow Master',
+    user_name: 'Shadow Master',
     userAvatar: 'https://ui-avatars.com/api/?name=Shadow+Master&background=8B5CF6&color=fff',
     title: 'The Shadow Knight\'s Quest',
     content: `In a realm where darkness threatened to consume all light, a lone warrior known as the Shadow Knight emerged from the forgotten lands of Eldoria.
@@ -33,7 +36,7 @@ The choice made in that moment would echo through eternity, shaping not just one
     mood: 'epic',
     length: 'medium',
     characterName: 'Shadow Knight',
-    coverImage: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=800',
+    coverImage: { path: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=800', previewUrl: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=800' },
     likes: 42,
     likedBy: [],
     comments: [
@@ -58,8 +61,13 @@ The choice made in that moment would echo through eternity, shaping not just one
     shares: 12,
     isPublic: true,
     isFeatured: true,
+    created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    updated_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
     updatedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    status: 'published',
+    is_public: true,
+    is_featured: true,
     tags: ['adventure', 'hero', 'quest', 'epic'],
     scenes: [
       {
@@ -95,7 +103,7 @@ What they found beyond the anomaly was a civilization that shouldn't exist, tech
     mood: 'suspenseful',
     length: 'short',
     characterName: 'Commander Nova',
-    coverImage: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800',
+    coverImage: { path: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800', previewUrl: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=800' },
     likes: 28,
     likedBy: [],
     comments: [],
@@ -125,7 +133,7 @@ As bonds deepened and powers awakened, Lyra realized the greatest magic wasn't i
     mood: 'inspirational',
     length: 'medium',
     characterName: 'Lyra',
-    coverImage: 'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=800',
+    coverImage: { path: 'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=800', previewUrl: 'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=800' },
     likes: 67,
     likedBy: [],
     comments: [
@@ -151,12 +159,14 @@ As bonds deepened and powers awakened, Lyra realized the greatest magic wasn't i
 
 // Mock User Stats
 export const mockStats: StoryStats = {
-  totalStories: 3,
-  totalViews: 479,
-  totalLikes: 137,
-  favoriteGenre: 'adventure',
-  storiesThisMonth: 2,
-  avgReadTime: 6
+  total_stories: 3,
+  total_views: 479,
+  total_likes: 137,
+  total_shares: 0,
+  favorite_genre: 'adventure',
+  stories_this_month: 2,
+  avg_read_time: 6,
+  remaining_quota: 10
 };
 
 // Mock Templates
@@ -165,8 +175,9 @@ export const mockTemplates: StoryTemplate[] = [
     id: '1',
     name: 'Hero\'s Journey',
     description: 'Classic adventure where your character becomes a legendary hero',
-    genre: 'adventure',
-    promptTemplate: 'Create an epic hero\'s journey story...',
+    genre: 'adventure' as const,
+    mood: 'epic' as const,
+    prompt_template: 'Create an epic hero\'s journey story...',
     thumbnail: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=400',
     popularity: 245
   },
@@ -174,8 +185,9 @@ export const mockTemplates: StoryTemplate[] = [
     id: '2',
     name: 'Space Odyssey',
     description: 'Journey through the cosmos discovering alien worlds',
-    genre: 'sci-fi',
-    promptTemplate: 'Create a space exploration story...',
+    genre: 'sci-fi' as const,
+    mood: 'suspenseful' as const,
+    prompt_template: 'Create a space exploration story...',
     thumbnail: 'https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=400',
     popularity: 198
   },
@@ -183,8 +195,9 @@ export const mockTemplates: StoryTemplate[] = [
     id: '3',
     name: 'Dragon Rider',
     description: 'Bond with dragons and save the magical realm',
-    genre: 'fantasy',
-    promptTemplate: 'Create a dragon rider fantasy story...',
+    genre: 'fantasy' as const,
+    mood: 'epic' as const,
+    prompt_template: 'Create a dragon rider fantasy story...',
     thumbnail: 'https://images.unsplash.com/photo-1615729947596-a598e5de0ab3?w=400',
     popularity: 312
   },
@@ -192,8 +205,9 @@ export const mockTemplates: StoryTemplate[] = [
     id: '4',
     name: 'Mystery Manor',
     description: 'Solve the dark mystery of the haunted manor',
-    genre: 'mystery',
-    promptTemplate: 'Create a mystery detective story...',
+    genre: 'mystery' as const,
+    mood: 'dark' as const,
+    prompt_template: 'Create a mystery detective story...',
     thumbnail: 'https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=400',
     popularity: 167
   },
@@ -201,8 +215,9 @@ export const mockTemplates: StoryTemplate[] = [
     id: '5',
     name: 'Time Traveler',
     description: 'Journey through time to fix the past',
-    genre: 'sci-fi',
-    promptTemplate: 'Create a time travel story...',
+    genre: 'sci-fi' as const,
+    mood: 'epic' as const,
+    prompt_template: 'Create a time travel story...',
     thumbnail: 'https://images.unsplash.com/photo-1501139083538-0139583c060f?w=400',
     popularity: 223
   },
@@ -210,8 +225,9 @@ export const mockTemplates: StoryTemplate[] = [
     id: '6',
     name: 'Love at First Sight',
     description: 'A heartwarming romantic tale',
-    genre: 'romance',
-    promptTemplate: 'Create a romantic love story...',
+    genre: 'romance' as const,
+    mood: 'romantic' as const,
+    prompt_template: 'Create a romantic love story...',
     thumbnail: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=400',
     popularity: 189
   }
@@ -254,9 +270,10 @@ export const generateMockStory = (
   const title = titles[genre]?.[Math.floor(Math.random() * 3)] || `${characterName}'s Story`;
 
   return {
+    success: true,
+    data: {
     story: {
-      _id: `generated-${Date.now()}`,
-      userId: '1',
+      user_name: 'Current User',
       userName: 'Current User',
       title,
       content: `This is the beginning of an ${mood} ${genre} story featuring ${characterName}.
@@ -272,18 +289,18 @@ As the story reaches its climax, ${characterName} faces their greatest challenge
 The conclusion brings not just resolution, but transformation. ${characterName} emerges changed, stronger, ready for whatever adventures lie ahead.`,
       genre: genre as any,
       mood: mood as any,
-      length: 'medium',
+      length: 'medium' as const,
       characterName,
-      coverImage: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800',
+      character_name: characterName,
+      coverImage: { path: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800', previewUrl: 'https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=800' },
       likes: 0,
-      likedBy: [],
+      liked_by: [],
       comments: [],
       views: 0,
       shares: 0,
-      isPublic: false,
-      isFeatured: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      status: 'draft' as const,
+      is_public: false,
+      is_featured: false,
       tags: [genre, mood, 'generated'],
       scenes: [
         {
@@ -310,7 +327,8 @@ The conclusion brings not just resolution, but transformation. ${characterName} 
       ]
     },
     scenes: [],
-    estimatedReadTime: 7
+    estimated_read_time: 7
+    }
   };
 };
 

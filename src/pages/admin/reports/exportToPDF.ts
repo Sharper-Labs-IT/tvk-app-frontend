@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import toast from 'react-hot-toast';
 
 /**
  * Export the analytics report to PDF by capturing the HTML content
@@ -85,7 +86,7 @@ export const printReport = (containerId: string = 'report-container'): void => {
   const printWindow = window.open('', '_blank');
   
   if (!printWindow) {
-    alert('Please allow pop-ups to print the report');
+    toast.error('Please allow pop-ups to print the report');
     return;
   }
 

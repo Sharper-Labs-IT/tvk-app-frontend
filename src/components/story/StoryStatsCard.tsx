@@ -20,7 +20,7 @@ const StoryStatsCard = ({ icon: Icon, label, value, color }: StoryStatsCardProps
   const colors = COLOR_CLASSES[color];
 
   return (
-    <div className="relative bg-[#1E1E1E] border border-brand-gold/20 rounded-2xl p-6 transform transition-all duration-300 hover:scale-105 hover:border-brand-gold/50 hover:shadow-[0_0_30px_rgba(230,198,91,0.2)] group">
+    <div className="relative bg-tvk-dark-card border border-white/5 rounded-2xl p-6 transform transition-all duration-300 hover:scale-105 hover:border-brand-gold/50 hover:shadow-[0_0_30px_rgba(230,198,91,0.2)] group">
       {/* Animated glow effect */}
       <div className={`absolute inset-0 rounded-2xl bg-gradient-to-r ${colors.glow} opacity-0 group-hover:opacity-10 blur-xl transition-opacity duration-300 -z-10`} />
       

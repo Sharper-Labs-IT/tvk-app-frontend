@@ -15,6 +15,7 @@ import TextType from "../../components/TextType";
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const GameLandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -117,7 +118,7 @@ const GameLandingPage: React.FC = () => {
           setShowAccessModal(false);
           navigate('/games/memory-challenge/start');
       } else {
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 

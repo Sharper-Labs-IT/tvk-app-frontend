@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateStory, saveStory, getStoryTemplates } from '../services/storyService';
-import type { StoryPrompt, StoryGenre, StoryMood, StoryLength, StoryTemplate } from '../types/story';
+import { saveStory } from '../services/storyService';
+import { generateStory } from '../services/storyGenerationService';
+import { getStoryTemplates } from '../services/storyTemplateService';
+import type { StoryPrompt, StoryGenre, StoryMood, StoryLength, StoryTemplate, GenerateStoryResponse } from '../types/story';
 import { useAuth } from '../context/AuthContext';
 import StoryTemplateSelector from '../components/story/StoryTemplateSelector';
 import StoryPreview from '../components/story/StoryPreview';
@@ -52,7 +54,7 @@ const StoryCreate = () => {
   const [characterName, setCharacterName] = useState(user?.nickname || 'Hero');
   const [characterTraits, setCharacterTraits] = useState('');
   const [includeImages, setIncludeImages] = useState(true);
-  const [generatedStory, setGeneratedStory] = useState<any>(null);
+  const [generatedStory, setGeneratedStory] = useState<GenerateStoryResponse | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
 
@@ -76,16 +78,23 @@ const StoryCreate = () => {
       setStep('generating');
 
       const response = await generateStory({
-        prompt,
-        characterName,
+        prompt: {
+          genre: prompt.genre,
+          mood: prompt.mood,
+          length: prompt.length,
+          theme: prompt.theme,
+          customPrompt: prompt.customPrompt
+        },
+        characterName: characterName,
         characterTraits: characterTraits.split(',').map(t => t.trim()).filter(Boolean),
-        includeImages,
+        includeImages: includeImages,
       });
 
       setGeneratedStory(response);
       setStep('preview');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to generate story. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to generate story. Please try again.';
+      setError(errorMessage);
       setStep('prompt');
     } finally {
       setGenerating(false);
@@ -93,12 +102,14 @@ const StoryCreate = () => {
   };
 
   const handleSave = async (isPublic: boolean) => {
+    if (!generatedStory?.data?.story) return;
+
     try {
       const saved = await saveStory({
-        ...generatedStory.story,
-        isPublic,
+        ...generatedStory.data.story,
+        is_public: isPublic,
       });
-      navigate(`/story/${saved._id}`);
+      navigate(`/story/${saved.data.id}`);
     } catch (error) {
       console.error('Failed to save story:', error);
       setError('Failed to save story. Please try again.');
@@ -134,8 +145,8 @@ const StoryCreate = () => {
   if (step === 'preview' && generatedStory) {
     return (
       <StoryPreview
-        story={generatedStory.story}
-        scenes={generatedStory.scenes}
+        story={generatedStory.data.story}
+        scenes={generatedStory.data.scenes}
         onSave={handleSave}
         onBack={() => setStep('prompt')}
       />
@@ -222,7 +233,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">
               Genre
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {GENRES.map((genre) => (
                 <button
                   key={genre.value}
@@ -249,7 +260,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">
               Mood
             </label>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {MOODS.map((mood) => (
                 <button
                   key={mood.value}
@@ -271,7 +282,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">
               Story Length
             </label>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {LENGTHS.map((length) => (
                 <button
                   key={length.value}
@@ -339,7 +350,7 @@ const StoryCreate = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={() => navigate('/story-studio')}
             className="flex-1 px-8 py-4 bg-gray-800 text-white border border-gray-700 rounded-xl hover:bg-gray-700 hover:border-gray-600 transition-all font-bold"

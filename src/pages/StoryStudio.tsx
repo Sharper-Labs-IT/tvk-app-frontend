@@ -49,7 +49,7 @@ const StoryStudio = () => {
       {/* Page Content */}
       <div className="bg-[#07091a]/95 backdrop-blur-lg border-b border-brand-gold/20 ">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold text-white flex items-center gap-3">
                 <span className="bg-gradient-to-r from-brand-gold via-[#fff5c2] to-brand-gold bg-clip-text text-transparent">
@@ -62,7 +62,7 @@ const StoryStudio = () => {
             </div>
             <button
               onClick={() => navigate('/story-studio/create')}
-              className="flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark rounded-xl font-bold hover:shadow-[0_0_30px_rgba(230,198,91,0.5)] transition-all duration-300 transform hover:scale-105"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark rounded-xl font-bold hover:shadow-[0_0_30px_rgba(230,198,91,0.5)] transition-all duration-300 transform hover:scale-105"
             >
               <Plus className="w-5 h-5" />
               Create Story
@@ -74,39 +74,39 @@ const StoryStudio = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         {stats && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StoryStatsCard
               icon={BookOpen}
               label="Total Stories"
-              value={stats.totalStories}
+              value={stats.total_stories}
               color="gold"
             />
             <StoryStatsCard
               icon={TrendingUp}
               label="Total Views"
-              value={stats.totalViews}
+              value={stats.total_views}
               color="gold"
             />
             <StoryStatsCard
               icon={Star}
               label="Total Likes"
-              value={stats.totalLikes}
+              value={stats.total_likes}
               color="gold"
             />
             <StoryStatsCard
               icon={Sparkles}
               label="This Month"
-              value={stats.storiesThisMonth}
+              value={stats.stories_this_month}
               color="gold"
             />
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-gray-800">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 border-b border-gray-800">
           <button
             onClick={() => setActiveTab('my-stories')}
-            className={`px-6 py-4 font-bold transition-all duration-300 relative ${
+            className={`px-6 py-4 font-bold transition-all duration-300 relative text-left sm:text-center ${
               activeTab === 'my-stories'
                 ? 'text-brand-gold'
                 : 'text-gray-400 hover:text-white'
@@ -138,15 +138,14 @@ const StoryStudio = () => {
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-brand-gold border-t-transparent"></div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {activeTab === 'my-stories' ? (
               myStories.length > 0 ? (
                 myStories.map((story) => (
-                  <StoryCard key={story._id} story={story} onUpdate={loadData} />
+                  <StoryCard key={story.id} story={story} onUpdate={loadData} />
                 ))
               ) : (
                 <div className="col-span-full text-center py-20 bg-[#1E1E1E]/50 rounded-2xl border border-gray-800">
-                  <Sparkles className="w-20 h-20 text-brand-gold mx-auto mb-6 animate-pulse" />
                   <h3 className="text-2xl font-bold text-white mb-2">
                     No stories yet
                   </h3>
@@ -163,7 +162,7 @@ const StoryStudio = () => {
               )
             ) : (
               featuredStories.map((story) => (
-                <StoryCard key={story._id} story={story} onUpdate={loadData} />
+                <StoryCard key={story.id} story={story} onUpdate={loadData} />
               ))
             )}
           </div>

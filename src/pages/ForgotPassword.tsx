@@ -88,15 +88,17 @@ const ForgotPassword: React.FC = () => {
       );
       setIsSuccess(true);
       setShowModal(true);
-    } catch (err: any) {
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = err as any;
       let errorMessage = 'Failed to process request. Please check your email and try again.';
 
-      if (err.response && err.response.status === 422) {
-        if (err.response.data.errors) {
-          errorMessage = Object.values(err.response.data.errors).flat().join(' ');
+      if (error.response && error.response.status === 422) {
+        if (error.response.data.errors) {
+          errorMessage = Object.values(error.response.data.errors).flat().join(' ');
         }
-      } else if (err.response && err.response.data.error) {
-        errorMessage = err.response.data.error;
+      } else if (error.response && error.response.data.error) {
+        errorMessage = error.response.data.error;
       }
 
       setError(errorMessage);

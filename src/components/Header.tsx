@@ -40,6 +40,7 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [playDropdownOpen, setPlayDropdownOpen] = useState(false);
+  const [storiesDropdownOpen, setStoriesDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   // Removed unused dropdowns: storeDropdownOpen, studioDropdownOpen
 
@@ -115,7 +116,7 @@ const Header: React.FC = () => {
           <Link to="/" className="block relative">
             <img
               src="/images/tvk-logo.png"
-              alt="TVK Logo"
+              alt="VJ Fans Hub Logo"
               className={`
                 object-contain transition-all duration-300 ease-in-out z-50
                 relative h-16 md:h-20 w-auto
@@ -226,6 +227,60 @@ const Header: React.FC = () => {
                 </motion.div>
               )}
             </motion.li>
+
+            {/* Stories Dropdown - only show when logged in */}
+            {isLoggedIn && (
+              <motion.li 
+                key="STORIES" 
+                variants={majorItemVariants}
+                className="relative"
+                onMouseEnter={() => setStoriesDropdownOpen(true)}
+                onMouseLeave={() => setStoriesDropdownOpen(false)}
+              >
+                <button
+                  className={`
+                    text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
+                    ${isActive('/stories') || isActive('/stories/create') || isActive('/stories/my-stories') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                  `}
+                >
+                  STORIES
+                  <span
+                    className={`
+                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                      ${isActive('/stories') || isActive('/stories/create') || isActive('/stories/my-stories') ? 'w-full' : 'w-0 group-hover:w-full'}
+                    `}
+                  ></span>
+                </button>
+                
+                {/* Dropdown Menu */}
+                {storiesDropdownOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute top-full left-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[160px] lg:min-w-[180px] z-50 pt-1.5"
+                  >
+                    <Link
+                      to="/stories/create"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
+                    >
+                      AI STUDIO
+                    </Link>
+                    <Link
+                      to="/stories"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      STORY FEED
+                    </Link>
+                    <Link
+                      to="/stories/my-stories"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors last:rounded-b-lg font-medium"
+                    >
+                      MY STORIES
+                    </Link>
+                  </motion.div>
+                )}
+              </motion.li>
+            )}
 
             {dynamicNavItems.map((item) => (
               // Regular nav item

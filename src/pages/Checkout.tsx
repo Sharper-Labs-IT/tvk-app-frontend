@@ -59,7 +59,7 @@ const Checkout: React.FC = () => {
                 setDiscountAmount(0);
                 toast.error(result.error || 'Invalid code');
             }
-        } catch (error) {
+        } catch {
             setReferralValid(false);
         } finally {
             setValidatingReferral(false);
@@ -85,7 +85,9 @@ const Checkout: React.FC = () => {
             } else {
                 toast.error("Checkout failed to initialize");
             }
-        } catch (error: any) {
+        } catch (err) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const error = err as any;
             console.error("Checkout Error:", error);
             const errorMessage = error.response?.data?.error || error.response?.data?.message || 'Checkout failed';
             
