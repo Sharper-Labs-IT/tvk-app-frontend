@@ -22,8 +22,20 @@ const StoryGenerationForm: React.FC = () => {
   } = useStoryGeneration();
   
   const [step, setStep] = useState(1);
+  const VIJAY_TRAIT_PRESETS = [
+    'Mass Hero', 'Justice Fighter', 'Fearless', 'Stylish', 'Compassionate',
+    'People\'s Leader', 'Witty', 'Determined',
+  ];
+
+  const VIJAY_BACKGROUND_PRESETS = [
+    { label: 'Revolutionary', value: 'A common man turned revolutionary who fights for the oppressed and stands against the system.' },
+    { label: 'Undercover Cop', value: 'A stylish undercover cop who dismantles corruption from within the system with wit and raw power.' },
+    { label: 'Mass Leader', value: 'A charismatic mass leader who sacrifices everything for the welfare of the people around him.' },
+    { label: 'Street Fighter', value: 'A fearless street-level hero who rises from humble origins to take on powerful enemies threatening the weak.' },
+  ];
+
   const [formData, setFormData] = useState<StoryFormData>({
-    character_name: '',
+    character_name: 'VJ',
     character_traits: [],
     character_background: '',
     genre: 'adventure',
@@ -198,10 +210,10 @@ const StoryGenerationForm: React.FC = () => {
       {/* Page Title */}
       <div className="text-center mb-10">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 font-zentry tracking-wide">
-          CREATE YOUR <span className="text-brand-gold">AI STORY</span>
+          CREATE YOUR <span className="text-brand-gold">VJ STORY</span>
         </h1>
         <p className="text-gray-400 text-lg">
-          Let AI weave a unique tale based on your choices.
+          Let AI craft an epic tale set in the Thalapathy universe.
         </p>
       </div>
       
@@ -264,19 +276,9 @@ const StoryGenerationForm: React.FC = () => {
                 <input
                   type="text"
                   value={formData.character_name}
-                  onChange={(e) => handleChange('character_name', e.target.value)}
-                  placeholder="Enter your character's name..."
-                  maxLength={100}
-                  className={`w-full px-5 py-4 bg-black/30 border rounded-lg focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold/50 text-white placeholder-gray-600 transition-all font-medium text-lg ${
-                    errors.character_name ? 'border-red-500' : 'border-brand-gold/30'
-                  }`}
+                  readOnly
+                  className="w-full px-5 py-4 bg-black/30 border border-brand-gold/30 rounded-lg text-brand-gold font-bold text-lg cursor-not-allowed opacity-80"
                 />
-                {errors.character_name && (
-                  <p className="text-red-500 text-sm mt-1">{errors.character_name}</p>
-                )}
-                <p className="text-gray-500 text-xs mt-1 text-right">
-                  {formData.character_name.length}/100
-                </p>
               </div>
               
               {/* Character Traits */}
@@ -284,10 +286,31 @@ const StoryGenerationForm: React.FC = () => {
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
                   Character Traits (Max 5)
                 </label>
+                {/* Vijay Preset Trait Chips */}
+                <div className="mb-3">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Quick Add — VJ Traits</p>
+                  <div className="flex flex-wrap gap-2">
+                    {VIJAY_TRAIT_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        disabled={formData.character_traits.includes(preset) || formData.character_traits.length >= 5}
+                        onClick={() => addTrait(preset)}
+                        className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                          formData.character_traits.includes(preset)
+                            ? 'bg-brand-gold/30 text-brand-gold border-brand-gold/40 opacity-50 cursor-not-allowed'
+                            : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-brand-gold/50 hover:text-brand-gold cursor-pointer'
+                        }`}
+                      >
+                        + {preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <div className="flex gap-2 mb-3">
                   <input
                     type="text"
-                    placeholder="Add a trait (e.g., brave, clever)..."
+                    placeholder="Or type a custom trait and press Enter..."
                     className="flex-1 px-5 py-3 bg-black/30 border border-brand-gold/30 rounded-lg focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold/50 text-white placeholder-gray-600"
                     onKeyPress={(e) => {
                       if (e.key === 'Enter') {
@@ -300,7 +323,7 @@ const StoryGenerationForm: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {formData.character_traits.length === 0 && (
-                     <span className="text-gray-600 text-sm italic">No traits added yet. Type and press Enter.</span>
+                     <span className="text-gray-600 text-sm italic">No traits added yet. Pick a preset or type your own.</span>
                   )}
                   {formData.character_traits.map((trait, index) => (
                     <span
@@ -325,11 +348,32 @@ const StoryGenerationForm: React.FC = () => {
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
                   Backstory (Optional)
                 </label>
+                {/* Vijay Archetype Presets */}
+                <div className="mb-3">
+                  <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Quick Pick — VJ Archetypes</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {VIJAY_BACKGROUND_PRESETS.map((preset) => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => handleChange('character_background', preset.value)}
+                        className={`text-left px-3 py-2 rounded-lg border text-xs transition-all ${
+                          formData.character_background === preset.value
+                            ? 'bg-brand-gold/20 border-brand-gold/50 text-brand-gold'
+                            : 'bg-gray-900 border-gray-700 text-gray-400 hover:border-brand-gold/40 hover:text-gray-200'
+                        }`}
+                      >
+                        <span className="font-bold block mb-0.5">{preset.label}</span>
+                        <span className="opacity-70 line-clamp-2">{preset.value}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <textarea
                   value={formData.character_background}
                   onChange={(e) => handleChange('character_background', e.target.value)}
-                  placeholder="Tell us about your character's past..."
-                  rows={4}
+                  placeholder="Or write a custom backstory for your character..."
+                  rows={3}
                   className="w-full px-5 py-3 bg-black/30 border border-brand-gold/30 rounded-lg focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold/50 text-white placeholder-gray-600 resize-none"
                 />
               </div>
@@ -446,11 +490,28 @@ const StoryGenerationForm: React.FC = () => {
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
                   Theme (Optional)
                 </label>
+                {/* Vijay Theme Quick Chips */}
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {['Social Justice', 'Mass Action', "People's Hero", 'Political Revolution', 'Thalapathy Style', 'Common Man Rises', 'Redemption'].map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => handleChange('theme', t)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                        formData.theme === t
+                          ? 'bg-brand-gold/20 text-brand-gold border-brand-gold/50'
+                          : 'bg-gray-900 text-gray-400 border-gray-700 hover:border-brand-gold/40 hover:text-brand-gold'
+                      }`}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
                 <input
                   type="text"
                   value={formData.theme}
                   onChange={(e) => handleChange('theme', e.target.value)}
-                  placeholder="e.g., friendship, betrayal, discovery..."
+                  placeholder="e.g., social justice, mass action, people's hero..."
                   className="w-full px-5 py-3 bg-black/30 border border-brand-gold/30 rounded-lg focus:ring-2 focus:ring-brand-gold/50 text-white placeholder-gray-600"
                 />
               </div>
@@ -524,7 +585,7 @@ const StoryGenerationForm: React.FC = () => {
                 <textarea
                   value={formData.custom_prompt}
                   onChange={(e) => handleChange('custom_prompt', e.target.value)}
-                  placeholder="Any specific plot twists, endings, or details?..."
+                  placeholder="e.g., VJ uncovers corruption and rallies the people, epic mass action climax, stylish slow-motion entry..."
                   rows={3}
                   className="w-full px-5 py-3 bg-black/30 border border-brand-gold/30 rounded-lg focus:ring-2 focus:ring-brand-gold/50 text-white placeholder-gray-600 resize-none"
                 />

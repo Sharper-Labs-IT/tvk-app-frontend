@@ -669,7 +669,7 @@ const AboutUs: React.FC = () => {
                                         Help Us Improve
                                     </h3>
                                     <p className="text-lg text-gray-300 mb-10 text-center max-w-2xl mx-auto leading-relaxed">
-                                        Your feedback shapes our community. Whether it's a suggestion, a bug report, or just a friendly message—we want to hear it all to make this platform <span className="text-brand-gold font-bold">better for you</span>.
+                                        Your feedback shapes our community. Whether it's a suggestion, a bug report, or just a friendly message we want to hear it all to make this platform <span className="text-brand-gold font-bold">better for you</span>.
                                     </p>
 
                                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">

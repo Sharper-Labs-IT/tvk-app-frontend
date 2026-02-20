@@ -150,7 +150,7 @@ const StoryStudio = () => {
                     No stories yet
                   </h3>
                   <p className="text-gray-400 mb-8 text-lg">
-                    Create your first AI-generated story featuring {user?.nickname || 'your character'}
+                    Create your first AI-generated story featuring {user?.nickname || 'VJ'}
                   </p>
                   <button
                     onClick={() => navigate('/story-studio/create')}

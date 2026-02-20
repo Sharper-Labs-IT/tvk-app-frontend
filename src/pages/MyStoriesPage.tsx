@@ -127,7 +127,7 @@ const MyStoriesPage: React.FC = () => {
       
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           <StatCard
             icon="📚"
             label="Total Stories"
@@ -152,14 +152,7 @@ const MyStoriesPage: React.FC = () => {
             borderColor="border-purple-500/30"
             textColor="text-purple-400"
           />
-          <StatCard
-            icon="⚡"
-            label="Quota Remaining"
-            value={`${stats.remaining_quota}/10`}
-             gradient="from-brand-gold/20 to-brand-goldDark/20"
-            borderColor="border-brand-gold/30"
-            textColor="text-brand-gold"
-          />
+          
         </div>
       )}
       

@@ -71,16 +71,16 @@ const StoryFeed = () => {
           <div className="text-center max-w-4xl mx-auto">
              <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-gradient-to-r from-brand-gold/10 to-transparent border border-brand-gold/20 text-brand-gold mb-8 animate-fade-in-up backdrop-blur-sm">
               <span className="w-2 h-2 rounded-full bg-brand-gold animate-ping" />
-              <span className="text-sm font-bold tracking-widest uppercase font-zentry">AI-Powered Storytelling</span>
+              <span className="text-sm font-bold tracking-widest uppercase font-zentry">Thalapathy Fan Stories</span>
             </div>
             
             <h1 className="text-5xl sm:text-6xl md:text-7xl font-black text-white tracking-tight mb-8 uppercase font-zentry leading-none drop-shadow-2xl">
-              Discover <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE587] via-brand-gold to-[#B8860B]">Epic Tales</span>
+              The VJ <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFE587] via-brand-gold to-[#B8860B]">Universe</span>
             </h1>
             
             <p className="text-xl sm:text-2xl text-gray-400 leading-relaxed mb-10 max-w-2xl mx-auto font-light">
-              Dive into a universe of <span className="text-white font-medium">AI-generated masterpieces</span>. 
-              Adventure, mystery, and endless imagination await.
+              Fan-written epics powered by <span className="text-white font-medium">AI</span>.
+              Mass action, social justice, and endless Thalapathy magic await.
             </p>
           </div>
 

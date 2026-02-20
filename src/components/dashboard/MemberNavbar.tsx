@@ -15,26 +15,25 @@ import {
   FolderOpen,
   ShoppingBag,
   Package,
+  Sparkles,
   Film,
+  BookOpen,
 } from 'lucide-react';
 
 const MemberNavbar: React.FC = () => {
   const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-  const [studioDropdownOpen, setStudioDropdownOpen] = useState(false);
+  const [storiesDropdownOpen, setStoriesDropdownOpen] = useState(false);
+  const [dashboardDropdownOpen, setDashboardDropdownOpen] = useState(false);
   const location = useLocation();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const studioDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsProfileDropdownOpen(false);
-      }
-      if (studioDropdownRef.current && !studioDropdownRef.current.contains(event.target as Node)) {
-        setStudioDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -44,23 +43,22 @@ const MemberNavbar: React.FC = () => {
   }, []);
 
   const navLinks = [
-    { name: 'Home', path: '/', icon: <Home size={20} /> },
-    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} /> },
-    { name: 'Feed', path: '/dashboard/feed', icon: <FileText size={20} /> },
-    { name: 'Games', path: '/games', icon: <Gamepad2 size={20} /> },
-    { name: 'Store', path: '/store', icon: <ShoppingBag size={20} /> },
-    { 
-      name: 'Studio', 
-      path: null, // null means dropdown only, don't navigate
+    { name: 'Home', path: '/', icon: <Home size={20} />, subLinks: null },
+    { name: 'Dashboard', path: '/dashboard', icon: <LayoutDashboard size={20} />, subLinks: null },
+    { name: 'Feed', path: '/dashboard/feed', icon: <FileText size={20} />, subLinks: null },
+    { name: 'Games', path: '/games', icon: <Gamepad2 size={20} />, subLinks: null },
+    { name: 'Store', path: '/store', icon: <ShoppingBag size={20} />, subLinks: null },
+    {
+      name: 'Stories',
+      path: null,
       icon: <Film size={20} />,
       subLinks: [
-        { name: 'My Studio', path: '/story-studio', icon: <FolderOpen size={20} /> },
-        { name: 'Create Story', path: '/story-studio/create', icon: <FolderOpen size={20} /> },
-        { name: 'Stories', path: '/story-feed', icon: <Film size={20} /> }
-      ]
+        { name: 'AI Studio', path: '/stories/create', icon: <Sparkles size={20} /> },
+        { name: 'Story Feed', path: '/stories', icon: <Film size={20} /> },
+      ],
     },
-    { name: 'Events', path: '/events', icon: <Calendar size={20} /> },
-    { name: 'Membership', path: '/membership', icon: <Crown size={20} /> },
+    { name: 'Events', path: '/events', icon: <Calendar size={20} />, subLinks: null },
+    { name: 'Membership', path: '/membership', icon: <Crown size={20} />, subLinks: null },
   ];
 
   // Helper to highlight active link
@@ -88,60 +86,24 @@ const MemberNavbar: React.FC = () => {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-2 lg:space-x-4">
               {navLinks.map((link) => (
-                <div key={link.name} className="relative">
-                  {link.subLinks ? (
-                    // Dropdown menu for Studio
-                    <div
-                      ref={link.name === 'Studio' ? studioDropdownRef : null}
-                      onMouseEnter={() => {
-                        if (link.name === 'Studio') setStudioDropdownOpen(true);
-                      }}
-                      onMouseLeave={() => {
-                        if (link.name === 'Studio') setStudioDropdownOpen(false);
-                      }}
-                      className="relative"
-                    >
-                      <button
-                        id="tour-nav-studio"
-                        className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 
-                        ${
-                          isActive('/story-studio') || isActive('/story-feed')
-                            ? 'text-black bg-gold'
-                            : 'text-gray-300 hover:text-gold hover:bg-white/5'
-                        }`}
-                      >
-                        {link.icon}
-                        <span className="hidden sm:inline">{link.name}</span>
-                        <ChevronDown size={14} />
-                      </button>
-                      
-                      {/* Dropdown */}
-                      {studioDropdownOpen && (
-                        <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-gold/20 rounded-md shadow-lg py-1 min-w-[160px] sm:min-w-[180px] z-50">
-                          {link.subLinks.map((subLink) => (
-                            <Link
-                              key={subLink.name}
-                              to={subLink.path}
-                              className={`flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm transition-colors duration-200 
-                              ${
-                                isActive(subLink.path)
-                                  ? 'text-gold bg-white/5'
-                                  : 'text-gray-300 hover:text-gold hover:bg-white/5'
-                              }`}
-                            >
-                              {subLink.icon}
-                              {subLink.name}
-                            </Link>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    // Regular link
+                <div
+                  key={link.name}
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (link.name === 'Stories') setStoriesDropdownOpen(true);
+                    if (link.name === 'Dashboard') setDashboardDropdownOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    if (link.name === 'Stories') setStoriesDropdownOpen(false);
+                    if (link.name === 'Dashboard') setDashboardDropdownOpen(false);
+                  }}
+                >
+                  {/* Render button for dropdown-only items, Link otherwise */}
+                  {link.path ? (
                     <Link
                       to={link.path}
                       id={`tour-nav-${link.name.toLowerCase().replace(' ', '-')}`}
-                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 
+                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200
                       ${
                         isActive(link.path)
                           ? 'text-black bg-gold'
@@ -150,8 +112,46 @@ const MemberNavbar: React.FC = () => {
                     >
                       {link.icon}
                       <span className="hidden sm:inline">{link.name}</span>
+                      {link.subLinks && <ChevronDown size={12} className="ml-0.5" />}
                     </Link>
+                  ) : (
+                    <button
+                      id={`tour-nav-${link.name.toLowerCase().replace(' ', '-')}`}
+                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200
+                      ${
+                        link.subLinks?.some((s) => isActive(s.path))
+                          ? 'text-black bg-gold'
+                          : 'text-gray-300 hover:text-gold hover:bg-white/5'
+                      }`}
+                    >
+                      {link.icon}
+                      <span className="hidden sm:inline">{link.name}</span>
+                      <ChevronDown size={12} className="ml-0.5" />
+                    </button>
                   )}
+
+                  {/* Sub-links dropdown */}
+                  {link.subLinks &&
+                    ((link.name === 'Stories' && storiesDropdownOpen) ||
+                      (link.name === 'Dashboard' && dashboardDropdownOpen)) && (
+                      <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-gold/20 rounded-md shadow-lg py-1 min-w-[150px] z-50">
+                        {link.subLinks.map((subLink) => (
+                          <Link
+                            key={subLink.name}
+                            to={subLink.path}
+                            className={`flex items-center gap-2 px-4 py-2 text-xs sm:text-sm transition-colors duration-200
+                            ${
+                              isActive(subLink.path)
+                                ? 'text-gold bg-white/5'
+                                : 'text-gray-300 hover:text-gold hover:bg-white/5'
+                            }`}
+                          >
+                            {subLink.icon}
+                            {subLink.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
                 </div>
               ))}
             </div>
@@ -193,13 +193,12 @@ const MemberNavbar: React.FC = () => {
                   </div>
 
                   <Link
-                    to="/dashboard/my-content"
-                    id="tour-my-content-link"
+                    to="/stories/my-stories"
                     onClick={() => setIsProfileDropdownOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-gold"
                   >
-                    <FolderOpen size={16} />
-                    My Content
+                    <BookOpen size={16} />
+                    My Stories
                   </Link>
 
                   <Link
@@ -210,6 +209,16 @@ const MemberNavbar: React.FC = () => {
                   >
                     <Package size={16} />
                     My Orders
+                  </Link>
+
+                  <Link
+                    to="/dashboard/my-content"
+                    id="tour-my-content-link"
+                    onClick={() => setIsProfileDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-gold"
+                  >
+                    <FolderOpen size={16} />
+                    My Content
                   </Link>
 
                   <button
@@ -257,20 +266,11 @@ const MemberNavbar: React.FC = () => {
 
             {navLinks.map((link) => (
               <div key={link.name}>
-                {link.subLinks ? (
-                  // Studio with sub-links (no main link navigation)
-                  <button
-                    onClick={() => setIsMenuOpen(false)}
-                    className="w-full flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white"
-                  >
-                    {link.icon}
-                    {link.name}
-                  </button>
-                ) : (
+                {link.path ? (
                   <Link
                     to={link.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium 
+                    className={`flex items-center gap-3 px-3 py-3 rounded-md text-base font-medium
                       ${
                         isActive(link.path)
                           ? 'bg-gold/10 text-gold border-l-4 border-gold'
@@ -280,14 +280,18 @@ const MemberNavbar: React.FC = () => {
                     {link.icon}
                     {link.name}
                   </Link>
+                ) : (
+                  <div className="px-3 py-2 text-xs font-bold text-gold/60 uppercase tracking-widest">
+                    {link.name}
+                  </div>
                 )}
-                {/* Sub-links for mobile */}
+                {/* Sub-links indented */}
                 {link.subLinks && link.subLinks.map((subLink) => (
                   <Link
                     key={subLink.name}
                     to={subLink.path}
                     onClick={() => setIsMenuOpen(false)}
-                    className={`flex items-center gap-3 pl-10 pr-3 py-2 rounded-md text-sm font-medium 
+                    className={`flex items-center gap-3 pl-9 pr-3 py-2.5 rounded-md text-sm font-medium
                       ${
                         isActive(subLink.path)
                           ? 'bg-gold/10 text-gold border-l-4 border-gold'

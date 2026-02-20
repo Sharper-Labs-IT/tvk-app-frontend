@@ -240,14 +240,14 @@ const Header: React.FC = () => {
                 <button
                   className={`
                     text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
-                    ${isActive('/stories') || isActive('/stories/create') || isActive('/stories/my-stories') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                    ${isActive('/stories') || isActive('/stories/create') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                   `}
                 >
                   STORIES
                   <span
                     className={`
                       absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                      ${isActive('/stories') || isActive('/stories/create') || isActive('/stories/my-stories') ? 'w-full' : 'w-0 group-hover:w-full'}
+                      ${isActive('/stories') || isActive('/stories/create') ? 'w-full' : 'w-0 group-hover:w-full'}
                     `}
                   ></span>
                 </button>
@@ -267,15 +267,9 @@ const Header: React.FC = () => {
                     </Link>
                     <Link
                       to="/stories"
-                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
-                    >
-                      STORY FEED
-                    </Link>
-                    <Link
-                      to="/stories/my-stories"
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors last:rounded-b-lg font-medium"
                     >
-                      MY STORIES
+                      STORY FEED
                     </Link>
                   </motion.div>
                 )}
@@ -430,6 +424,12 @@ const Header: React.FC = () => {
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                     >
                       DASHBOARD
+                    </Link>
+                    <Link
+                      to="/stories/my-stories"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      MY STORIES
                     </Link>
                     <Link
                       to="/dashboard/my-content"

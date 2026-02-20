@@ -51,7 +51,7 @@ const StoryCreate = () => {
     customPrompt: '',
   });
 
-  const [characterName, setCharacterName] = useState(user?.nickname || 'Hero');
+  const [characterName] = useState('VJ');
   const [characterTraits, setCharacterTraits] = useState('');
   const [includeImages, setIncludeImages] = useState(true);
   const [generatedStory, setGeneratedStory] = useState<GenerateStoryResponse | null>(null);
@@ -161,11 +161,11 @@ const StoryCreate = () => {
           <div className="flex items-center justify-center gap-4 mb-4">
             
             <h1 className="text-5xl font-bold bg-gradient-to-r from-brand-gold via-[#fff5c2] to-brand-gold bg-clip-text text-transparent drop-shadow-sm">
-              Create Your AI Story
+              Create Your VJ Story
             </h1>
           </div>
           <p className="text-gray-400 text-lg">
-            Let AI craft an amazing story featuring your character
+            Let AI craft an epic tale set in the Thalapathy universe
           </p>
         </div>
 
@@ -188,21 +188,47 @@ const StoryCreate = () => {
               <input
                 type="text"
                 value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                placeholder="Enter character name"
+                readOnly
+                className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-brand-gold font-bold cursor-not-allowed opacity-80"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-300 mb-2 uppercase tracking-wide">
                 Character Traits (optional)
               </label>
+              {/* Vijay Preset Trait Chips */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Mass Hero', 'Justice Fighter', 'Fearless', 'Stylish', 'Compassionate', "People's Leader", 'Witty', 'Determined'].map((preset) => {
+                  const current = characterTraits.split(',').map(t => t.trim()).filter(Boolean);
+                  const isAdded = current.includes(preset);
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        if (isAdded) {
+                          setCharacterTraits(current.filter(t => t !== preset).join(', '));
+                        } else {
+                          setCharacterTraits(current.length > 0 ? `${characterTraits.trim().replace(/,$/, '')}, ${preset}` : preset);
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                        isAdded
+                          ? 'bg-brand-gold/20 text-brand-gold border-brand-gold/40'
+                          : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-brand-gold/50 hover:text-brand-gold'
+                      }`}
+                    >
+                      {isAdded ? '✓' : '+'} {preset}
+                    </button>
+                  );
+                })}
+              </div>
               <input
                 type="text"
                 value={characterTraits}
                 onChange={(e) => setCharacterTraits(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                placeholder="e.g., brave, intelligent, kind (comma-separated)"
+                placeholder="e.g., fearless, mass hero, stylish (comma-separated)"
               />
             </div>
           </div>
@@ -311,12 +337,29 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-2 uppercase tracking-wide">
               Theme (optional)
             </label>
+            {/* Vijay Theme Quick Chips */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {['Social Justice', 'Mass Action', "People's Hero", 'Political Revolution', 'Thalapathy Style', 'Common Man Rises', 'Redemption'].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setPrompt({ ...prompt, theme: t })}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                    prompt.theme === t
+                      ? 'bg-brand-gold/20 text-brand-gold border-brand-gold/50'
+                      : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-brand-gold/50 hover:text-brand-gold'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
             <input
               type="text"
               value={prompt.theme}
               onChange={(e) => setPrompt({ ...prompt, theme: e.target.value })}
               className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-              placeholder="e.g., friendship, courage, redemption"
+              placeholder="e.g., social justice, mass action, people's hero"
             />
           </div>
 
@@ -330,7 +373,7 @@ const StoryCreate = () => {
               onChange={(e) => setPrompt({ ...prompt, customPrompt: e.target.value })}
               rows={4}
               className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all resize-none"
-              placeholder="Add any specific details you'd like in your story..."
+              placeholder="e.g., VJ rallies the common people against a corrupt system, epic mass action climax..."
             />
           </div>
 
