@@ -6,7 +6,7 @@ const FEATURES = [
   {
     icon: <Camera size={22} className="text-brand-gold" />,
     title: 'Selfie with VJ',
-    desc: 'Upload your photo and step into a scene with Thalapathy VJ using AI magic.',
+    desc: 'Upload your photo and step into a scene with Thalapathy VJ using AI magic',
     cta: 'Try Now',
     href: '/ai-studio',
   },
