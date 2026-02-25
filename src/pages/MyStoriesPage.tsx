@@ -111,7 +111,7 @@ const MyStoriesPage: React.FC = () => {
           <p className="text-gray-400">Manage your AI-generated story collection</p>
         </div>
         <Link
-          to="/stories/create"
+          to="/ai-studio/stories/create"
           className="px-8 py-3 bg-brand-gold text-brand-dark font-bold rounded hover:bg-white transition-colors flex items-center justify-center gap-2 uppercase tracking-wider"
         >
          Create New Story
@@ -204,7 +204,7 @@ const MyStoriesPage: React.FC = () => {
           </p>
           {filter === 'all' && (
             <Link
-              to="/stories/create"
+              to="/ai-studio/stories/create"
               className="inline-block px-8 py-3 bg-brand-gold text-brand-dark font-bold rounded hover:bg-white transition-colors uppercase tracking-wider"
             >
               Create Your First Story

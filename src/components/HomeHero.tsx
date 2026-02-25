@@ -118,7 +118,7 @@ const HomeHero: React.FC = () => {
         <div className="flex justify-center items-center flex-1">
           <img
             src="/images/hero.png"
-            alt="Thalapathy Vijay"
+            alt="Thalapathy VJ"
             className={`w-full max-w-[500px] lg:max-w-[600px] 2xl:max-w-[900px] h-auto max-h-[85vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
               isVisible ? 'opacity-100' : 'opacity-0'
             }`}
@@ -215,7 +215,7 @@ const HomeHero: React.FC = () => {
 
               {/* Tablet Disclaimer - Added 'italic' */}
               <p className={`mt-6 text-xs text-gray-500 font-light italic max-w-lg mx-auto ${getAnimClass('delay-[700ms]')}`}>
-                This is an independent global fan platform created to celebrate actor Vijay’s legacy. It is not affiliated with any political party, organization, or Thalapathy Vijay personally.
+                This is an independent global fan platform created to celebrate actor VJ's legacy. It is not affiliated with any political party, organization, or Thalapathy VJ personally.
               </p>
             </div>
 
@@ -223,7 +223,7 @@ const HomeHero: React.FC = () => {
             <div className="flex-1 flex justify-center items-end mt-6">
               <img
                 src="/images/hero.png"
-                alt="Thalapathy Vijay"
+                alt="Thalapathy VJ"
                 className={`w-auto max-w-full h-auto max-h-[55vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
                   isVisible ? 'opacity-100' : 'opacity-0'
                 }`}
@@ -309,7 +309,7 @@ const HomeHero: React.FC = () => {
 
             {/* Mobile Disclaimer - Added 'italic' */}
             <p className={`mt-4 px-2 text-[10px] text-gray-500 font-light italic leading-tight max-w-xs mx-auto ${getAnimClass('delay-[700ms]')}`}>
-              This is an independent global fan platform created to celebrate actor VJ’s legacy. It is not affiliated with any political party, organization, or Thalapathy Vijay personally.
+                This is an independent global fan platform created to celebrate actor VJ's legacy. It is not affiliated with any political party, organization, or Thalapathy VJ personally.
             </p>
           </div>
 
@@ -317,7 +317,7 @@ const HomeHero: React.FC = () => {
           <div className="mt-2 flex justify-center items-start flex-1">
             <img
               src="/images/hero.png"
-              alt="Thalapathy Vijay"
+              alt="Thalapathy VJ"
               className={`w-auto max-w-full h-auto max-h-[60vh] object-contain object-top pointer-events-none transition-opacity duration-1000 ${
                 isVisible ? 'opacity-100' : 'opacity-0'
               }`}

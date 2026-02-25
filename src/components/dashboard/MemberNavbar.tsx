@@ -17,7 +17,6 @@ import {
   Package,
   Sparkles,
   Film,
-  BookOpen,
 } from 'lucide-react';
 
 const MemberNavbar: React.FC = () => {
@@ -49,12 +48,13 @@ const MemberNavbar: React.FC = () => {
     { name: 'Games', path: '/games', icon: <Gamepad2 size={20} />, subLinks: null },
     { name: 'Store', path: '/store', icon: <ShoppingBag size={20} />, subLinks: null },
     {
-      name: 'Stories',
+      name: 'AI Studio',
       path: null,
-      icon: <Film size={20} />,
+      icon: <Sparkles size={20} />,
       subLinks: [
-        { name: 'AI Studio', path: '/stories/create', icon: <Sparkles size={20} /> },
-        { name: 'Story Feed', path: '/stories', icon: <Film size={20} /> },
+        { name: 'Selfie with VJ', path: '/ai-studio', icon: <Sparkles size={20} /> },
+        { name: 'AI Stories', path: '/ai-studio/stories/create', icon: <Film size={20} /> },
+        { name: 'Story Feed', path: '/ai-studio/stories', icon: <Film size={20} /> },
       ],
     },
     { name: 'Events', path: '/events', icon: <Calendar size={20} />, subLinks: null },
@@ -90,11 +90,11 @@ const MemberNavbar: React.FC = () => {
                   key={link.name}
                   className="relative"
                   onMouseEnter={() => {
-                    if (link.name === 'Stories') setStoriesDropdownOpen(true);
+                    if (link.name === 'AI Studio') setStoriesDropdownOpen(true);
                     if (link.name === 'Dashboard') setDashboardDropdownOpen(true);
                   }}
                   onMouseLeave={() => {
-                    if (link.name === 'Stories') setStoriesDropdownOpen(false);
+                    if (link.name === 'AI Studio') setStoriesDropdownOpen(false);
                     if (link.name === 'Dashboard') setDashboardDropdownOpen(false);
                   }}
                 >
@@ -103,7 +103,7 @@ const MemberNavbar: React.FC = () => {
                     <Link
                       to={link.path}
                       id={`tour-nav-${link.name.toLowerCase().replace(' ', '-')}`}
-                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200
+                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap
                       ${
                         isActive(link.path)
                           ? 'text-black bg-gold'
@@ -117,7 +117,7 @@ const MemberNavbar: React.FC = () => {
                   ) : (
                     <button
                       id={`tour-nav-${link.name.toLowerCase().replace(' ', '-')}`}
-                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200
+                      className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors duration-200 whitespace-nowrap
                       ${
                         link.subLinks?.some((s) => isActive(s.path))
                           ? 'text-black bg-gold'
@@ -132,7 +132,7 @@ const MemberNavbar: React.FC = () => {
 
                   {/* Sub-links dropdown */}
                   {link.subLinks &&
-                    ((link.name === 'Stories' && storiesDropdownOpen) ||
+                    ((link.name === 'AI Studio' && storiesDropdownOpen) ||
                       (link.name === 'Dashboard' && dashboardDropdownOpen)) && (
                       <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-gold/20 rounded-md shadow-lg py-1 min-w-[150px] z-50">
                         {link.subLinks.map((subLink) => (
@@ -193,12 +193,12 @@ const MemberNavbar: React.FC = () => {
                   </div>
 
                   <Link
-                    to="/stories/my-stories"
+                    to="/ai-studio"
                     onClick={() => setIsProfileDropdownOpen(false)}
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-gold"
                   >
-                    <BookOpen size={16} />
-                    My Stories
+                    <Sparkles size={16} />
+                    AI Studio
                   </Link>
 
                   <Link

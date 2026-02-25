@@ -88,7 +88,7 @@ const StoryCard = ({ story, onUpdate }: StoryCardProps) => {
 
   return (
     <div
-      onClick={() => navigate(`/stories/${story.id}`)}
+      onClick={() => navigate(`/ai-studio/stories/${story.id}`)}
       className="group bg-tvk-dark-card border border-white/5 rounded-2xl hover:border-brand-gold/50 shadow-lg hover:shadow-[0_0_30px_rgba(230,198,91,0.2)] transition-all duration-300 overflow-hidden cursor-pointer transform hover:scale-[1.02]"
     >
       {/* Cover Image */}

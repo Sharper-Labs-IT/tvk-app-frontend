@@ -41,7 +41,7 @@ const StoryDetailPage: React.FC = () => {
   // Fetch story
   useEffect(() => {
     if (!id) {
-      navigate('/stories');
+      navigate('/ai-studio/stories');
       return;
     }
     
@@ -150,7 +150,7 @@ const StoryDetailPage: React.FC = () => {
         <h2 className="text-3xl font-zentry text-red-500 mb-4">STORY LOST IN THE VOID</h2>
         <p className="text-gray-400 mb-8">{error || 'We couldn\'t find the story you were looking for.'}</p>
         <button 
-          onClick={() => navigate('/stories')}
+          onClick={() => navigate('/ai-studio/stories')}
           className="px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded hover:bg-white transition-colors"
         >
           Return to Library
@@ -182,7 +182,7 @@ const StoryDetailPage: React.FC = () => {
         
         {/* Back Button */}
         <button 
-          onClick={() => navigate('/stories')}
+          onClick={() => navigate('/ai-studio/stories')}
           className="mb-8 flex items-center text-gray-400 hover:text-brand-gold transition-colors font-bold uppercase tracking-wide text-sm"
         >
           <span className="mr-2 text-xl">←</span> Back to Stories

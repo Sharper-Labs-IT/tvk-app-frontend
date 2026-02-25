@@ -4,7 +4,6 @@ import { saveStory } from '../services/storyService';
 import { generateStory } from '../services/storyGenerationService';
 import { getStoryTemplates } from '../services/storyTemplateService';
 import type { StoryPrompt, StoryGenre, StoryMood, StoryLength, StoryTemplate, GenerateStoryResponse } from '../types/story';
-import { useAuth } from '../context/AuthContext';
 import StoryTemplateSelector from '../components/story/StoryTemplateSelector';
 import StoryPreview from '../components/story/StoryPreview';
 
@@ -38,7 +37,6 @@ const LENGTHS: { value: StoryLength; label: string; words: string }[] = [
 
 const StoryCreate = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [step, setStep] = useState<'prompt' | 'generating' | 'preview'>('prompt');
   const [templates, setTemplates] = useState<StoryTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<StoryTemplate | null>(null);
@@ -196,7 +194,7 @@ const StoryCreate = () => {
               <label className="block text-sm font-semibold text-gray-300 mb-2 uppercase tracking-wide">
                 Character Traits (optional)
               </label>
-              {/* Vijay Preset Trait Chips */}
+              {/* VJ Preset Trait Chips */}
               <div className="flex flex-wrap gap-2 mb-3">
                 {['Mass Hero', 'Justice Fighter', 'Fearless', 'Stylish', 'Compassionate', "People's Leader", 'Witty', 'Determined'].map((preset) => {
                   const current = characterTraits.split(',').map(t => t.trim()).filter(Boolean);
@@ -337,7 +335,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-2 uppercase tracking-wide">
               Theme (optional)
             </label>
-            {/* Vijay Theme Quick Chips */}
+            {/* VJ Theme Quick Chips */}
             <div className="flex flex-wrap gap-2 mb-3">
               {['Social Justice', 'Mass Action', "People's Hero", 'Political Revolution', 'Thalapathy Style', 'Common Man Rises', 'Redemption'].map((t) => (
                 <button

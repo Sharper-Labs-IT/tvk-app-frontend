@@ -68,7 +68,7 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
                     <p><span className="text-white font-medium">1.1</span> These Terms & Conditions ("Terms") apply to all users of the TVK Members platform ("we", "us", "our", "Platform").</p>
                     <p><span className="text-white font-medium">1.2</span> The Platform is operated from the United Kingdom by TVK MEMBERS LTD, Company Number 16875735, registered at 58 Croydon Road, Caterham, England, CR3 6QB.</p>
                     <p><span className="text-white font-medium">1.3</span> By creating an account, accessing or using the Platform, you confirm that you accept these Terms and agree to comply with them.</p>
-                    <p><span className="text-white font-medium">1.4</span> TVK Members is an independent international fan platform. It is not officially associated with, endorsed, authorised or sponsored by actor Vijay, his representatives, production companies, or any official fan organisation.</p>
+                    <p><span className="text-white font-medium">1.4</span> TVK Members is an independent international fan platform. It is not officially associated with, endorsed, authorised or sponsored by actor VJ, his representatives, production companies, or any official fan organisation.</p>
                     <p><span className="text-white font-medium">1.5</span> If you do not agree to these Terms, you must not use this Platform.</p>
                   </div>
                 </div>

@@ -93,7 +93,7 @@ export const exportToExcel = (data: AnalyticsReport): void => {
 
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    const filename = `Vijay_Fan_Analytics_Report_${timestamp}.xlsx`;
+    const filename = `VJ_Fan_Analytics_Report_${timestamp}.xlsx`;
 
     // Write and download the file
     XLSX.writeFile(workbook, filename);

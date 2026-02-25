@@ -129,7 +129,7 @@ const StoryPreviewEdit: React.FC = () => {
       // Update: Show success notification
       alert(`Story successfully ${status === 'published' ? 'published' : 'saved as draft'}!`);
       // Optional: redirect to my stories or stay here
-      navigate('/stories/my-stories');
+      navigate('/ai-studio/stories/my-stories');
       
     } catch (err: any) {
       setError(getErrorMessage(err));
@@ -392,7 +392,7 @@ const StoryPreviewEdit: React.FC = () => {
               <button
                 onClick={() => {
                   resetGeneration();
-                  navigate('/stories/create');
+                  navigate('/ai-studio/stories/create');
                 }}
                 className="text-gray-500 hover:text-brand-gold font-medium transition-colors"
               >

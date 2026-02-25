@@ -22,12 +22,12 @@ const StoryGenerationForm: React.FC = () => {
   } = useStoryGeneration();
   
   const [step, setStep] = useState(1);
-  const VIJAY_TRAIT_PRESETS = [
+  const VJ_TRAIT_PRESETS = [
     'Mass Hero', 'Justice Fighter', 'Fearless', 'Stylish', 'Compassionate',
     'People\'s Leader', 'Witty', 'Determined',
   ];
 
-  const VIJAY_BACKGROUND_PRESETS = [
+  const VJ_BACKGROUND_PRESETS = [
     { label: 'Revolutionary', value: 'A common man turned revolutionary who fights for the oppressed and stands against the system.' },
     { label: 'Undercover Cop', value: 'A stylish undercover cop who dismantles corruption from within the system with wit and raw power.' },
     { label: 'Mass Leader', value: 'A charismatic mass leader who sacrifices everything for the welfare of the people around him.' },
@@ -286,11 +286,11 @@ const StoryGenerationForm: React.FC = () => {
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
                   Character Traits (Max 5)
                 </label>
-                {/* Vijay Preset Trait Chips */}
+                {/* VJ Preset Trait Chips */}
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Quick Add — VJ Traits</p>
                   <div className="flex flex-wrap gap-2">
-                    {VIJAY_TRAIT_PRESETS.map((preset) => (
+                    {VJ_TRAIT_PRESETS.map((preset) => (
                       <button
                         key={preset}
                         type="button"
@@ -348,11 +348,11 @@ const StoryGenerationForm: React.FC = () => {
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
                   Backstory (Optional)
                 </label>
-                {/* Vijay Archetype Presets */}
+                {/* VJ Archetype Presets */}
                 <div className="mb-3">
                   <p className="text-xs text-gray-500 uppercase tracking-wide mb-2">Quick Pick — VJ Archetypes</p>
                   <div className="grid grid-cols-2 gap-2">
-                    {VIJAY_BACKGROUND_PRESETS.map((preset) => (
+                    {VJ_BACKGROUND_PRESETS.map((preset) => (
                       <button
                         key={preset.label}
                         type="button"
@@ -490,7 +490,7 @@ const StoryGenerationForm: React.FC = () => {
                 <label className="block text-sm font-bold text-gray-300 mb-2 uppercase tracking-wide">
                   Theme (Optional)
                 </label>
-                {/* Vijay Theme Quick Chips */}
+                {/* VJ Theme Quick Chips */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {['Social Justice', 'Mass Action', "People's Hero", 'Political Revolution', 'Thalapathy Style', 'Common Man Rises', 'Redemption'].map((t) => (
                     <button

@@ -73,7 +73,7 @@ const MembershipPlan: React.FC = () => {
         {/* Main Layout: Desktop = One Line (Image | Free | Paid), Aligned to Bottom */}
         {/* 'items-end' pushes the image to the bottom line */}
         <div className="flex flex-col xl:flex-row items-center xl:items-end justify-center gap-6 xl:gap-8">
-          {/* 1. Vijay Image (Left Side - Desktop Only) */}
+          {/* 1. VJ Image (Left Side - Desktop Only) */}
           {/* RESTORED: Shows in the same line on desktop */}
           <motion.div className="hidden xl:block w-1/3 max-w-[550px] shrink-0" variants={itemVariants}>
             <img
@@ -276,7 +276,7 @@ const MembershipPlan: React.FC = () => {
           className="block xl:hidden w-full max-w-[280px] mx-auto mt-10"
           variants={itemVariants}
         >
-          <img src="/images/VijayImg1.png" alt="Vijay" className="w-full h-auto drop-shadow-xl" />
+          <img src="/images/VijayImg1.png" alt="VJ" className="w-full h-auto drop-shadow-xl" />
         </motion.div>
       </motion.div>
     </section>

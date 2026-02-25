@@ -228,10 +228,10 @@ const Header: React.FC = () => {
               )}
             </motion.li>
 
-            {/* Stories Dropdown - only show when logged in */}
+            {/* AI Studio Dropdown - only show when logged in */}
             {isLoggedIn && (
               <motion.li 
-                key="STORIES" 
+                key="AI_STUDIO" 
                 variants={majorItemVariants}
                 className="relative"
                 onMouseEnter={() => setStoriesDropdownOpen(true)}
@@ -240,14 +240,14 @@ const Header: React.FC = () => {
                 <button
                   className={`
                     text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
-                    ${isActive('/stories') || isActive('/stories/create') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                    ${location.pathname.startsWith('/ai-studio') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                   `}
                 >
-                  STORIES
+                  AI STUDIO
                   <span
                     className={`
                       absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                      ${isActive('/stories') || isActive('/stories/create') ? 'w-full' : 'w-0 group-hover:w-full'}
+                      ${location.pathname.startsWith('/ai-studio') ? 'w-full' : 'w-0 group-hover:w-full'}
                     `}
                   ></span>
                 </button>
@@ -257,16 +257,22 @@ const Header: React.FC = () => {
                   <motion.div 
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="absolute top-full left-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[160px] lg:min-w-[180px] z-50 pt-1.5"
+                    className="absolute top-full left-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[180px] lg:min-w-[200px] z-50 pt-1.5"
                   >
                     <Link
-                      to="/stories/create"
+                      to="/ai-studio"
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                     >
-                      AI STUDIO
+                      SELFIE WITH VJ
                     </Link>
                     <Link
-                      to="/stories"
+                      to="/ai-studio/stories/create"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      AI STORIES
+                    </Link>
+                    <Link
+                      to="/ai-studio/stories"
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors last:rounded-b-lg font-medium"
                     >
                       STORY FEED
@@ -426,7 +432,7 @@ const Header: React.FC = () => {
                       DASHBOARD
                     </Link>
                     <Link
-                      to="/stories/my-stories"
+                      to="/ai-studio/stories/my-stories"
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
                     >
                       MY STORIES

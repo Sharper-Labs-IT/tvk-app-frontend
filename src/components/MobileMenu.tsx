@@ -167,10 +167,10 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 onClick={() => setStoriesExpanded(!storiesExpanded)}
                 className={`
                   w-full flex items-center justify-between text-lg font-medium p-2 transition-colors uppercase tracking-wide
-                  ${isActive('/stories') || isActive('/stories/create') || isActive('/stories/my-stories') ? 'text-brand-gold' : 'hover:text-brand-gold'}
+                  ${location.pathname.startsWith('/ai-studio') ? 'text-brand-gold' : 'hover:text-brand-gold'}
                 `}
               >
-                STORIES
+                AI STUDIO
                 <svg
                   className={`w-5 h-5 transition-transform ${storiesExpanded ? 'rotate-180' : ''}`}
                   fill="none"
@@ -188,34 +188,34 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                   className="ml-4 mt-2 space-y-2"
                 >
                   <Link
-                    to="/stories/create"
+                    to="/ai-studio"
                     onClick={onClose}
                     className={`
                       block text-base font-medium p-2 transition-colors
-                      ${isActive('/stories/create') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                      ${isActive('/ai-studio') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
                     `}
                   >
-                    ✨ AI Studio
+                    Selfie with VJ
                   </Link>
                   <Link
-                    to="/stories"
+                    to="/ai-studio/stories/create"
                     onClick={onClose}
                     className={`
                       block text-base font-medium p-2 transition-colors
-                      ${isActive('/stories') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                      ${isActive('/ai-studio/stories/create') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
                     `}
                   >
-                    📖 Story Feed
+                    AI Stories
                   </Link>
                   <Link
-                    to="/stories/my-stories"
+                    to="/ai-studio/stories"
                     onClick={onClose}
                     className={`
                       block text-base font-medium p-2 transition-colors
-                      ${isActive('/stories/my-stories') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                      ${isActive('/ai-studio/stories') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
                     `}
                   >
-                    📚 My Stories
+                    Story Feed
                   </Link>
                 </motion.div>
               )}

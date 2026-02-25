@@ -107,6 +107,9 @@ const StoryDetailPage = React.lazy(() => import('../pages/StoryDetailPage'));
 const MyStoriesPage = React.lazy(() => import('../pages/MyStoriesPage'));
 const StoryFeed = React.lazy(() => import('../components/story/StoryFeed'));
 
+// AI Studio
+const AIStudioPage = React.lazy(() => import('../pages/AIStudioPage'));
+
 /**
  * Helper to safely get role name string
  */
@@ -232,11 +235,21 @@ const AppRoutes: React.FC = () => {
           <Route path="/cookie-policy" element={<CookiePolicy />} />
           <Route path="/about" element={<AboutUs />} />
           
-          {/* Story Feature Routes */}
-          <Route path="/stories/create" element={<UserRoute element={<StoryStudioPage />} />} />
-          <Route path="/stories/my-stories" element={<UserRoute element={<MyStoriesPage />} />} />
-          <Route path="/stories/:id" element={<UserRoute element={<StoryDetailPage />} />} />
-          <Route path="/stories" element={<UserRoute element={<StoryFeed />} />} />
+          {/* ── AI Studio Routes ─────────────────────────────────────── */}
+          {/* Main landing: Selfie with VJ */}
+          <Route path="/ai-studio" element={<UserRoute element={<AIStudioPage />} />} />
+
+          {/* AI Story Studio sub-routes */}
+          <Route path="/ai-studio/stories" element={<UserRoute element={<StoryFeed />} />} />
+          <Route path="/ai-studio/stories/create" element={<UserRoute element={<StoryStudioPage />} />} />
+          <Route path="/ai-studio/stories/my-stories" element={<UserRoute element={<MyStoriesPage />} />} />
+          <Route path="/ai-studio/stories/:id" element={<UserRoute element={<StoryDetailPage />} />} />
+
+          {/* Legacy redirects – keeps old bookmarks/links working */}
+          <Route path="/stories" element={<Navigate to="/ai-studio/stories" replace />} />
+          <Route path="/stories/create" element={<Navigate to="/ai-studio/stories/create" replace />} />
+          <Route path="/stories/my-stories" element={<Navigate to="/ai-studio/stories/my-stories" replace />} />
+          <Route path="/stories/:id" element={<Navigate to="/ai-studio/stories/:id" replace />} />
 
           {/* Resolved Conflict: Merged these three routes */}
           <Route path="/dashboard-access" element={<DashboardRedirect />} />

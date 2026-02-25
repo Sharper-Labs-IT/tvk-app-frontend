@@ -125,7 +125,7 @@ export const shareStory = async (
  * Copy story link to clipboard and track share
  */
 export const copyStoryLink = async (storyId: string): Promise<string> => {
-  const shareUrl = `${window.location.origin}/stories/${storyId}`;
+  const shareUrl = `${window.location.origin}/ai-studio/stories/${storyId}`;
   
   try {
     await navigator.clipboard.writeText(shareUrl);

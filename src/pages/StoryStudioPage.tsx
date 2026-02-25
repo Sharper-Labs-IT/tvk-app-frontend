@@ -23,7 +23,7 @@ const StoryStudioContent: React.FC = () => {
   // Redirect to story detail after successful save
   useEffect(() => {
     if (savedStory && generationState === 'PUBLISHED') {
-      navigate(`/stories/${savedStory.id}`);
+      navigate(`/ai-studio/stories/${savedStory.id}`);
     }
   }, [savedStory, generationState, navigate]);
   
