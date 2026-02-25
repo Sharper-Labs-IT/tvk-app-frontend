@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generateStory, saveStory, getStoryTemplates } from '../services/storyService';
-import type { StoryPrompt, StoryGenre, StoryMood, StoryLength, StoryTemplate } from '../types/story';
-import { useAuth } from '../context/AuthContext';
+import { saveStory } from '../services/storyService';
+import { generateStory } from '../services/storyGenerationService';
+import { getStoryTemplates } from '../services/storyTemplateService';
+import type { StoryPrompt, StoryGenre, StoryMood, StoryLength, StoryTemplate, GenerateStoryResponse } from '../types/story';
 import StoryTemplateSelector from '../components/story/StoryTemplateSelector';
 import StoryPreview from '../components/story/StoryPreview';
 
@@ -36,7 +37,6 @@ const LENGTHS: { value: StoryLength; label: string; words: string }[] = [
 
 const StoryCreate = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [step, setStep] = useState<'prompt' | 'generating' | 'preview'>('prompt');
   const [templates, setTemplates] = useState<StoryTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<StoryTemplate | null>(null);
@@ -49,10 +49,10 @@ const StoryCreate = () => {
     customPrompt: '',
   });
 
-  const [characterName, setCharacterName] = useState(user?.nickname || 'Hero');
+  const [characterName] = useState('VJ');
   const [characterTraits, setCharacterTraits] = useState('');
   const [includeImages, setIncludeImages] = useState(true);
-  const [generatedStory, setGeneratedStory] = useState<any>(null);
+  const [generatedStory, setGeneratedStory] = useState<GenerateStoryResponse | null>(null);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState('');
 
@@ -76,16 +76,23 @@ const StoryCreate = () => {
       setStep('generating');
 
       const response = await generateStory({
-        prompt,
-        characterName,
+        prompt: {
+          genre: prompt.genre,
+          mood: prompt.mood,
+          length: prompt.length,
+          theme: prompt.theme,
+          customPrompt: prompt.customPrompt
+        },
+        characterName: characterName,
         characterTraits: characterTraits.split(',').map(t => t.trim()).filter(Boolean),
-        includeImages,
+        includeImages: includeImages,
       });
 
       setGeneratedStory(response);
       setStep('preview');
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to generate story. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to generate story. Please try again.';
+      setError(errorMessage);
       setStep('prompt');
     } finally {
       setGenerating(false);
@@ -93,12 +100,14 @@ const StoryCreate = () => {
   };
 
   const handleSave = async (isPublic: boolean) => {
+    if (!generatedStory?.data?.story) return;
+
     try {
       const saved = await saveStory({
-        ...generatedStory.story,
-        isPublic,
+        ...generatedStory.data.story,
+        is_public: isPublic,
       });
-      navigate(`/story/${saved._id}`);
+      navigate(`/story/${saved.data.id}`);
     } catch (error) {
       console.error('Failed to save story:', error);
       setError('Failed to save story. Please try again.');
@@ -134,8 +143,8 @@ const StoryCreate = () => {
   if (step === 'preview' && generatedStory) {
     return (
       <StoryPreview
-        story={generatedStory.story}
-        scenes={generatedStory.scenes}
+        story={generatedStory.data.story}
+        scenes={generatedStory.data.scenes}
         onSave={handleSave}
         onBack={() => setStep('prompt')}
       />
@@ -150,11 +159,11 @@ const StoryCreate = () => {
           <div className="flex items-center justify-center gap-4 mb-4">
             
             <h1 className="text-5xl font-bold bg-gradient-to-r from-brand-gold via-[#fff5c2] to-brand-gold bg-clip-text text-transparent drop-shadow-sm">
-              Create Your AI Story
+              Create Your VJ Story
             </h1>
           </div>
           <p className="text-gray-400 text-lg">
-            Let AI craft an amazing story featuring your character
+            Let AI craft an epic tale set in the Thalapathy universe
           </p>
         </div>
 
@@ -177,21 +186,47 @@ const StoryCreate = () => {
               <input
                 type="text"
                 value={characterName}
-                onChange={(e) => setCharacterName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                placeholder="Enter character name"
+                readOnly
+                className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-brand-gold font-bold cursor-not-allowed opacity-80"
               />
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-300 mb-2 uppercase tracking-wide">
                 Character Traits (optional)
               </label>
+              {/* VJ Preset Trait Chips */}
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Mass Hero', 'Justice Fighter', 'Fearless', 'Stylish', 'Compassionate', "People's Leader", 'Witty', 'Determined'].map((preset) => {
+                  const current = characterTraits.split(',').map(t => t.trim()).filter(Boolean);
+                  const isAdded = current.includes(preset);
+                  return (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        if (isAdded) {
+                          setCharacterTraits(current.filter(t => t !== preset).join(', '));
+                        } else {
+                          setCharacterTraits(current.length > 0 ? `${characterTraits.trim().replace(/,$/, '')}, ${preset}` : preset);
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                        isAdded
+                          ? 'bg-brand-gold/20 text-brand-gold border-brand-gold/40'
+                          : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-brand-gold/50 hover:text-brand-gold'
+                      }`}
+                    >
+                      {isAdded ? '✓' : '+'} {preset}
+                    </button>
+                  );
+                })}
+              </div>
               <input
                 type="text"
                 value={characterTraits}
                 onChange={(e) => setCharacterTraits(e.target.value)}
                 className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-                placeholder="e.g., brave, intelligent, kind (comma-separated)"
+                placeholder="e.g., fearless, mass hero, stylish (comma-separated)"
               />
             </div>
           </div>
@@ -222,7 +257,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">
               Genre
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {GENRES.map((genre) => (
                 <button
                   key={genre.value}
@@ -249,7 +284,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">
               Mood
             </label>
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {MOODS.map((mood) => (
                 <button
                   key={mood.value}
@@ -271,7 +306,7 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-3 uppercase tracking-wide">
               Story Length
             </label>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {LENGTHS.map((length) => (
                 <button
                   key={length.value}
@@ -300,12 +335,29 @@ const StoryCreate = () => {
             <label className="block text-sm font-semibold text-gray-300 mb-2 uppercase tracking-wide">
               Theme (optional)
             </label>
+            {/* VJ Theme Quick Chips */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {['Social Justice', 'Mass Action', "People's Hero", 'Political Revolution', 'Thalapathy Style', 'Common Man Rises', 'Redemption'].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setPrompt({ ...prompt, theme: t })}
+                  className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${
+                    prompt.theme === t
+                      ? 'bg-brand-gold/20 text-brand-gold border-brand-gold/50'
+                      : 'bg-gray-800 text-gray-400 border-gray-700 hover:border-brand-gold/50 hover:text-brand-gold'
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
             <input
               type="text"
               value={prompt.theme}
               onChange={(e) => setPrompt({ ...prompt, theme: e.target.value })}
               className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all"
-              placeholder="e.g., friendship, courage, redemption"
+              placeholder="e.g., social justice, mass action, people's hero"
             />
           </div>
 
@@ -319,7 +371,7 @@ const StoryCreate = () => {
               onChange={(e) => setPrompt({ ...prompt, customPrompt: e.target.value })}
               rows={4}
               className="w-full px-4 py-3 border border-gray-700 rounded-xl bg-[#121212] text-white focus:ring-2 focus:ring-brand-gold focus:border-brand-gold transition-all resize-none"
-              placeholder="Add any specific details you'd like in your story..."
+              placeholder="e.g., VJ rallies the common people against a corrupt system, epic mass action climax..."
             />
           </div>
 
@@ -339,7 +391,7 @@ const StoryCreate = () => {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={() => navigate('/story-studio')}
             className="flex-1 px-8 py-4 bg-gray-800 text-white border border-gray-700 rounded-xl hover:bg-gray-700 hover:border-gray-600 transition-all font-bold"

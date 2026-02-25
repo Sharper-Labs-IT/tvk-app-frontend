@@ -1,13 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
-import { AuthProvider } from "./context/AuthContext.tsx";
-import { AudioProvider } from "./context/AudioContext.tsx";
-import { CartProvider } from "./context/CartContext.tsx";
-import { WishlistProvider } from "./context/WishlistContext.tsx";
+import { AuthProvider } from "./context/AuthContext";
+import { AudioProvider } from "./context/AudioContext";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import App from './App.tsx';
+import App from './App';
 import './styles/global.css';
 
 // 1. Get the key (Clean: No console.log)

@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // TVK primary theme colors (EXISTING)
+        // VJ Fans Hub primary theme colors (EXISTING)
         black: '#000000',
         gold: '#E6C65B', // main gold (EXISTING)
         goldDark: '#B68D40', // darker gold shade (EXISTING)

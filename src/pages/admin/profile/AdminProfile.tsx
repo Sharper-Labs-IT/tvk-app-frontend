@@ -7,6 +7,7 @@ import {
   requestPasswordReset,
   confirmPasswordReset,
 } from '../../../utils/api';
+import { getStoryImageUrl } from '../../../utils/storyUtils';
 import MessageModal from '../../../components/common/MessageModal';
 import ConfirmationModal from '../../../components/common/ConfirmationModal'; // ✅ Importing your Confirmation Modal
 
@@ -43,7 +44,7 @@ const AdminProfile: React.FC = () => {
 
   const currentAvatar =
     previewAvatar ||
-    userData.avatar_url ||
+    getStoryImageUrl(userData.avatar_url) ||
     `https://ui-avatars.com/api/?name=${encodeURIComponent(
       userData.name
     )}&background=E6C65B&color=000&size=256`;

@@ -4,6 +4,7 @@ import Cookies from 'js-cookie';
 // Uses the smart client that attaches the token automatically
 import axiosClient from '../api/axiosClient';
 import type { IUser } from '../types/auth';
+import { getStoryImageUrl } from '../utils/storyUtils';
 
 /**
  * @fileoverview Global Authentication Context.
@@ -61,7 +62,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Note: The userData coming from login MIGHT be missing roles depending on backend.
     // We set it for now, but the useEffect below will fix it on next reload.
     // Normalize avatar field (backend sends 'avatar' but we use 'avatar_url')
-    const normalizedUser = { ...userData, avatar_url: userData.avatar_url || userData.avatar || null };
+    let avatar_url = userData.avatar_url || userData.avatar || null;
+    if (avatar_url) {
+        avatar_url = getStoryImageUrl(avatar_url);
+    }
+    const normalizedUser = { ...userData, avatar_url };
     setUser(normalizedUser);
     localStorage.setItem('user', JSON.stringify(normalizedUser));
   }, []);
@@ -111,7 +116,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // MERGE FIX: Kept 'development' logic to ensure avatar_url is set
         // Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
-        const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+        let avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+        if (avatar_url) {
+            avatar_url = getStoryImageUrl(avatar_url);
+        }
         
         const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
         
@@ -140,7 +148,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const totalCoins = calculateTotalCoins(fullUser);
             
             // 3.5. Ensure avatar_url is set (backend might send 'avatar' or 'avatar_url')
-            const avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+            let avatar_url = fullUser.avatar_url || fullUser.avatar || null;
+            if (avatar_url) {
+                avatar_url = getStoryImageUrl(avatar_url);
+            }
             
             const userWithCoins = { ...fullUser, avatar_url, coins: totalCoins };
 

@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const CityDefenderStart: React.FC = () => {
   const navigate = useNavigate();
@@ -98,8 +99,7 @@ const CityDefenderStart: React.FC = () => {
           setShowAccessModal(false);
           navigate('/game/city-defender/start');
       } else {
-          // Ideally show a toast or error in modal
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 

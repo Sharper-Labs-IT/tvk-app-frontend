@@ -106,13 +106,13 @@ const CENTER_Y = 50;
 const BASE_SPAWN_RATE = 1500;
 
 const COMBO_SCENARIOS = [
-  { alien: "He's too fast!", vijay: "I am Waiting!" },
-  { alien: "We can't hit him!", vijay: "Thalaiva!" },
-  { alien: "Retreat!", vijay: "Unstoppable!" },
-  { alien: "Impossible!", vijay: "Victory is Ours!" },
-  { alien: "My eyes!", vijay: "Mass!" },
-  { alien: "What is this power?", vijay: "Class!" },
-  { alien: "Run away!", vijay: "Theri!" },
+  { alien: "He's too fast!", vj: "I am Waiting!" },
+  { alien: "We can't hit him!", vj: "Thalaiva!" },
+  { alien: "Retreat!", vj: "Unstoppable!" },
+  { alien: "Impossible!", vj: "Victory is Ours!" },
+  { alien: "My eyes!", vj: "Mass!" },
+  { alien: "What is this power?", vj: "Class!" },
+  { alien: "Run away!", vj: "Theri!" },
 ];
 
 const ENEMY_TYPES = [
@@ -156,7 +156,7 @@ const CityDefenderGame: React.FC = () => {
 
   // Feedback State
   const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState<'vijay' | 'alien'>('vijay');
+  const [feedbackType, setFeedbackType] = useState<'vj' | 'alien'>('vj');
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSide, setFeedbackSide] = useState<'left' | 'right'>('right'); 
   const [participantId, setParticipantId] = useState<number | null>(null);
@@ -363,8 +363,8 @@ const CityDefenderGame: React.FC = () => {
     setShowFeedback(true);
 
     feedbackTimeoutRef.current = setTimeout(() => {
-      setFeedbackType('vijay');
-      setFeedbackText(scenario.vijay);
+      setFeedbackType('vj');
+      setFeedbackText(scenario.vj);
       setFeedbackSide('right');
       
       feedbackTimeoutRef.current = setTimeout(() => {
@@ -759,10 +759,10 @@ const CityDefenderGame: React.FC = () => {
             <div className={`flex items-end gap-2 md:gap-4 ${feedbackSide === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
                 {/* Avatar */}
                 <div className={`w-12 h-12 md:w-24 md:h-24 rounded-full border-2 md:border-4 shadow-lg overflow-hidden bg-black ${
-                    feedbackType === 'vijay' ? 'border-yellow-400' : 'border-red-500'
+                    feedbackType === 'vj' ? 'border-yellow-400' : 'border-red-500'
                 }`}>
                     <img 
-                        src={feedbackType === 'vijay' ? '/img/Game.png' : '/img/angry-alien.webp'} 
+                        src={feedbackType === 'vj' ? '/img/Game.png' : '/img/angry-alien.webp'} 
                         alt="Avatar" 
                         className="w-full h-full object-cover"
                     />
@@ -773,7 +773,7 @@ const CityDefenderGame: React.FC = () => {
                    initial={{ scale: 0.8, opacity: 0 }}
                    animate={{ scale: 1, opacity: 1 }}
                    className={`relative px-6 py-3 rounded-2xl border-2 shadow-xl ${
-                     feedbackType === 'vijay' 
+                     feedbackType === 'vj' 
                        ? 'bg-yellow-400 border-yellow-200 text-black' 
                        : 'bg-red-600 border-red-400 text-white'
                    }`}
@@ -784,7 +784,7 @@ const CityDefenderGame: React.FC = () => {
                     
                     {/* Tail */}
                     <div className={`absolute w-4 h-4 transform border-r-2 border-b-2 ${
-                       feedbackType === 'vijay' ? 'bg-yellow-400 border-yellow-200' : 'bg-red-600 border-red-400'
+                       feedbackType === 'vj' ? 'bg-yellow-400 border-yellow-200' : 'bg-red-600 border-red-400'
                     } ${
                         feedbackSide === 'right' 
                           ? 'right-[-8px] bottom-4 -rotate-45'
@@ -963,7 +963,7 @@ const CityDefenderGame: React.FC = () => {
           )}
 
           <img 
-            src={isRageActive ? "/img/angry-vijay.png" : "/img/Game.png"} 
+            src={isRageActive ? "/img/angry-vijay.png" : "/img/Game.png"}  
             alt="Hero" 
             className={`w-full h-full object-contain drop-shadow-2xl transition-transform duration-300 ${isRageActive ? 'scale-125' : ''}`}
           />

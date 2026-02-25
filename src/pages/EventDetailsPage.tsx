@@ -48,11 +48,13 @@ const EventDetailsPage: React.FC = () => {
       if(data?.participation?.status){
         setParticipationStatus(data.participation.status);
       }
-    } catch (err: any) {
-      console.error("Participation error:", err.response || err);
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = err as any;
+      console.error("Participation error:", error.response || error);
       const message =
-        err.response?.data?.message ||
-        err.response?.statusText ||
+        error.response?.data?.message ||
+        error.response?.statusText ||
         "Failed to participate. Please try again.";
       setParticipationError(message);
     } finally {
@@ -77,7 +79,7 @@ const EventDetailsPage: React.FC = () => {
         if(participation?.status){
           setParticipationStatus(participation.status);
         }
-      } catch(error){
+      } catch {
         // No participation found or not loggedIn
       }
     };

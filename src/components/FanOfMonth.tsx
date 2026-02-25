@@ -6,6 +6,7 @@ import { isLastWeekOfMonth, getPreviousMonthName, getCurrentMonthName } from '..
 import { getCountryFromMobile } from '../utils/countryHelper';
 import { pointsService, type TopFan } from '../services/pointsService';
 import { getPreviousWinner, savePreviousWinner, type StoredWinner } from '../utils/winnerStorage';
+import { getStoryImageUrl } from '../utils/storyUtils';
 
 const FanOfMonth: React.FC = () => {
   const isRevealTime = isLastWeekOfMonth();
@@ -30,6 +31,9 @@ const FanOfMonth: React.FC = () => {
           // save it as the previous winner
           if (response.month !== currentMonthName && response.month === previousMonthName) {
             // This is the archived winner from last month - store it
+            const rawAvatar = topFanData.avatar_url || topFanData.user?.avatar || null;
+            const fullAvatarUrl = rawAvatar ? getStoryImageUrl(rawAvatar) : null;
+            
             savePreviousWinner({
               name: topFanData.nickname || topFanData.name,
               month: response.month,
@@ -37,7 +41,8 @@ const FanOfMonth: React.FC = () => {
               points: topFanData.month_points,
               country: topFanData.country || topFanData.user?.country || 
                       topFanData.location || topFanData.user?.location ||
-                      getCountryFromMobile(topFanData.mobile || topFanData.user?.mobile) || "Global"
+                      getCountryFromMobile(topFanData.mobile || topFanData.user?.mobile) || "Global",
+              avatar_url: fullAvatarUrl || undefined
             });
           }
         }
@@ -61,7 +66,7 @@ const FanOfMonth: React.FC = () => {
   // Previous winner comes from stored data, NOT from current API call
   const previousWinner = {
     name: previousWinnerData?.name || "TBA",
-    image: "/images/tvk-logo.png",
+    image: previousWinnerData?.avatar_url || "/images/tvk-logo.png",
     label: previousWinnerData?.month ? `${previousWinnerData.month} Winner` : `${previousMonthName} Winner`
   };
 

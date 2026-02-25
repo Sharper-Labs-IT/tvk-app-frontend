@@ -9,6 +9,7 @@ import CommentSection from './CommentSection';
 import ConfirmModal from './ConfirmModal';
 import ShareModal from './ShareModal';
 import { linkifyText } from '../../utils/linkify';
+import { getStoryImageUrl } from '../../utils/storyUtils';
 
 import {
   MessageCircle,
@@ -260,7 +261,7 @@ const PostCard: React.FC<PostCardProps> = ({ post, isPremiumUser, onPostDeleted 
             <div className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10">
               {author?.avatar_url ? (
                 <img
-                  src={author.avatar_url}
+                  src={getStoryImageUrl(author.avatar_url)!}
                   alt={author.name}
                   className="w-full h-full object-cover"
                 />

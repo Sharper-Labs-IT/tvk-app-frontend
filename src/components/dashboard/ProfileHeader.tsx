@@ -1,6 +1,7 @@
 import React from 'react';
 import { Camera, User, Edit, Check, X, MapPin, HelpCircle } from 'lucide-react';
 import { getCountryFromMobile } from '../../utils/countryHelper';
+import { getStoryImageUrl } from '../../utils/storyUtils';
 
 interface ProfileHeaderProps {
   user: any;
@@ -51,7 +52,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-full p-1 bg-[#1E1E1E]">
               <img
                 src={
-                  user?.avatar_url ||
+                  getStoryImageUrl(user?.avatar_url) ||
                   `https://ui-avatars.com/api/?name=${
                     user?.name || 'User'
                   }&background=E6C65B&color=000&size=256`

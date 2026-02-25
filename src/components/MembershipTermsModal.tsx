@@ -112,10 +112,10 @@ const MembershipTermsModal: React.FC<MembershipTermsModalProps> = ({
               <Heart className="w-5 h-5 text-brand-gold" /> Platform Identity & Disclaimer
             </h3>
             <p className="text-slate-400 mb-2">
-              Independent fan platform created to celebrate and honour Thalapathy Vijay following his last movie, Jana Nayagan — keeping the spirit, passion and inspiration of the actor Vijay alive in the hearts and minds of fans around the world.
+              Independent fan platform created to celebrate and honour Thalapathy VJ following his last movie, Jana Nayagan — keeping the spirit, passion and inspiration of the actor VJ alive in the hearts and minds of fans around the world.
             </p>
             <p className="text-slate-400">
-              This platform is not officially associated with, endorsed by, or affiliated with actor Vijay, his management, production companies, or representatives.
+              This platform is not officially associated with, endorsed by, or affiliated with actor VJ, his management, production companies, or representatives.
             </p>
           </section>
         </div>

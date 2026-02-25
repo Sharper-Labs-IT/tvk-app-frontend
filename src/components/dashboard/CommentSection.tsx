@@ -3,6 +3,7 @@ import { Send, Trash2, Loader2, User as UserIcon, ThumbsUp, Heart } from 'lucide
 import { interactionService } from '../../services/interactionService';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import { getStoryImageUrl } from '../../utils/storyUtils';
 import type { IComment, CommentReactionType } from '../../types/content';
 
 interface CommentSectionProps {
@@ -97,7 +98,7 @@ const CommentItem = ({
       <div className="w-8 h-8 rounded-full border border-white/10 bg-gray-700 overflow-hidden flex-shrink-0">
         {displayAvatar ? (
           <img
-            src={displayAvatar}
+            src={getStoryImageUrl(displayAvatar)!}
             className="w-full h-full object-cover"
             alt="avatar"
             onError={(e) => {

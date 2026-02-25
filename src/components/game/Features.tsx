@@ -184,7 +184,7 @@ const Features = () => {
                   TVK<b> memory</b> Challenge
                 </>
               }
-              description="A VJ Movie shuffle game - remix iconic scenes from Thalapathy Vijay's blockbuster movies."
+              description="A VJ Movie shuffle game - remix iconic scenes from Thalapathy VJ's blockbuster movies."
               clickToPlay
               onPlay={() => handleGameClick("/games/memory-challenge")}
             />
@@ -256,7 +256,7 @@ const Features = () => {
                     <b>Trivia</b> Battle
                   </>
                 }
-                description="Test your knowledge about Thalapathy Vijay and prove you are the biggest fan!"
+                description="Test your knowledge about Thalapathy VJ and prove you are the biggest fan!"
                 clickToPlay
                 onPlay={() => handleGameClick("/games/trivia")}
               />

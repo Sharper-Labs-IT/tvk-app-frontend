@@ -5,9 +5,10 @@ import LogoHeader from '../components/common/LogoHeader';
 import Footer from '../components/Footer';
 import { type TrophyTier } from '../utils/trophySystem';
 import { gameService } from '../services/gameService'; 
+import { getStoryImageUrl } from '../utils/storyUtils';
 
 // S3 Configuration
-const S3_BASE_URL = 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
+// const S3_BASE_URL = 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
 
 // --- Types ---
 interface UserTrophyData {
@@ -86,24 +87,8 @@ const DUMMY_LEADERBOARD_DATA: UserTrophyData[] = [
 
 
 const getAvatarUrl = (avatar: string | null | undefined): string => {
-  if (!avatar) {
-    // Return empty string, will use fallback later
-    return '';
-  }
-  
-
-  if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-    return avatar;
-  }
-  
-
-  if (avatar.startsWith('avatars/')) {
-    // Construct full S3 URL
-    return `${S3_BASE_URL}/${avatar}`;
-  }
-  
-  // Return as is (might be a data URI or other format)
-  return avatar;
+  if (!avatar) return '';
+  return getStoryImageUrl(avatar) || '';
 };
 
 const Leaderboard: React.FC = () => {
@@ -119,6 +104,7 @@ const Leaderboard: React.FC = () => {
         // Handle potential response wrapping (e.g. { leaderboard: [...] } or { data: [...] })
         const data = Array.isArray(response) 
           ? response 
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           : (response as any).leaderboard || (response as any).data || [];
         
         // If no data from API, use dummy data
@@ -129,6 +115,7 @@ const Leaderboard: React.FC = () => {
         
         // Map backend data to frontend format
         // Backend format: { user_id, total_score, total_coins, bronze_count, silver_count, gold_count, platinum_count, total_trophies, user: { id, name, avatar, avatar_url, nickname } }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const formattedData: UserTrophyData[] = data.map((entry: any, index: number) => {
           
  
@@ -158,7 +145,7 @@ const Leaderboard: React.FC = () => {
           };
         });
         setLeaderboardData(formattedData);
-      } catch (error) {
+      } catch {
         // Fallback to dummy data
         setLeaderboardData(DUMMY_LEADERBOARD_DATA);
       } finally {
@@ -295,6 +282,7 @@ const Leaderboard: React.FC = () => {
               {['all', 'platinum', 'gold'].map((f) => (
                 <button
                   key={f}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setFilter(f as any)}
                   className={`px-6 py-2 rounded-xl text-sm font-bold transition-all duration-300 whitespace-nowrap ${
                     filter === f 

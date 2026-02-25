@@ -20,6 +20,7 @@ import TextType from "../../components/TextType"; // Assuming this exists
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const TriviaGameStart: React.FC = () => {
   const navigate = useNavigate();
@@ -114,7 +115,7 @@ const TriviaGameStart: React.FC = () => {
           setShowAccessModal(false);
           navigate('/games/trivia/start');
       } else {
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 
@@ -374,7 +375,7 @@ const TriviaGameStart: React.FC = () => {
                   <span className="text-yellow-500">►</span> Instructions
                 </h3>
                 <ol className="space-y-3 text-gray-300 list-decimal list-inside marker:text-yellow-500/50">
-                  <li className="pl-2">Read the question carefully regarding Thalapathy Vijay's movies & life.</li>
+                  <li className="pl-2">Read the question carefully regarding Thalapathy VJ's movies & life.</li>
                   <li className="pl-2">Select the correct answer from the 4 options.</li>
                   <li className="pl-2">Wrong answers reset your <span className="text-purple-400 font-bold">Streak Bonus</span>.</li>
                   <li className="pl-2">Complete the daily challenge to earn the "Verified Fan" badge.</li>

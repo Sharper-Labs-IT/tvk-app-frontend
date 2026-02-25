@@ -356,7 +356,7 @@ const Login: React.FC = () => {
             'delay-[500ms]'
           )}`}
         >
-          &copy; 2026 TVK Global Membership Programme. All rights reserved.
+          &copy; 2026 VJ Fans Hub. All rights reserved.
         </div>
       </div>
 

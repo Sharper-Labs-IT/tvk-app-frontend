@@ -78,7 +78,7 @@ const WhatYouGet: React.FC = () => {
           <motion.h2 variants={itemVariants} className="text-4xl md:text-6xl lg:text-7xl font-black text-white leading-snug mb-8">
             Ready to Join the <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-[#fff5c2] to-brand-gold drop-shadow-sm inline-block py-1">
-              TVK Global Movement?
+              VJ Super Fan Experience?
             </span>
           </motion.h2>
 

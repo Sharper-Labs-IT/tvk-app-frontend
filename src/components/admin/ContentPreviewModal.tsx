@@ -144,7 +144,7 @@ const ContentPreviewModal: React.FC<ContentPreviewModalProps> = ({
             <ul className="text-xs text-blue-400/80 space-y-1">
               <li>• Ensure content is appropriate and follows community guidelines</li>
               <li>• Check for copyright violations or unauthorized use</li>
-              <li>• Verify content quality and relevance to Thalapathy Vijay</li>
+              <li>• Verify content quality and relevance to Thalapathy VJ</li>
               <li>• Look for spam, promotional, or misleading content</li>
             </ul>
           </div>

@@ -263,7 +263,7 @@ const VerifyOtp: React.FC = () => {
             'delay-[500ms]'
           )}`}
         >
-          &copy; 2025 TVK Membership Program.
+          &copy; 2025 VJ Fans Hub.
         </div>
       </div>
 

@@ -15,7 +15,7 @@ export const getFullImageUrl = (path?: string | null): string => {
     }
   
     // Get base URL from environment
-    let baseUrl = import.meta.env.VITE_API_BASE_URL || '';
+    let baseUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
   
     // Common Issue Fix: If VITE_API_BASE_URL includes '/api' (e.g., http://localhost:8000/api/v1),
     // we usually want the root domain for images (http://localhost:8000).

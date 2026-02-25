@@ -1,5 +1,6 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import toast from 'react-hot-toast';
 
 /**
  * Export the analytics report to PDF by capturing the HTML content
@@ -55,7 +56,7 @@ export const exportToPDF = async (
 
     // Generate filename with timestamp
     const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    const pdfFilename = filename || `Vijay_Fan_Analytics_Report_${timestamp}.pdf`;
+    const pdfFilename = filename || `VJ_Fan_Analytics_Report_${timestamp}.pdf`;
 
     // Save the PDF
     pdf.save(pdfFilename);
@@ -85,7 +86,7 @@ export const printReport = (containerId: string = 'report-container'): void => {
   const printWindow = window.open('', '_blank');
   
   if (!printWindow) {
-    alert('Please allow pop-ups to print the report');
+    toast.error('Please allow pop-ups to print the report');
     return;
   }
 
@@ -94,7 +95,7 @@ export const printReport = (containerId: string = 'report-container'): void => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Analytics Report - Vijay Fan Club</title>
+        <title>Analytics Report - VJ Fan Club</title>
         <style>
           @media print {
             body {

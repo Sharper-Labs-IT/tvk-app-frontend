@@ -15,6 +15,7 @@ import TextType from "../../components/TextType";
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const JigsawPuzzleStart: React.FC = () => {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ const JigsawPuzzleStart: React.FC = () => {
           setShowAccessModal(false);
           navigate('/games/jigsaw-puzzle/start');
       } else {
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 
@@ -118,7 +119,7 @@ const JigsawPuzzleStart: React.FC = () => {
     <div
       className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat overflow-hidden font-sans"
       style={{
-        // REPLACE THIS URL with a high-res image of Vijay (e.g., Leo or GOAT poster art)
+        // REPLACE THIS URL with a high-res image of VJ (e.g., Leo or GOAT poster art)
         backgroundImage: "url('/img/jigsaw-hero.webp')",
       }}
     >
