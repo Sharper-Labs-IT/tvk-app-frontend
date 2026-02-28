@@ -12,6 +12,7 @@ interface MembershipTireCardProps {
   name: string;
   tagline: string;
   priceLabel: string;
+  originalPriceLabel?: string;
   priceSuffix: string;
   billingNote?: string;
   highlight?: boolean;
@@ -26,6 +27,7 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
   name,
   tagline,
   priceLabel,
+  originalPriceLabel,
   priceSuffix,
   billingNote,
   highlight = false,
@@ -60,6 +62,16 @@ const MembershipTireCard: React.FC<MembershipTireCardProps> = ({
         </div>
 
         <div className="mb-8 2xl:mb-12">
+          {originalPriceLabel && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-sm md:text-base text-slate-500 line-through decoration-red-500 decoration-2">
+                {originalPriceLabel}
+              </span>
+              <span className="text-xs text-brand-gold font-bold bg-brand-gold/10 px-2 py-0.5 rounded-full border border-brand-gold/20">
+                Limited Time Offer
+              </span>
+            </div>
+          )}
           <div className="flex items-baseline gap-2">
             <span className="text-4xl md:text-5xl 2xl:text-7xl font-bold text-[#f7c948]">{priceLabel}</span>
             <span className="text-sm md:text-base 2xl:text-xl text-slate-300">{priceSuffix}</span>

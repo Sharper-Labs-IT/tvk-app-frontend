@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
@@ -17,8 +17,8 @@ import MembershipCancelModal from '../components/MembershipCancelModal';
 import MembershipCancelledSuccessModal from '../components/MembershipCancelSuccessfulModal';
 import MembershipPaymentSuccessModal from '../components/MembershipPaymentSuccessModal';
 import { toast } from 'react-hot-toast';
-import { getCountryFromMobile } from '../utils/countryHelper';
-import { useGeoLocation } from '../hooks/useGeoLocation';
+// import { getCountryFromMobile } from '../utils/countryHelper';
+// import { useGeoLocation } from '../hooks/useGeoLocation';
 
 const benefitsContainerVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -53,9 +53,9 @@ const hardCodedPlans: Plan[] = [
   },
   {
     id: 2,
-    name: 'Super Fan',
+    name: 'Super Fan Premium',
     description: 'Premium access (30-day subscription)',
-    price: '9.99',
+    price: '2.99',
     duration_days: 30,
     status: 1,
     benefits: [
@@ -78,11 +78,11 @@ const hardCodedPlans: Plan[] = [
 const MembershipPage: React.FC = () => {
   const { isLoggedIn, user, refreshUser } = useAuth();
   const navigate = useNavigate();
-  const { countryCode: detectedCountryCode } = useGeoLocation();
+  // const { countryCode: detectedCountryCode } = useGeoLocation();
 
   const [selectedCurrency, setSelectedCurrency] = useState<'GBP' | 'USD' | 'EUR'>('GBP');
-  const [planPrices, setPlanPrices] = useState<Record<number, string>>({});
-  const [pricesLoading, setPricesLoading] = useState(false);
+  // const [planPrices, setPlanPrices] = useState<Record<number, string>>({});
+  // const [pricesLoading, setPricesLoading] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   // Modals
@@ -91,6 +91,7 @@ const MembershipPage: React.FC = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [isPaymentSuccessOpen, setIsPaymentSuccessOpen] = useState(false);
+  const [isFreeMemberRequiredModalOpen, setIsFreeMemberRequiredModalOpen] = useState(false);
 
   // --- LOGIC: HELPER TO FORMAT DATE ---
   const formatDate = (dateString: string) => {
@@ -117,6 +118,7 @@ const MembershipPage: React.FC = () => {
     return 'free';
   }, [isLoggedIn, user]);
 
+  /*
   useEffect(() => {
     const fetchPrices = async () => {
       setPricesLoading(true);
@@ -142,25 +144,37 @@ const MembershipPage: React.FC = () => {
     };
     fetchPrices();
   }, [selectedCurrency]);
+  */
 
   const handleSubscribeClick = (plan: Plan) => {
     if (plan.id === 1) {
-      isLoggedIn ? navigate('/') : navigate('/login');
+      if (isLoggedIn) {
+        navigate('/');
+      } else {
+        navigate('/login');
+      }
       return;
     }
 
+    // Check if user is logged in and if they are a free member
     if (!isLoggedIn) {
-      navigate('/login', { state: { from: '/membership' } });
+      setIsFreeMemberRequiredModalOpen(true);
       return;
     }
 
-    const isIndia = user?.mobile
-      ? getCountryFromMobile(user.mobile) === 'India'
-      : detectedCountryCode === 'IN';
-    if (isIndia) {
-      toast.error('Membership purchase is not available for users in India.');
+    // Check if user is a free member (plan_id = 1) before allowing Super Fan subscription
+    if (user?.membership?.plan_id !== 1) {
+      setIsFreeMemberRequiredModalOpen(true);
       return;
     }
+
+    // const isIndia = user?.mobile
+    //   ? getCountryFromMobile(user.mobile) === 'India'
+    //   : detectedCountryCode === 'IN';
+    // if (isIndia) {
+    //   toast.error('Membership purchase is not available for users in India.');
+    //   return;
+    // }
 
     // Handle clicking a paid plan card when already subscribed
     if (membershipStatus === 'active_auto_renew_on') {
@@ -182,7 +196,7 @@ const MembershipPage: React.FC = () => {
       setIsCancelModalOpen(false);
       setIsSuccessModalOpen(true);
       toast.success('Auto-renewal cancelled successfully.');
-    } catch (err) {
+    } catch (_err) {
       toast.error('Failed to cancel membership.');
     }
   };
@@ -233,11 +247,11 @@ const MembershipPage: React.FC = () => {
           {hardCodedPlans.map((plan) => {
             const isPlanFree = plan.id === 1;
             const isPlanPaid = plan.id !== 1;
-            const isIndia = detectedCountryCode === 'IN';
+            // const isIndia = detectedCountryCode === 'IN';
 
             // --- REFINED BUTTON LOGIC ---
             const buttonText = (() => {
-              if (isIndia) return 'Not Available';
+              // if (isIndia) return 'Not Available';
 
               if (isPlanPaid) {
                 if (membershipStatus === 'active_auto_renew_on') return 'Cancel Auto-Renewal';
@@ -260,26 +274,48 @@ const MembershipPage: React.FC = () => {
             // 2. Free card and user is already logged in (Free or Paid)
             // 3. Paid card and user already cancelled auto-renew but plan is still running (grace period)
             const buttonDisabled =
-              isIndia ||
               (isPlanFree && isLoggedIn) ||
               (isPlanPaid && membershipStatus === 'active_auto_renew_off');
 
             const symbol =
               selectedCurrency === 'GBP' ? '£' : selectedCurrency === 'EUR' ? '€' : '$';
-            const priceLabel = isPlanFree
-              ? 'Free'
-              : `${symbol}${planPrices[plan.id] || plan.price}`;
+            
+            // Override or use fetched price. Ideally backend should be updated, but for frontend change:
+            // We use the fetched price if available, but if we changed the base to 2.99 and backend returns 9.99, we might want to override.
+            // For now, let's assume we display what we have or a hardcoded override if needed.
+            // User asked to CHANGE price to 2.99.
+            // st displayPrice = isPlanPaid ? '2.99' : plan.price; // Force 2.99 for paid plan display
+            
+            // To handle currency correctly without backend:
+            const priceValue = (() => {
+                if (isPlanFree) return '0.00';
+                if (selectedCurrency === 'GBP') return '2.99';
+                if (selectedCurrency === 'USD') return '3.99';
+                if (selectedCurrency === 'EUR') return '3.49';
+                return '2.99';
+            })();
+
+            const originalPriceValue = (() => {
+                if (selectedCurrency === 'GBP') return '9.99';
+                if (selectedCurrency === 'USD') return '12.99';
+                if (selectedCurrency === 'EUR') return '11.99';
+                return '9.99';
+            })();
+
+            const priceLabel = isPlanFree ? 'Free' : `${symbol}${priceValue}`;
+            const originalPriceLabel = isPlanPaid ? `${symbol}${originalPriceValue}` : undefined;
 
             return (
               <MembershipTireCard
                 key={plan.id}
                 name={plan.name}
                 tagline={plan.description}
-                priceLabel={pricesLoading && !isPlanFree ? '...' : priceLabel}
+                priceLabel={priceLabel}
+                originalPriceLabel={originalPriceLabel}
                 priceSuffix={isPlanFree ? '/ Lifetime' : `/ Monthly (${selectedCurrency})`}
                 features={(plan.benefits || []).map((b) => ({ label: b, available: true }))}
                 highlight={isPlanPaid}
-                badgeLabel={isPlanPaid ? 'Most Popular' : undefined}
+                badgeLabel={isPlanPaid ? 'First 100 Users Only!' : undefined}
                 onSubscribe={() => handleSubscribeClick(plan)}
                 buttonText={buttonText}
                 buttonDisabled={buttonDisabled}
@@ -366,9 +402,64 @@ const MembershipPage: React.FC = () => {
         onSuccess={handlePaymentSuccess}
       />
 
+      {/* Free Member Required Modal */}
+      {isFreeMemberRequiredModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-tvk-dark-card border border-tvk-accent-gold/30 rounded-2xl max-w-md w-full shadow-2xl shadow-gold/20 animate-fadeIn">
+            {/* Header */}
+            <div className="p-6 border-b border-white/10">
+              <div className="flex items-center gap-3 mb-2">
+                {/* <div className="w-12 h-12 bg-tvk-accent-gold/20 rounded-xl flex items-center justify-center border border-tvk-accent-gold/30">
+                  <Star className="w-6 h-6 text-tvk-accent-gold" />
+                </div> */}
+                <h2 className="text-xl font-bold text-white">
+                  You’re Almost There, True VJ Fan! 🎉
+                </h2>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-4">
+              <p className="text-gray-300 leading-relaxed">
+                We love your enthusiasm! To unlock the full{' '}
+                <span className="text-tvk-accent-gold font-bold">Super Fan</span>, experience,
+                you’ll first need to join as a{' '}
+                <span className="text-green-400 font-semibold">Free Member</span>
+              </p>
+              <p className="text-gray-400 text-sm">
+                It only takes a minute to create your free account. Once you’re in, you can
+                instantly upgrade to Super Fan Premium and enjoy exclusive content, priority access,
+                and special fan privileges
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3 p-6 border-t border-white/10 bg-white/5">
+              <button
+                onClick={() => setIsFreeMemberRequiredModalOpen(false)}
+                className="flex-1 px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white rounded-lg font-medium transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setIsFreeMemberRequiredModalOpen(false);
+                  navigate('/login');
+                }}
+                className="flex-1 px-6 py-2.5 bg-gradient-to-r from-tvk-accent-gold-dark to-tvk-accent-gold hover:from-tvk-accent-gold hover:to-[#FFC43A] text-black rounded-lg font-bold transition-all flex items-center justify-center gap-2"
+              >
+                <Star className="w-4 h-4" />
+                Join Free Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   );
 };
 //
 export default MembershipPage;
+

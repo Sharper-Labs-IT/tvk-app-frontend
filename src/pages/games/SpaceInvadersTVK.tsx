@@ -6,6 +6,7 @@ import Shuffle from '../../components/Shufflle';
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const SpaceInvadersTVK: React.FC = () => {
   const navigate = useNavigate();
@@ -82,7 +83,7 @@ const SpaceInvadersTVK: React.FC = () => {
     const { allowed, reason, cost } = checkAccess();
     if (allowed) {
       consumePlay(false);
-      navigate('/game/protect-area/start');
+      navigate('/games/protect-area/start');
     } else {
       if (reason === 'limit_reached' || reason === 'no_coins') {
         setAccessCost(cost);
@@ -97,9 +98,9 @@ const SpaceInvadersTVK: React.FC = () => {
       const success = await consumePlay(true);
       if (success) {
           setShowAccessModal(false);
-          navigate('/game/protect-area/start');
+          navigate('/games/protect-area/start');
       } else {
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 
@@ -126,7 +127,7 @@ const SpaceInvadersTVK: React.FC = () => {
         <header className="flex flex-col md:flex-row justify-between items-center px-4 py-4 md:px-12 gap-4 w-full">
           <div className="w-full md:w-auto flex justify-start">
             <div
-              onClick={() => navigate('/game')}
+              onClick={() => navigate('/games')}
               className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity"
             >
               <div className="bg-white text-black p-1 rounded-full">
@@ -188,7 +189,7 @@ const SpaceInvadersTVK: React.FC = () => {
               'Defend.',
               'Shoot.',
               'Conquer.',
-              ' Join the TVK Army and defend the galaxy from the invasion.',
+              ' Join the VJ Fans Army and defend the galaxy from the invasion.',
             ]}
             typingSpeed={75}
             pauseDuration={1500}
@@ -225,7 +226,7 @@ const SpaceInvadersTVK: React.FC = () => {
         </main>
 
         <footer className="px-6 py-6 md:px-12 flex flex-col md:flex-row justify-between items-center gap-4 text-gray-400 text-sm mt-auto bg-slate-900/20 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none">
-          <div className="text-center md:text-left">© 2025 TVK. All rights reserved.</div>
+          <div className="text-center md:text-left">© 2025 VJ Fans Hub. All rights reserved.</div>
 
           <div className="flex items-center gap-6">
             <button className="hover:text-white transition-colors">

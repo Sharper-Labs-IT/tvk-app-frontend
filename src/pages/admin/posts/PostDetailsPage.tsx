@@ -15,6 +15,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import ConfirmationModal from '../../../components/common/ConfirmationModal';
+import toast from 'react-hot-toast';
 
 const PostDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,7 @@ const PostDetailsPage: React.FC = () => {
     } catch (err: any) {
       // Handle Error
       const msg = err.response?.data?.message || 'Failed to delete post';
-      alert(msg);
+      toast.error(msg);
       setDeleting(false);
       setIsDeleteModalOpen(false); // Close modal on error so user can try again
     }

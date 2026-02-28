@@ -15,6 +15,7 @@ import TextType from "../../components/TextType";
 import { useGameAccess } from '../../hooks/useGameAccess';
 import GameAccessModal from '../../components/common/GameAccessModal';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const JigsawPuzzleStart: React.FC = () => {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ const JigsawPuzzleStart: React.FC = () => {
     const { allowed, reason, cost } = checkAccess();
     if (allowed) {
       consumePlay(false);
-      navigate('/game/jigsaw-puzzle/start');
+      navigate('/games/jigsaw-puzzle/start');
     } else {
       if (reason === 'limit_reached' || reason === 'no_coins') {
         setAccessCost(cost);
@@ -108,9 +109,9 @@ const JigsawPuzzleStart: React.FC = () => {
       const success = await consumePlay(true);
       if (success) {
           setShowAccessModal(false);
-          navigate('/game/jigsaw-puzzle/start');
+          navigate('/games/jigsaw-puzzle/start');
       } else {
-          alert("Not enough coins!");
+          toast.error("Not enough coins!");
       }
   }
 
@@ -118,7 +119,7 @@ const JigsawPuzzleStart: React.FC = () => {
     <div
       className="relative min-h-screen w-full bg-cover bg-center bg-no-repeat overflow-hidden font-sans"
       style={{
-        // REPLACE THIS URL with a high-res image of Vijay (e.g., Leo or GOAT poster art)
+        // REPLACE THIS URL with a high-res image of VJ (e.g., Leo or GOAT poster art)
         backgroundImage: "url('/img/jigsaw-hero.webp')",
       }}
     >
@@ -140,7 +141,7 @@ const JigsawPuzzleStart: React.FC = () => {
         {/* HEADER */}
         <header className="flex justify-between items-center px-6 py-6 md:px-12">
           <div
-            onClick={() => navigate("/game")}
+            onClick={() => navigate("/games")}
             className="group flex items-center gap-3 cursor-pointer"
           >
             <div className="bg-white/10 group-hover:bg-red-600 backdrop-blur-md p-2 rounded-lg border border-white/20 transition-all duration-300">

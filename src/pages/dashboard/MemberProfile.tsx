@@ -1,29 +1,36 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import axiosClient from '../../api/axiosClient';
 import { toast } from 'react-hot-toast';
-import { Mail, Phone, Calendar } from 'lucide-react';
+import { Mail, Phone, Calendar, AlertTriangle, Trash2, Edit2, Camera } from 'lucide-react';
 
-import EditProfileModal from '../../components/dashboard/EditProfileModal';
+
 import ResetPasswordModal from '../../components/dashboard/ResetPasswordModal';
+import EmailChangeModal from '../../components/EmailChangeModal';
 import NicknameConfirmModal from '../../components/dashboard/NicknameConfirmModal';
+import DeleteAccountModal from '../../components/dashboard/DeleteAccountModal';
 import ProfileHeader from '../../components/dashboard/ProfileHeader';
 import GameStats from '../../components/dashboard/GameStats';
 import SubscriptionWidget from '../../components/dashboard/SubscriptionWidget';
 
 import MembershipPaymentModal from '../../components/MembershipPaymentModal';
 import MembershipCancelModal from '../../components/MembershipCancelModal';
+import MembershipReactivateModal from '../../components/MembershipReactivateModal';
 import MembershipCancelledSuccessModal from '../../components/MembershipCancelSuccessfulModal';
 
 import type { Plan } from '../../types/plan';
 
-const MemberProfile: React.FC = () => {
-  const { user, login, token, refreshUser } = useAuth();
+// --- SYSTEM NICKNAME TITLES ---
+const SYSTEM_TITLE_PREFIXES = ['mr', 'mrs', 'ms', 'miss', 'mx', 'dr', 'prof', 'rev', 'sir', 'dame'];
 
-  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+const MemberProfile: React.FC = () => {
+  const { user, refreshUser } = useAuth();
+  const navigate = useNavigate();
+
   const [isResetPassOpen, setIsResetPassOpen] = useState(false);
-  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   const [isEditingNickname, setIsEditingNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState(user?.nickname || '');
@@ -34,18 +41,24 @@ const MemberProfile: React.FC = () => {
 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false); // State for cancel loading
+  const [cancelError, setCancelError] = useState('');
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  // --- DELETE ACCOUNT STATE ---
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
-  // --- FIX: Robust Date Formatter ---
+  // --- RESUBSCRIBE STATE ---
+  const [isReactivateModalOpen, setIsReactivateModalOpen] = useState(false);
+  const [isResubscribing, setIsResubscribing] = useState(false);
+  const [isComingSoonModalOpen, setIsComingSoonModalOpen] = useState(false);
+
+  // --- Robust Date Formatter ---
   const formatDate = (dateString?: string) => {
-    // If date is missing, try to fall back to 'Now' or hide it,
-    // but usually 'created_at' exists.
     if (!dateString) return 'Recent';
-
     const date = new Date(dateString);
-    // Check if date is valid
     if (isNaN(date.getTime())) return 'Recent';
 
     return date.toLocaleDateString('en-US', {
@@ -55,6 +68,7 @@ const MemberProfile: React.FC = () => {
     });
   };
 
+  // --- PREMIUM LOGIC ---
   const isPremium = useMemo(() => {
     if (!user) return false;
     if (user.membership?.plan_id && Number(user.membership.plan_id) > 1) return true;
@@ -67,25 +81,22 @@ const MemberProfile: React.FC = () => {
     return false;
   }, [user]);
 
-  const handleAvatarClick = () => fileInputRef.current?.click();
+  // --- NEW: SYSTEM PATTERN CHECK (FREE CHANGE LOGIC) ---
+  const hasFreeChange = useMemo(() => {
+    if (!user?.nickname) return true;
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setIsUploadingAvatar(true);
-    try {
-      const response = await userService.updateAvatar(file);
-      if (token && user) {
-        login(token, { ...user, avatar_url: response.avatar_url });
-        await refreshUser();
-      }
-      toast.success('Profile picture updated!');
-    } catch (error) {
-      toast.error('Failed to update profile picture.');
-    } finally {
-      setIsUploadingAvatar(false);
-    }
-  };
+    const lowerNick = user.nickname.toLowerCase();
+
+    // Check if the current nickname starts with a title followed by a dash (system pattern)
+    // This allows one free change if they currently have a system-generated name.
+    const isSystemPattern = SYSTEM_TITLE_PREFIXES.some((title) =>
+      lowerNick.startsWith(`${title}-`)
+    );
+
+    return isSystemPattern;
+  }, [user?.nickname]);
+
+  const handleAvatarClick = () => setIsComingSoonModalOpen(true);
 
   const handleNicknameUpdate = () => {
     if (!nicknameInput.trim()) {
@@ -101,22 +112,50 @@ const MemberProfile: React.FC = () => {
   };
 
   const confirmNicknameUpdate = async () => {
+    // 🛡️ Security: Client-side Rate Limiting (60s cooldown)
+    const lastUpdate = localStorage.getItem('last_nickname_update');
+    if (lastUpdate) {
+      const remaining = 60000 - (Date.now() - Number(lastUpdate));
+      if (remaining > 0) {
+        setNicknameError(`Change limit: Please wait ${Math.ceil(remaining / 1000)}s.`);
+        setShowNicknameConfirmModal(false);
+        return;
+      }
+    }
+
     setIsUpdatingNickname(true);
     setNicknameSuccess('');
     setNicknameError('');
     try {
       const response = await userService.updateNickname(nicknameInput.trim());
+      
+      // Set cooldown on success
+      localStorage.setItem('last_nickname_update', Date.now().toString());
+
       await refreshUser();
+
       const coins = response.coins_deducted || 0;
       setNicknameSuccess(
         coins > 0 ? `Updated! ${coins} coins deducted.` : 'Nickname updated successfully!'
       );
+
       setIsEditingNickname(false);
       setShowNicknameConfirmModal(false);
+      toast.success('Nickname updated!');
       setTimeout(() => setNicknameSuccess(''), 3000);
     } catch (error: any) {
-      setNicknameError(error.response?.data?.message || 'Failed to update nickname');
-      setShowNicknameConfirmModal(false);
+      const serverMessage = error.response?.data?.message || '';
+
+      // FIX: Replace generic backend message with specific "already taken" text
+      if (
+        serverMessage === 'Failed to update nickname' ||
+        serverMessage.toLowerCase().includes('taken') ||
+        serverMessage.toLowerCase().includes('exists')
+      ) {
+        setNicknameError('nickname already taken, choose another one');
+      } else {
+        setNicknameError(serverMessage || 'nickname already taken, choose another one');
+      }
     } finally {
       setIsUpdatingNickname(false);
     }
@@ -134,17 +173,41 @@ const MemberProfile: React.FC = () => {
     updated_at: new Date().toISOString(),
   };
 
-  const handleUpgradeClick = () => setIsPaymentModalOpen(true);
-  const handleCancelClick = () => setIsCancelModalOpen(true);
+  const handleUpgradeClick = () => navigate('/membership');
+  const handleCancelClick = () => {
+    setCancelError('');
+    setIsCancelModalOpen(true);
+  };
 
-  const confirmCancelMembership = async () => {
+  // Updated to accept password
+  const confirmCancelMembership = async (password: string) => {
+    setIsCancelling(true);
+    setCancelError('');
     try {
-      await axiosClient.post('/membership/cancel');
+      await axiosClient.post('/membership/cancel', { password });
       await refreshUser();
       setIsSuccessModalOpen(true);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to cancel membership. Please try again.');
+      setIsCancelModalOpen(false);
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Failed to cancel membership.';
+      setCancelError(msg);
+      toast.error(msg);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const handleDeleteAccountConfirm = async (password: string) => {
+    setIsDeleting(true);
+    setDeleteError('');
+    try {
+      await userService.deleteAccount(password);
+      // Force logout
+      localStorage.clear();
+      window.location.href = '/login';
+    } catch (error: any) {
+      setDeleteError(error.response?.data?.message || 'Failed to delete account. Wrong password?');
+      setIsDeleting(false);
     }
   };
 
@@ -154,14 +217,27 @@ const MemberProfile: React.FC = () => {
     setIsPaymentModalOpen(false);
   };
 
+  const confirmReactivate = async (password: string) => {
+    setIsResubscribing(true);
+    try {
+      await axiosClient.post('/membership/reactivate', { password });
+      
+      await refreshUser();
+      toast.success('Subscription reactivated! Auto-renewal is now ON.');
+      setIsReactivateModalOpen(false);
+    } catch (error: any) {
+      const msg = error.response?.data?.message || 'Failed to reactivate. Please contact support.';
+      toast.error(msg);
+    } finally {
+      setIsResubscribing(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <ProfileHeader
         user={user}
         isPremium={isPremium}
-        isUploadingAvatar={isUploadingAvatar}
-        fileInputRef={fileInputRef}
-        handleFileChange={handleFileChange}
         handleAvatarClick={handleAvatarClick}
         isEditingNickname={isEditingNickname}
         nicknameInput={nicknameInput}
@@ -175,26 +251,32 @@ const MemberProfile: React.FC = () => {
         setIsEditingNickname={setIsEditingNickname}
         nicknameError={nicknameError}
         nicknameSuccess={nicknameSuccess}
-        onEditProfile={() => setIsEditProfileOpen(true)}
         onResetPassword={() => setIsResetPassOpen(true)}
       />
 
-      {/* Divider */}
       <hr className="border-slate-800 mb-8" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1 space-y-6">
-          {/* FIX: Info Box Contrast - Slate-900 background */}
           <div className="bg-slate-900 p-6 rounded-2xl border border-slate-700/50 shadow-lg">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
               Contact Info
             </h3>
             <ul className="space-y-4 text-slate-300 text-sm">
-              <li className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
-                <Mail size={18} className="text-yellow-500 shrink-0" />
-                <span className="truncate" title={user?.email}>
-                  {user?.email}
-                </span>
+              <li className="flex items-center justify-between gap-3 p-3 bg-slate-800/50 rounded-xl">
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <Mail size={18} className="text-yellow-500 shrink-0" />
+                  <span className="truncate" title={user?.email}>
+                    {user?.email}
+                  </span>
+                </div>
+                <button 
+                  onClick={() => setIsEmailModalOpen(true)}
+                  className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-colors"
+                  title="Change Email"
+                >
+                  <Edit2 size={14} />
+                </button>
               </li>
               <li className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
                 <Phone size={18} className="text-yellow-500 shrink-0" />
@@ -202,7 +284,6 @@ const MemberProfile: React.FC = () => {
               </li>
               <li className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-xl">
                 <Calendar size={18} className="text-yellow-500 shrink-0" />
-                {/* User Joined Date */}
                 <span>Joined {formatDate(user?.created_at)}</span>
               </li>
             </ul>
@@ -213,18 +294,43 @@ const MemberProfile: React.FC = () => {
             isPremium={isPremium}
             onUpgradeClick={handleUpgradeClick}
             onCancelClick={handleCancelClick}
+            onResubscribeClick={() => setIsReactivateModalOpen(true)}
+            isResubscribing={isResubscribing}
           />
         </div>
 
         <GameStats user={user} />
       </div>
+      {/* --- DANGER ZONE (GDPR Compliance) --- */}
+      <div className="mt-12 bg-red-950/20 border border-red-900/40 rounded-2xl p-6 relative overflow-hidden">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+           <div>
+             <h3 className="text-xl font-bold text-red-500 flex items-center gap-2 mb-2">
+               <AlertTriangle size={24} /> Danger Zone
+             </h3>
+             <p className="text-sm text-gray-400 max-w-xl">
+               Permanently delete your account and all associated data. This action cannot be undone.
+               You will lose all coins, badges, and game history immediately.
+             </p>
+           </div>
+           
+           <button 
+             onClick={() => setIsDeleteModalOpen(true)}
+             className="px-6 py-3 bg-red-500/10 hover:bg-red-500 hover:text-white border border-red-500/50 text-red-500 rounded-xl font-bold transition flex items-center gap-2"
+           >
+             <Trash2 size={18} /> Delete Account
+           </button>
+        </div>
+      </div>
 
       {/* --- MODALS --- */}
+      {/* <EditProfileModal
       <EditProfileModal
+ development
         isOpen={isEditProfileOpen}
         onClose={() => setIsEditProfileOpen(false)}
         currentName={user?.name || ''}
-      />
+      /> */}
       <ResetPasswordModal isOpen={isResetPassOpen} onClose={() => setIsResetPassOpen(false)} />
 
       <NicknameConfirmModal
@@ -236,10 +342,11 @@ const MemberProfile: React.FC = () => {
         onConfirm={confirmNicknameUpdate}
         nickname={nicknameInput}
         isPremium={isPremium}
-        hasFreeChange={!user?.nickname_changes || user.nickname_changes === 0}
+        hasFreeChange={hasFreeChange}
         currentCoins={user?.coins || 0}
         cost={2000}
         isLoading={isUpdatingNickname}
+        error={nicknameError}
       />
 
       <MembershipPaymentModal
@@ -254,12 +361,65 @@ const MemberProfile: React.FC = () => {
         isOpen={isCancelModalOpen}
         onClose={() => setIsCancelModalOpen(false)}
         onConfirm={confirmCancelMembership}
+        isLoading={isCancelling}
+        error={cancelError}
+      />
+
+      <MembershipReactivateModal
+        isOpen={isReactivateModalOpen}
+        onClose={() => setIsReactivateModalOpen(false)}
+        onConfirm={confirmReactivate}
+        isLoading={isResubscribing}
+      />
+
+      <DeleteAccountModal 
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleDeleteAccountConfirm}
+        isLoading={isDeleting}
+        error={deleteError}
+      />
+
+      <EmailChangeModal 
+        isOpen={isEmailModalOpen} 
+        onClose={() => setIsEmailModalOpen(false)} 
+        onSuccess={() => {
+          refreshUser();
+          setIsEmailModalOpen(false);
+        }}
       />
 
       <MembershipCancelledSuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
       />
+
+      {/* Coming Soon Modal */}
+      {isComingSoonModalOpen && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsComingSoonModalOpen(false)}
+          />
+          <div className="relative bg-slate-900 rounded-2xl shadow-2xl border border-yellow-500/30 max-w-md w-full p-8 text-center">
+            <div className="mb-6">
+              <div className="w-20 h-20 mx-auto mb-4 bg-yellow-500/10 rounded-full flex items-center justify-center">
+                <Camera size={40} className="text-yellow-500" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">Coming Soon!</h2>
+              <p className="text-slate-400">
+                Profile picture upload feature is currently under development. Stay tuned for updates!
+              </p>
+            </div>
+            <button
+              onClick={() => setIsComingSoonModalOpen(false)}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-3 px-6 rounded-xl transition-colors"
+            >
+              Got it
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

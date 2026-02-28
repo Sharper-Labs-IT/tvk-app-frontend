@@ -24,6 +24,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
 }) => {
   const location = useLocation();
   const [playExpanded, setPlayExpanded] = useState(false);
+  const [storiesExpanded, setStoriesExpanded] = useState(false);
   const [profileExpanded, setProfileExpanded] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
@@ -103,7 +104,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             </motion.li>
           ))}
 
-          {/* Play Expandable Menu */}
           <motion.li
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -134,11 +134,11 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 className="ml-4 mt-2 space-y-2"
               >
                 <Link
-                  to="/game"
+                  to="/games"
                   onClick={onClose}
                   className={`
                     block text-base font-medium p-2 transition-colors
-                    ${isActive('/game') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                    ${isActive('/games') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
                   `}
                 >
                   Games
@@ -157,15 +157,80 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             )}
           </motion.li>
 
-          {/* Divider */}
-          <motion.div
+          {isLoggedIn && (
+            <motion.li
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 + (navItems.length + 1) * 0.05 }}
+            >
+              <button
+                onClick={() => setStoriesExpanded(!storiesExpanded)}
+                className={`
+                  w-full flex items-center justify-between text-lg font-medium p-2 transition-colors uppercase tracking-wide
+                  ${location.pathname.startsWith('/ai-studio') ? 'text-brand-gold' : 'hover:text-brand-gold'}
+                `}
+              >
+                AI STUDIO
+                <svg
+                  className={`w-5 h-5 transition-transform ${storiesExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              
+              {storiesExpanded && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="ml-4 mt-2 space-y-2"
+                >
+                  <Link
+                    to="/ai-studio"
+                    onClick={onClose}
+                    className={`
+                      block text-base font-medium p-2 transition-colors
+                      ${isActive('/ai-studio') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                    `}
+                  >
+                    Selfie with VJ
+                  </Link>
+                  <Link
+                    to="/ai-studio/stories/create"
+                    onClick={onClose}
+                    className={`
+                      block text-base font-medium p-2 transition-colors
+                      ${isActive('/ai-studio/stories/create') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                    `}
+                  >
+                    AI Stories
+                  </Link>
+                  <Link
+                    to="/ai-studio/stories"
+                    onClick={onClose}
+                    className={`
+                      block text-base font-medium p-2 transition-colors
+                      ${isActive('/ai-studio/stories') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                    `}
+                  >
+                    Story Feed
+                  </Link>
+                </motion.div>
+              )}
+            </motion.li>
+          )}
+
+
+          <motion.li
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 + (navItems.length + 1) * 0.05 }}
-            className="h-px bg-gray-700 my-6"
-          />
+          >
+            <div className="h-px bg-gray-700 my-6" />
+          </motion.li>
 
-          {/* Dynamic Auth Button */}
           <motion.li
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -218,6 +283,20 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                     >
                       Dashboard
                     </Link>
+                    <Link
+                      to="/dashboard/my-content"
+                      onClick={onClose}
+                      className="block text-base font-medium p-2 text-gray-300 hover:text-brand-gold transition-colors rounded hover:bg-brand-gold/10"
+                    >
+                      My Content
+                    </Link>
+                    <Link
+                      to="/orders"
+                      onClick={onClose}
+                      className="block text-base font-medium p-2 text-gray-300 hover:text-brand-gold transition-colors rounded hover:bg-brand-gold/10"
+                    >
+                      My Orders
+                    </Link>
                     <button
                       onClick={() => {
                         onClose();
@@ -231,7 +310,7 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 )}
               </>
             ) : (
-              <Link to="/login" onClick={onClose}>
+              <Link to="/signup" onClick={onClose}>
                 <button className="w-full bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-8 py-3 rounded hover:opacity-90 transition-opacity text-base shadow-lg">
                   Login / Join
                 </button>

@@ -36,4 +36,26 @@ export const authService = {
       return null;
     }
   },
+
+  /**
+   * Step 1: Request email change
+   */
+  requestEmailChange: async (newEmail: string, password: string) => {
+    const response = await api.post('/v1/auth/request-email-change', {
+      new_email: newEmail,
+      password: password
+    });
+    return response.data;
+  },
+
+  /**
+   * Step 2: Verify email change with OTP
+   */
+  verifyEmailChange: async (token: string, otp: string) => {
+    const response = await api.post('/v1/auth/verify-email-change', {
+      token,
+      otp
+    });
+    return response.data;
+  },
 };

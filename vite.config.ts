@@ -22,7 +22,7 @@ export default ({ mode }: ConfigEnv) => {
       },
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL, // Loaded dynamically from .env
+          target: env.VITE_API_BASE_URL || env.VITE_API_URL, // Loaded dynamically from .env
           changeOrigin: true,
           secure: false,
         },

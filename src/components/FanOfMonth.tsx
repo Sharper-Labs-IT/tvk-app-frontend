@@ -1,40 +1,82 @@
 import React, { useEffect, useState } from 'react';
-import { Star, Gem, Zap, Award, Trophy, ArrowRight, MessageCircle, Calendar, Gamepad2 } from 'lucide-react';
+import { Star, Gem, Zap, Trophy, ArrowRight, MessageCircle, Calendar, Gamepad2 } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { isLastWeekOfMonth, getPreviousMonthName } from '../utils/dateUtils';
+import { isLastWeekOfMonth, getPreviousMonthName, getCurrentMonthName } from '../utils/dateUtils';
 import { getCountryFromMobile } from '../utils/countryHelper';
 import { pointsService, type TopFan } from '../services/pointsService';
+import { getPreviousWinner, savePreviousWinner, type StoredWinner } from '../utils/winnerStorage';
+import { getStoryImageUrl } from '../utils/storyUtils';
 
 const FanOfMonth: React.FC = () => {
   const isRevealTime = isLastWeekOfMonth();
   const previousMonthName = getPreviousMonthName();
+  const currentMonthName = getCurrentMonthName();
 
   const [topFan, setTopFan] = useState<TopFan | null>(null);
+  const [previousWinnerData, setPreviousWinnerData] = useState<StoredWinner | null>(null);
+  const [apiMonth, setApiMonth] = useState<string>("");
 
   useEffect(() => {
     const fetchTopFan = async () => {
       try {
         const response = await pointsService.getFanOfTheMonth();
+        setApiMonth(response.month);
+        
         if (response.top_fans && response.top_fans.length > 0) {
-          setTopFan(response.top_fans[0]);
+          const topFanData = response.top_fans[0];
+          setTopFan(topFanData);
+          
+          // If the API returns data for the previous month (archived winner),
+          // save it as the previous winner
+          if (response.month !== currentMonthName && response.month === previousMonthName) {
+            // This is the archived winner from last month - store it
+            const rawAvatar = topFanData.avatar_url || topFanData.user?.avatar || null;
+            const fullAvatarUrl = rawAvatar ? getStoryImageUrl(rawAvatar) : null;
+            
+            savePreviousWinner({
+              name: topFanData.nickname || topFanData.name,
+              month: response.month,
+              year: response.year,
+              points: topFanData.month_points,
+              country: topFanData.country || topFanData.user?.country || 
+                      topFanData.location || topFanData.user?.location ||
+                      getCountryFromMobile(topFanData.mobile || topFanData.user?.mobile) || "Global",
+              avatar_url: fullAvatarUrl || undefined
+            });
+          }
         }
       } catch (error) {
         console.error('Failed to fetch top fan:', error);
       }
     };
 
-    fetchTopFan();
-  }, []);
+    // Load stored previous winner
+    const storedWinner = getPreviousWinner();
+    if (storedWinner) {
+      setPreviousWinnerData(storedWinner);
+    }
 
+    fetchTopFan();
+  }, [currentMonthName, previousMonthName]);
+
+  // Determine if API data is for current month (live leaderboard) or archived winner
+  const isCurrentMonthData = apiMonth === currentMonthName || apiMonth === "";
+  
+  // Previous winner comes from stored data, NOT from current API call
   const previousWinner = {
-    name: topFan?.name || "Winner",
-    image: "/images/tvk-logo.png", // Force TVK logo
-    label: `${previousMonthName} Winner`
+    name: previousWinnerData?.name || "TBA",
+    image: previousWinnerData?.avatar_url || "/images/tvk-logo.png",
+    label: previousWinnerData?.month ? `${previousWinnerData.month} Winner` : `${previousMonthName} Winner`
   };
 
-  const currentTopName = topFan?.nickname || topFan?.name || "Loading...";
-  const currentTopCountry = topFan?.country || topFan?.user?.country || topFan?.location || topFan?.user?.location || getCountryFromMobile(topFan?.mobile || topFan?.user?.mobile) || "Global";
+  // Current top fan is the live leader for THIS month
+  const currentTopName = isCurrentMonthData 
+    ? (topFan?.nickname || topFan?.name || "Loading...")
+    : "Competition Open";
+  const currentTopCountry = isCurrentMonthData 
+    ? (topFan?.country || topFan?.user?.country || topFan?.location || topFan?.user?.location || getCountryFromMobile(topFan?.mobile || topFan?.user?.mobile) || "Global")
+    : "Join Now";
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
@@ -86,32 +128,39 @@ const FanOfMonth: React.FC = () => {
                   Top Fan of the Month
                 </span>
               </h2>
-              <p className="text-xs lg:text-sm text-gray-300 font-medium max-w-md">
-                {isRevealTime 
-                  ? "The results are in! See who claimed the throne this month and won exclusive rewards."
-                  : "Compete with other fans, earn points, and win exclusive digital collectibles and shoutouts."}
+              <p className="text-base lg:text-lg text-white font-semibold mb-3">
+                Step into the spotlight and prove your passion.
+              </p>
+              <p className="text-xs lg:text-sm text-gray-300 font-medium max-w-lg leading-relaxed text-justify">
+                Compete with fans from around the world, earn points through games, events, and community engagement, and climb the leaderboard to be crowned Top Fan of the Month. Each month, the most active and dedicated fan will be recognised with exclusive digital rewards, a special Top Fan badge, and a featured shoutout visible across the platform. It's not just about winning it's about showing up, staying engaged, and representing your fandom with pride.
               </p>
             </motion.div>
 
-            <motion.ul variants={itemVariants} className="space-y-4 pl-2">
-              <ListItem
-                icon={<Star className="w-5 h-5 text-brand-gold" />}
-                text="Exclusive Top Fan Badge"
-              />
-              <ListItem
-                icon={<Gem className="w-5 h-5 text-brand-gold" />}
-                text="Special Digital Collectible"
-              />
-              <ListItem
-                icon={<Zap className="w-5 h-5 text-brand-gold" />}
-                text="Priority Shoutout"
-              />
-            </motion.ul>
+            <motion.div variants={itemVariants} className="space-y-4">
+              <h3 className="text-gray-300 font-semibold text-sm uppercase tracking-wider">What You Can Win</h3>
+              <ul className="space-y-4 pl-2">
+                <ListItem
+                  icon={<Star className="w-5 h-5 text-brand-gold" />}
+                  title="Exclusive Top Fan Badge"
+                  description="A rare digital badge to showcase your achievement"
+                />
+                <ListItem
+                  icon={<Gem className="w-5 h-5 text-brand-gold" />}
+                  title="Special Digital Collectible"
+                  description="A limited-edition reward available only to monthly winners"
+                />
+                <ListItem
+                  icon={<Zap className="w-5 h-5 text-brand-gold" />}
+                  title="Priority Shoutout"
+                  description="Public recognition on the platform and community highlights"
+                />
+              </ul>
+            </motion.div>
 
             {/* How to Win Section - Modern UX */}
             <motion.div variants={itemVariants} className="mt-6">
-              <h3 className="text-gray-400 font-medium mb-4 text-xs uppercase tracking-widest flex items-center gap-2">
-                <Award className="w-4 h-4 text-brand-gold" /> Path to Victory
+              <h3 className="text-gray-300 font-semibold mb-3 text-sm uppercase tracking-wider">
+                Your Path to the Top
               </h3>
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-white/5 hover:bg-white/10 border border-white/10 p-3 rounded-xl flex flex-col items-center text-center transition-all group cursor-default">
@@ -119,7 +168,7 @@ const FanOfMonth: React.FC = () => {
                     <MessageCircle className="w-5 h-5 text-brand-gold" />
                   </div>
                   <span className="text-[10px] text-brand-gold/80 uppercase tracking-bold font-bold">Engage</span>
-                  <span className="text-[11px] text-gray-400 leading-tight mt-1">Join Discussions</span>
+                  <span className="text-[11px] text-gray-400 leading-tight mt-1">Join discussions and interact with the community</span>
                 </div>
                 
                 <div className="bg-white/5 hover:bg-white/10 border border-white/10 p-3 rounded-xl flex flex-col items-center text-center transition-all group cursor-default">
@@ -127,7 +176,7 @@ const FanOfMonth: React.FC = () => {
                     <Calendar className="w-5 h-5 text-brand-gold" />
                   </div>
                   <span className="text-[10px] text-brand-gold/80 uppercase tracking-bold font-bold">Attend</span>
-                  <span className="text-[11px] text-gray-400 leading-tight mt-1">Events & Streams</span>
+                  <span className="text-[11px] text-gray-400 leading-tight mt-1">Take part in events and live streams</span>
                 </div>
 
                 <div className="bg-white/5 hover:bg-white/10 border border-white/10 p-3 rounded-xl flex flex-col items-center text-center transition-all group cursor-default">
@@ -135,9 +184,12 @@ const FanOfMonth: React.FC = () => {
                     <Gamepad2 className="w-5 h-5 text-brand-gold" />
                   </div>
                   <span className="text-[10px] text-brand-gold/80 uppercase tracking-bold font-bold">Play</span>
-                  <span className="text-[11px] text-gray-400 leading-tight mt-1">Top Leaderboards</span>
+                  <span className="text-[11px] text-gray-400 leading-tight mt-1">Compete in games and climb the leaderboards</span>
                 </div>
               </div>
+              <p className="text-xs text-gray-400 mt-4 italic">
+                Every action counts. The more you participate, the closer you get to the top.
+              </p>
             </motion.div>
 
             <motion.div variants={itemVariants}>
@@ -145,7 +197,7 @@ const FanOfMonth: React.FC = () => {
                 to="/fan-of-the-month"
                 className="inline-flex items-center gap-2 bg-brand-gold text-brand-dark font-bold py-3 px-8 rounded-xl hover:bg-white transition-colors shadow-lg shadow-brand-gold/20"
               >
-                {isRevealTime ? "Reveal Winner" : "View Countdown"}
+                {isRevealTime ? "Reveal Winner" : "Countdown"}
                 <ArrowRight className="w-5 h-5" />
               </Link>
             </motion.div>
@@ -178,7 +230,7 @@ const FanOfMonth: React.FC = () => {
                 </div>
                 <div>
                   <div className="text-xs text-gray-400 uppercase">
-                    {isRevealTime ? "Previous Winner" : "🏆 Fan of the Month"}
+                    {isRevealTime ? "Previous Winner" : "🏆 Current Leader"}
                   </div>
                   <div className="text-white font-bold">
                     {isRevealTime ? previousWinner.name : currentTopName}
@@ -189,8 +241,8 @@ const FanOfMonth: React.FC = () => {
                 </div>
               </motion.div>
 
-              {/* Previous Winner Card - Hidden during Reveal to avoid duplication */}
-              {!isRevealTime && (
+              {/* Previous Winner Card - Only show if we have actual winner data */}
+              {!isRevealTime && previousWinnerData && previousWinnerData.name !== "TBA" && (
                 <motion.div 
                   initial={{ opacity: 0, x: -20 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -222,10 +274,13 @@ const FanOfMonth: React.FC = () => {
   );
 };
 
-const ListItem = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <li className="flex items-center gap-3 text-gray-200">
+const ListItem = ({ icon, title, description }: { icon: React.ReactNode; title: string; description?: string }) => (
+  <li className="flex items-start gap-3 text-gray-200">
     <div className="flex-shrink-0 bg-white/5 p-2 rounded-lg">{icon}</div>
-    <span className="font-medium text-lg tracking-wide">{text}</span>
+    <div className="flex flex-col">
+      <span className="font-semibold text-base tracking-wide text-white">{title}</span>
+      {description && <span className="text-xs text-gray-400 mt-1">{description}</span>}
+    </div>
   </li>
 );
 

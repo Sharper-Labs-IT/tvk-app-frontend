@@ -1176,7 +1176,7 @@ const WhackAMoleGame: React.FC = () => {
               {/* Buttons - Mobile friendly sizing */}
               <div className={`grid ${isPremium ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 <button
-                  onClick={() => navigate('/game/villain-hunt')}
+                  onClick={() => navigate('/games/villain-hunt')}
                   className="w-full py-3 sm:py-4 rounded-xl font-bold text-xs sm:text-sm md:text-base uppercase tracking-wider transition-colors bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center gap-2"
                 >
                   <Home className="w-4 h-4 sm:w-5 sm:h-5" />

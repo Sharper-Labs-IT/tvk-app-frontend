@@ -1,8 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
+import { ShoppingCart, Heart } from 'lucide-react';
 import MobileMenu from './MobileMenu';
 import { useAuth } from '../context/AuthContext';
+import { useAudio } from '../context/AudioContext';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import ConfirmationModal from '../components/common/ConfirmationModal';
 
 const headerContainerVariants: Variants = {
@@ -36,21 +40,33 @@ const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [playDropdownOpen, setPlayDropdownOpen] = useState(false);
+  const [storiesDropdownOpen, setStoriesDropdownOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  // Removed unused dropdowns: storeDropdownOpen, studioDropdownOpen
 
   const { isLoggedIn, user, logout } = useAuth();
+  const { isMuted, toggleMute } = useAudio();
+  const { cartCount, setIsCartOpen } = useCart();
+  const { wishlistCount } = useWishlist();
 
   const isHome = location.pathname === '/';
   const isActive = (path: string) => location.pathname === path;
 
   // --- DYNAMIC NAVIGATION LOGIC ---
   const dynamicNavItems = useMemo(() => {
-    return [
+    const items = [
       { name: 'MEMBERSHIP', path: '/membership' },
       { name: 'STORE', path: '/store' },
       { name: 'EVENTS', path: '/events' },
     ];
-  }, []);
+    
+    // Story Studio removed - still in development
+    // if (isLoggedIn) {
+    //   items.splice(1, 0, { name: 'STUDIO', path: null });
+    // }
+    
+    return items;
+  }, [isLoggedIn]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -100,7 +116,7 @@ const Header: React.FC = () => {
           <Link to="/" className="block relative">
             <img
               src="/images/tvk-logo.png"
-              alt="TVK Logo"
+              alt="VJ Fans Hub Logo"
               className={`
                 object-contain transition-all duration-300 ease-in-out z-50
                 relative h-16 md:h-20 w-auto
@@ -145,6 +161,27 @@ const Header: React.FC = () => {
               </Link>
             </motion.li>
 
+            {/* Feed link - only show when logged in */}
+            {isLoggedIn && (
+              <motion.li key="FEED" variants={majorItemVariants}>
+                <Link
+                  to="/dashboard/feed"
+                  className={`
+                    text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
+                    ${isActive('/dashboard/feed') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                  `}
+                >
+                  FEED
+                  <span
+                    className={`
+                      absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                      ${isActive('/dashboard/feed') ? 'w-full' : 'w-0 group-hover:w-full'}
+                    `}
+                  ></span>
+                </Link>
+              </motion.li>
+            )}
+
             {/* Play Dropdown */}
             <motion.li 
               key="PLAY" 
@@ -156,14 +193,14 @@ const Header: React.FC = () => {
               <button
                 className={`
                   text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
-                  ${isActive('/game') || isActive('/leaderboard') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                  ${isActive('/games') || isActive('/leaderboard') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                 `}
               >
                 PLAY
                 <span
                   className={`
                     absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                    ${isActive('/game') || isActive('/leaderboard') ? 'w-full' : 'w-0 group-hover:w-full'}
+                    ${isActive('/games') || isActive('/leaderboard') ? 'w-full' : 'w-0 group-hover:w-full'}
                   `}
                 ></span>
               </button>
@@ -176,7 +213,7 @@ const Header: React.FC = () => {
                   className="absolute top-full left-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[140px] lg:min-w-[160px] z-50 pt-1.5"
                 >
                   <Link
-                    to="/game"
+                    to="/games"
                     className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                   >
                     GAMES
@@ -191,24 +228,79 @@ const Header: React.FC = () => {
               )}
             </motion.li>
 
-            {dynamicNavItems.map((item) => (
-              <motion.li key={item.name} variants={majorItemVariants}>
-                <Link
-                  to={item.path}
+            {/* AI Studio Dropdown - only show when logged in */}
+            {isLoggedIn && (
+              <motion.li 
+                key="AI_STUDIO" 
+                variants={majorItemVariants}
+                className="relative"
+                onMouseEnter={() => setStoriesDropdownOpen(true)}
+                onMouseLeave={() => setStoriesDropdownOpen(false)}
+              >
+                <button
                   className={`
                     text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
-                    ${isActive(item.path) ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                    ${location.pathname.startsWith('/ai-studio') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                   `}
                 >
-                  {item.name}
+                  AI STUDIO
                   <span
                     className={`
                       absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
-                      ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
+                      ${location.pathname.startsWith('/ai-studio') ? 'w-full' : 'w-0 group-hover:w-full'}
                     `}
                   ></span>
-                </Link>
+                </button>
+                
+                {/* Dropdown Menu */}
+                {storiesDropdownOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="absolute top-full left-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[180px] lg:min-w-[200px] z-50 pt-1.5"
+                  >
+                    <Link
+                      to="/ai-studio"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
+                    >
+                      SELFIE WITH VJ
+                    </Link>
+                    <Link
+                      to="/ai-studio/stories/create"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      AI STORIES
+                    </Link>
+                    <Link
+                      to="/ai-studio/stories"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors last:rounded-b-lg font-medium"
+                    >
+                      STORY FEED
+                    </Link>
+                  </motion.div>
+                )}
               </motion.li>
+            )}
+
+            {dynamicNavItems.map((item) => (
+              // Regular nav item
+                <motion.li key={item.name} variants={majorItemVariants}>
+                  <Link
+                    to={item.path}
+                    className={`
+                      text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
+                      ${isActive(item.path) ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
+                    `}
+                  >
+                    {item.name}
+                    <span
+                      className={`
+                        absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
+                        ${isActive(item.path) ? 'w-full' : 'w-0 group-hover:w-full'}
+                      `}
+                    ></span>
+                  </Link>
+                </motion.li>
             ))}
           </motion.ul>
         </motion.nav>
@@ -217,16 +309,96 @@ const Header: React.FC = () => {
         {/* ADDED ml-auto HERE to force this container to the right on mobile */}
         <motion.div
           variants={majorItemVariants}
-          className="flex-shrink-0 flex items-center space-x-4 ml-auto"
+          className="flex-shrink-0 flex items-center space-x-2 lg:space-x-4 ml-auto"
         >
+          {/* Audio Control Button - Show on main pages */}
+          {(location.pathname === '/' || 
+            location.pathname === '/membership' || 
+            location.pathname === '/store' || 
+            location.pathname === '/events' ||
+            location.pathname === '/games' ||
+            location.pathname === '/leaderboard') && (
+            <button
+              onClick={toggleMute}
+              className="p-2 transition-colors hover:text-brand-gold"
+              aria-label={isMuted ? "Unmute music" : "Mute music"}
+            >
+              {isMuted ? (
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" 
+                  />
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" 
+                  />
+                </svg>
+              ) : (
+                <svg 
+                  className="w-6 h-6" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" 
+                  />
+                </svg>
+              )}
+            </button>
+          )}
+
+          {/* Wishlist Link */}
+          <button 
+           onClick={() => navigate('/wishlist')}
+            className="relative p-2 transition-colors hover:text-brand-gold group"
+            aria-label="Wishlist"
+          >
+            <Heart size={22} className={wishlistCount > 0 ? "fill-brand-gold text-brand-gold" : "text-white"} />
+            {wishlistCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-brand-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                {wishlistCount > 9 ? '9+' : wishlistCount}
+              </span>
+            )}
+          </button>
+
+          {/* Cart Icon replaced with CartDrawer Toggle */}
+          <button 
+            onClick={() => setIsCartOpen(true)}
+            className="relative p-2 transition-colors hover:text-brand-gold group"
+            aria-label="Cart"
+          >
+            <ShoppingCart className="w-6 h-6" />
+            {cartCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-brand-gold text-black text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
+          </button>
+          
           <div className="hidden md:block">
             {isLoggedIn ? (
               <div 
+                id="tour-profile-menu-container"
                 className="relative"
                 onMouseEnter={() => setProfileDropdownOpen(true)}
                 onMouseLeave={() => setProfileDropdownOpen(false)}
               >
                 <button
+                  id="tour-profile-btn"
                   className="bg-brand-goldDark text-white font-bold px-3 lg:px-4 py-2 rounded-lg text-sm transition-opacity hover:opacity-90 whitespace-nowrap flex items-center gap-1 lg:gap-2"
                 >
                   <svg 
@@ -253,10 +425,31 @@ const Header: React.FC = () => {
                     className="absolute top-full right-0 mt-0.5 bg-brand-dark border border-brand-gold/30 rounded-lg shadow-xl min-w-[140px] lg:min-w-[160px] z-50 pt-1.5"
                   >
                     <Link
+                      id="tour-dashboard-link"
                       to={getDashboardPath()}
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors first:rounded-t-lg font-medium"
                     >
                       DASHBOARD
+                    </Link>
+                    <Link
+                      to="/ai-studio/stories/my-stories"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      MY STORIES
+                    </Link>
+                    <Link
+                      to="/dashboard/my-content"
+                      id="tour-my-content-link"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      MY CONTENT
+                    </Link>
+                    <Link
+                      to="/orders"
+                      id="tour-my-orders-link"
+                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                    >
+                      MY ORDERS
                     </Link>
                     <button
                       onClick={() => {
@@ -272,7 +465,7 @@ const Header: React.FC = () => {
               </div>
             ) : (
               <Link
-                to="/login"
+                to="/signup"
                 className="bg-gradient-to-r from-brand-goldDark to-brand-gold text-brand-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 transition-opacity text-base shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
               >
                 Login / Join
@@ -316,7 +509,11 @@ const Header: React.FC = () => {
       <MobileMenu
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
-        navItems={[{ name: 'HOME', path: '/' }, ...dynamicNavItems]}
+        navItems={[
+          { name: 'HOME', path: '/' },
+          ...(isLoggedIn ? [{ name: 'FEED', path: '/dashboard/feed' }] : []),
+          ...dynamicNavItems
+        ]}
         isLoggedIn={isLoggedIn}
         user={user}
         onLogout={handleMobileLogoutTrigger}

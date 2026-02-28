@@ -1,585 +1,495 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Coins,
-  ShoppingBag,
-  Zap,
-  Star,
-  Shield,
-  TrendingUp,
-  Wallet,
-  Sparkles,
-  Bomb,
-  Snowflake,
-  Lock, // Added Lock icon
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  ShoppingBag, 
+  Search, 
+  Zap, 
+  Lock,
+  Heart,
+  Eye,
+  XCircle
 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { storeService } from '../services/storeService';
-import type { CoinPackage, MerchItem } from '../services/storeService';
-import { useAuth } from '../context/AuthContext';
+import type { Product, ProductCategory } from '../types/product';
+import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
+import { getFullImageUrl } from '../utils/imageUrl';
 
-const MerchCard = ({ item, index }: { item: any; index: number }) => {
-  // State to track which color is currently selected
-  const [activeVariantIndex, setActiveVariantIndex] = useState(0);
-  const [imageError, setImageError] = useState(false);
+// --- Improved Components ---
 
-  // Determine current display data
-  const hasVariants = item.variants && item.variants.length > 0;
-  const currentVariant = hasVariants ? item.variants[activeVariantIndex] : null;
+import { useNavigate } from 'react-router-dom';
 
-  // Get images: Use variant images if available, otherwise use single image
-  const displayImages = hasVariants ? currentVariant.images : [item.image, item.image]; // Fallback: same image for front/back
+const ProductCard = ({ product }: { product: Product }) => {
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const [isHovered, setIsHovered] = useState(false);
 
-  // Check if using placeholder images
-  const isPlaceholder = displayImages[0]?.includes('placehold.co');
+  // Helper to get the best display image
+  const getDisplayImage = () => {
+    // 1. Try Media Array (Standard)
+    if (product.media && product.media.length > 0) {
+        const primary = product.media.find(m => m.is_primary);
+        if (primary) return getFullImageUrl(primary.url);
+        return getFullImageUrl(product.media[0].url);
+    }
+    
+    // 2. Try Variant Images (Fallback if main product has no image but variants do)
+    if (product.variants && product.variants.length > 0) {
+        const variantWithImage = product.variants.find(v => v.image_url);
+        if (variantWithImage) return getFullImageUrl(variantWithImage.image_url);
+    }
+
+    // 3. Try legacy/alternative fields (Backend consistency check)
+    // Cast to any to bypass strict typing if the backend sends undocumented fields
+    const p = product as any;
+
+    // Explicitly check for 'primary_image' which was found in debug logs
+    if (p.primary_image) {
+        if (typeof p.primary_image === 'string') return getFullImageUrl(p.primary_image);
+        if (typeof p.primary_image === 'object' && p.primary_image.url) return getFullImageUrl(p.primary_image.url);
+    }
+
+    if (p.image_url) return getFullImageUrl(p.image_url);
+    if (p.image) return getFullImageUrl(p.image);
+    if (p.thumbnail) return getFullImageUrl(p.thumbnail);
+    if (p.cover_image) return getFullImageUrl(p.cover_image);
+    if (p.media_url) return getFullImageUrl(p.media_url);
+
+    // 4. Wildcard Image Search (Last Resort) - Look for any key containing 'image' or 'url' that is a string
+    const potentialKeys = Object.keys(p).filter(k => 
+        (k.includes('image') || k.includes('img') || k.includes('thumb')) && 
+        typeof p[k] === 'string' && 
+        p[k].length > 5
+    );
+    
+    if (potentialKeys.length > 0) {
+        return getFullImageUrl(p[potentialKeys[0]]);
+    }
+
+    return '';
+  };
+
+  const [activeImage, setActiveImage] = useState(getDisplayImage());
+  
+  useEffect(() => {
+    // Update image when product changes to ensure initial state is correct
+    setActiveImage(getDisplayImage());
+  }, [product]);
+
+  useEffect(() => {
+    if (product.media && product.media.length > 1 && isHovered) {
+      // On hover, try to show the second image (index 1)
+      setActiveImage(getFullImageUrl(product.media[1].url));
+    } else {
+      // On un-hover, revert to display image
+      setActiveImage(getDisplayImage());
+    }
+  }, [isHovered, product.media]);
+
+  // Robust check for variants
+  const hasVariants = product.has_variants || (product.variants && product.variants.length > 0);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // If product has variants, we must go to details page to select one
+    if (hasVariants) {
+        navigate(`/store/products/${product.id}`);
+        return;
+    }
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: product.discount_price || product.price,
+      quantity: 1,
+      image: activeImage, // Use the resolved active image
+      type: product.type === 'game_item' ? 'coins' : 'merch',
+      stock: product.stock_quantity
+    });
+  };
+
+  const toDetails = () => navigate(`/store/products/${product.id}`);
+
+  const discountPercentage = product.discount_price 
+    ? Math.round(((product.price - product.discount_price) / product.price) * 100) 
+    : 0;
+
+  const isComingSoon = product.status === 'inactive';
 
   return (
     <motion.div
+      layout
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="group relative bg-[#0a0a0a] rounded-3xl overflow-hidden border border-white/5 hover:border-white/20 transition-all duration-500 flex flex-col"
+      viewport={{ once: true, margin: "-50px" }}
+      className="group relative flex flex-col h-full perspective-1000 cursor-pointer"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={toDetails}
     >
-      {/* --- Image Area --- */}
-      <div className="aspect-square overflow-hidden relative bg-gradient-to-br from-[#1a1a2e] to-[#0f0f1a]">
-        {/* Decorative background pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[length:20px_20px]" />
-        </div>
+        {/* Card Container */ }
+        <div className="relative h-full bg-[#0F0F0F] rounded-2xl overflow-hidden border border-white/5 transition-all duration-500 hover:border-brand-gold/50 hover:shadow-[0_0_30px_rgba(230,198,91,0.1)] hover:-translate-y-2">
+            
+            {/* Image Section */}
+            <div className="aspect-[4/5] relative overflow-hidden bg-[#151515]">
+                <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(255,255,255,0.03)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.03)_50%,rgba(255,255,255,0.03)_75%,transparent_75%,transparent)] bg-[length:24px_24px] opacity-20" />
+                
+                {activeImage ? (
+                    <motion.img
+                        key={activeImage}
+                        initial={{ opacity: 0.8, scale: 1 }}
+                        animate={{ opacity: 1, scale: isHovered ? 1.05 : 1 }}
+                        transition={{ duration: 0.4 }}
+                        src={activeImage} 
+                        referrerPolicy="no-referrer"
+                        alt={product.name} 
+                        className="w-full h-full object-contain p-6 relative z-10"
+                        onError={(e) => {
+                            console.error('Store Image Load Failed:', activeImage);
+                            (e.target as HTMLImageElement).src = 'https://placehold.co/600x600/1a1a1a/white?text=No+Preview';
+                        }}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-white/20">
+                        <ShoppingBag size={48} />
+                    </div>
+                )}
 
-        {isPlaceholder || imageError ? (
-          // Fallback display when no real image
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
-            <div className="w-20 h-20 mb-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:bg-white/10 transition-all duration-500">
-              <ShoppingBag className="w-10 h-10 text-white/40 group-hover:text-brand-gold transition-colors" />
-            </div>
-            <p className="text-white/30 text-sm font-medium text-center">Image Coming Soon</p>
-          </div>
-        ) : (
-          <>
-            {/* Front Image (Visible by default) */}
-            <img
-              src={displayImages[0]}
-              alt={item.name}
-              onError={() => setImageError(true)}
-              className="absolute inset-0 w-full h-full object-contain p-4 transition-all duration-700 
-                group-hover:scale-105 group-hover:opacity-0"
-            />
+                {/* Overlays */}
+                <div className="absolute top-3 left-3 flex flex-col gap-2 z-20">
+                    {product.is_featured && (
+                        <div className="bg-brand-gold text-black text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider flex items-center gap-1">
+                            <Zap size={10} fill="currentColor" /> Featured
+                        </div>
+                    )}
+                    {discountPercentage > 0 && (
+                        <div className="bg-white text-black text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-wider">
+                            -{discountPercentage}%
+                        </div>
+                    )}
+                </div>
 
-            {/* Back/Second Image (Visible on Hover) */}
-            <img
-              src={displayImages[1] || displayImages[0]}
-              alt={`${item.name} alternate view`}
-              onError={() => setImageError(true)}
-              className="absolute inset-0 w-full h-full object-contain p-4 transition-all duration-700 scale-105 opacity-0 
-                group-hover:opacity-100 group-hover:scale-100"
-            />
-          </>
-        )}
-
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-40 pointer-events-none" />
-
-        {/* Rarity Badge */}
-        <div className="absolute top-4 left-4 z-10">
-          <span
-            className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md
-            ${
-              item.rarity === 'Legendary'
-                ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-400'
-                : item.rarity === 'Epic'
-                ? 'bg-purple-500/20 border-purple-500/50 text-purple-400'
-                : 'bg-blue-500/20 border-blue-500/50 text-blue-400'
-            }`}
-          >
-            {item.rarity}
-          </span>
-        </div>
-
-        {/* Quick Action Button - UPDATED to Lock/Coming Soon */}
-        <div className="absolute bottom-4 right-4 translate-y-10 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-10">
-          <button 
-            disabled
-            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/50 flex items-center justify-center cursor-not-allowed"
-          >
-            <Lock className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-
-      {/* --- Content Area --- */}
-      <div className="p-6 relative flex flex-col flex-grow">
-        <div className="absolute -top-10 left-6">
-          {/* UPDATED: Price replaced with Coming Soon */}
-          <div className="text-lg font-black text-white/90 drop-shadow-lg tracking-wider bg-black/50 backdrop-blur-sm px-2 py-1 rounded-lg border border-white/10">
-            COMING SOON
-          </div>
-        </div>
-
-        <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
-          {item.category}
-        </p>
-
-        <div className="flex justify-between items-start mb-4">
-          <h3 className="text-lg font-bold text-white group-hover:text-brand-gold transition-colors">
-            {item.name}
-          </h3>
-        </div>
-
-        {/* Color Selector (Only if variants exist) */}
-        {hasVariants && (
-          <div className="mt-auto pt-2 flex items-center gap-3">
-            <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider">
-              Select Color:
-            </span>
-            <div className="flex gap-2">
-              {item.variants.map((variant: any, idx: number) => (
-                <button
-                  key={idx}
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevent triggering parent clicks
-                    setActiveVariantIndex(idx);
-                  }}
-                  className={`w-6 h-6 rounded-full border-2 transition-all duration-300 relative
-                    ${
-                      activeVariantIndex === idx
-                        ? 'border-brand-gold scale-110 shadow-[0_0_10px_rgba(255,255,255,0.3)]'
-                        : 'border-transparent hover:border-white/50'
-                    }`}
-                  style={{ backgroundColor: variant.colorHex }}
-                  title={variant.colorName}
+                {/* Wishlist Button */}
+                <button 
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product.id);
+                    }}
+                    className="absolute top-3 right-3 p-2 rounded-full bg-black/20 hover:bg-black/50 text-white transition-all z-20 backdrop-blur-sm group-hover:bg-black/40"
                 >
-                  {/* White dot for active black items to make it visible */}
-                  {activeVariantIndex === idx && variant.colorHex === '#1a1a1a' && (
-                    <div className="absolute inset-0 m-auto w-1.5 h-1.5 bg-white rounded-full" />
-                  )}
+                     <Heart size={18} className={isInWishlist(product.id) ? "fill-red-500 text-red-500" : "text-white/70"} />
                 </button>
-              ))}
+
+                {/* Quick Action Overlay (Desktop) */}
+                {!isComingSoon && (
+                    <div className="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 z-20 hidden md:block bg-gradient-to-t from-black/90 to-transparent pt-12">
+                        
+                        {product.stock_quantity > 0 && product.stock_quantity <= 5 && (
+                            <div className="mb-2 text-center">
+                                <span className="inline-flex items-center gap-1 text-red-500 text-[10px] font-black uppercase tracking-wider bg-black/80 px-2 py-1 rounded">
+                                    <Zap size={10} className="fill-current" />
+                                    Only {product.stock_quantity} Left
+                                </span>
+                            </div>
+                        )}
+
+                        <button 
+                            onClick={handleAddToCart}
+                            disabled={product.stock_quantity <= 0}
+                            className={`w-full font-heavy font-black py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                                product.stock_quantity <= 0
+                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                    : 'bg-white text-black hover:bg-brand-gold'
+                            }`}
+                        >
+                            {product.stock_quantity <= 0 ? (
+                                <>
+                                    <XCircle size={18} />
+                                    OUT OF STOCK
+                                </>
+                            ) : (
+                                <>
+                                    <ShoppingBag size={18} />
+                                    {hasVariants ? 'VIEW OPTIONS' : 'ADD TO CART'}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
+
+                {isComingSoon && (
+                     <div className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-30">
+                         <div className="flex items-center gap-2 text-white/50 font-bold uppercase tracking-widest border border-white/20 px-4 py-2 rounded-full">
+                             <Lock size={14} /> Coming Soon
+                         </div>
+                     </div>
+                )}
             </div>
-          </div>
-        )}
-      </div>
+
+            {/* Info Section */}
+            <div className="p-5 flex flex-col flex-grow bg-[#0F0F0F] relative group-hover:bg-[#121212] transition-colors">
+                <div className="flex items-start justify-between mb-2">
+                    <span className="text-[10px] text-brand-gold font-bold uppercase tracking-widest opacity-80">
+                        {product.category?.name || 'Artifact'}
+                    </span>
+                    {product.stock_quantity < 5 && product.stock_quantity > 0 && (
+                        <span className="text-[10px] text-red-400 font-bold">Only {product.stock_quantity} left</span>
+                    )}
+                </div>
+                
+                <h3 className="text-white font-bold text-lg leading-tight mb-2 group-hover:text-brand-gold transition-colors line-clamp-2">
+                    {product.name}
+                </h3>
+                
+                <div className="mt-auto pt-4 border-t border-white/5 flex items-end justify-between">
+                    <div>
+                        {product.discount_price ? (
+                            <div className="flex flex-col">
+                                <span className="text-neutral-500 text-xs line-through font-medium">£{Number(product.price).toFixed(2)}</span>
+                                <span className="text-xl font-black text-white">£{Number(product.discount_price).toFixed(2)}</span>
+                            </div>
+                        ) : (
+                            <span className="text-xl font-black text-white">
+                                {isComingSoon ? '--' : `£${Number(product.price).toFixed(2)}`}
+                            </span>
+                        )}
+                    </div>
+                     {/* Mobile Quick Add */}
+                     <button 
+                        onClick={handleAddToCart}
+                        className="md:hidden w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-gold hover:text-black transition-colors"
+                     >
+                         {hasVariants ? <Eye size={14} /> : <ShoppingBag size={14} />}
+                     </button>
+                </div>
+            </div>
+        </div>
     </motion.div>
   );
 };
 
-// --- Mock Data ---
-
-const DEFAULT_COIN_PACKAGES = [
-  {
-    id: 1,
-    amount: 100,
-    price: '£0.99',
-    bonus: null,
-    popular: false,
-    color: 'from-blue-500 to-cyan-400',
-    image: 'https://images.unsplash.com/photo-1519681393798-3828fb4090bb?auto=format&fit=crop&q=80',
-  },
-  {
-    id: 2,
-    amount: 550,
-    price: '£4.99',
-    bonus: '+50 Bonus',
-    popular: true,
-    color: 'from-violet-500 to-fuchsia-400',
-    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80',
-  },
-  {
-    id: 3,
-    amount: 1200,
-    price: '£9.99',
-    bonus: '+200 Bonus',
-    popular: false,
-    color: 'from-amber-400 to-orange-500',
-    image: 'https://images.unsplash.com/photo-1533134486753-c833f0ed4866?auto=format&fit=crop&q=80',
-  },
-  {
-    id: 4,
-    amount: 3000,
-    price: '£24.99',
-    bonus: '+500 Bonus',
-    popular: false,
-    color: 'from-emerald-400 to-teal-500',
-    image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80',
-  },
-];
-
-const DEFAULT_MERCH_ITEMS = [
-  {
-    id: 1,
-    name: 'TVK Signature Cap',
-    price: '£49.99',
-    category: 'Apparel',
-    rarity: 'Legendary',
-    // This item has variants
-    variants: [
-      {
-        colorName: 'Midnight Black',
-        colorHex: '#1a1a1a',
-        images: [
-          '/img/cap-b.png', 
-          '/img/cap-b2.png', 
-        ],
-      },
-      {
-        colorName: 'Crimson Red',
-        colorHex: '#dc2626',
-        images: [
-          '/img/cap-r.png', 
-          '/img/cap-r2.png', 
-        ],
-      },
-      {
-        colorName: 'Ghost White',
-        colorHex: '#f3f4f6',
-        images: ['/img/cap-w.png', '/img/cap-w2.png'],
-      },
-    ],
-    // Fallback for items without variants
-    image: 'https://placehold.co/400x400/1a1a1a/white?text=Cyber+Hoodie',
-  },
-  {
-    id: 2,
-    name: 'Mug with TVK Design',
-    price: '£24.99',
-    image: '/img/mug.png',
-    category: 'Accessories',
-    rarity: 'Rare',
-  },
-  {
-    id: 3,
-    name: 'Premium Gift Card',
-    price: '£29.99',
-    image: '/img/gift-card.png',
-    category: 'Apparel',
-    rarity: 'Epic',
-  },
-  {
-    id: 4,
-    name: 'Special Edition Back Covers',
-    price: '£19.99',
-    image: '/img/back-cover.png',
-    category: 'Gear',
-    rarity: 'Common',
-  },
-];
-
-// --- Components ---
-
-const SectionTitle = ({
-  title,
-  subtitle,
-  icon: Icon,
-}: {
-  title: string;
-  subtitle: string;
-  icon: any;
-}) => (
-  <div className="mb-10 relative">
-    <div className="flex items-center gap-3 mb-2">
-      <div className="p-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur-sm">
-        <Icon className="w-6 h-6 text-brand-gold" />
-      </div>
-      <h2 className="text-3xl md:text-4xl font-zentry font-bold bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500">
-        {title}
-      </h2>
+const CategoryFilter = ({ categories, activeCategory, onSelect }: any) => {
+  return (
+    <div className="flex items-center justify-center w-full py-4">
+         <div className="bg-[#1a1a1a]/80 backdrop-blur-md border border-white/10 p-1.5 rounded-full flex gap-1 overflow-x-auto max-w-[95vw] md:max-w-fit no-scrollbar shadow-2xl">
+            <button
+                onClick={() => onSelect('all')}
+                className={`px-6 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap uppercase tracking-wider
+                    ${activeCategory === 'all' 
+                        ? 'bg-brand-gold text-black shadow-lg scale-105' 
+                        : 'text-neutral-400 hover:text-white hover:bg-white/5'}`}
+            >
+                All Products
+            </button>
+            {categories.map((cat: any) => (
+                <button
+                    key={cat.id}
+                    onClick={() => onSelect(cat.id)}
+                    className={`px-6 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap uppercase tracking-wider flex items-center gap-2
+                        ${activeCategory === cat.id 
+                            ? 'bg-brand-gold text-black shadow-lg scale-105' 
+                            : 'text-neutral-400 hover:text-white hover:bg-white/5'}`}
+                >
+                    {cat.name}
+                    {cat.products_count > 0 && (
+                        <span className={`w-5 h-5 flex items-center justify-center rounded-full text-[10px] ${activeCategory === cat.id ? 'bg-black text-brand-gold' : 'bg-white/10 text-white'}`}>
+                            {cat.products_count}
+                        </span>
+                    )}
+                </button>
+            ))}
+         </div>
     </div>
-    <p className="text-gray-400 text-lg max-w-xl ml-1 mt-2">{subtitle}</p>
-  </div>
-);
+  );
+};
 
 const Store: React.FC = () => {
-  const [coinPackages, setCoinPackages] = useState<CoinPackage[]>(DEFAULT_COIN_PACKAGES);
-  const [merchItems, setMerchItems] = useState<MerchItem[]>(DEFAULT_MERCH_ITEMS);
-  const { user, refreshUser } = useAuth();
-  const userCoins = user?.coins || 0;
+    const [products, setProducts] = useState<Product[]>([]);
+    const [categories, setCategories] = useState<ProductCategory[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [activeCategory, setActiveCategory] = useState<number | 'all'>('all');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [page, setPage] = useState(1);
+    const [hasMore, setHasMore] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+  
+    useEffect(() => {
+        // Load Categories
+        storeService.getCategories().then(data => {
+            setCategories(Array.isArray(data) ? data : []);
+        });
+    }, []);
 
-  // Refresh user data when component mounts or becomes visible
-  useEffect(() => {
-    refreshUser();
-  }, []);
+    useEffect(() => {
+      const fetchData = async () => {
+        setLoading(true);
+        setPage(1); // Reset page on filter change
+        try {
+          const response = await storeService.getProducts({ 
+               category_id: activeCategory !== 'all' ? activeCategory : undefined,
+               search: searchQuery,
+               status: 'active',
+               page: 1
+          });
+          
+          const pList = (response as any).data || response || [];
+          setProducts(Array.isArray(pList) ? pList : []);
+          setHasMore((response as any).last_page > 1);
+        } catch (error) {
+          console.error("Failed to load store data", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      const debounceTimer = setTimeout(fetchData, 500);
+      return () => clearTimeout(debounceTimer);
+    }, [activeCategory, searchQuery]);
 
-  // Refresh when page becomes visible (user returns from game)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        refreshUser();
-      }
+    const handleLoadMore = async () => {
+        if (loadingMore || !hasMore) return;
+        setLoadingMore(true);
+        try {
+            const nextPage = page + 1;
+            const response = await storeService.getProducts({ 
+                category_id: activeCategory !== 'all' ? activeCategory : undefined,
+                search: searchQuery,
+                status: 'active',
+                page: nextPage
+           });
+           
+           const newProducts = (response as any).data || [];
+           setProducts(prev => [...prev, ...newProducts]);
+           setPage(nextPage);
+           setHasMore(nextPage < (response as any).last_page);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoadingMore(false);
+        }
     };
-
-    const handleFocus = () => {
-      refreshUser();
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
-    };
-  }, [refreshUser]);
-
-  useEffect(() => {
-    const fetchStoreData = async () => {
-      try {
-        // Attempt to fetch data from backend
-        // If backend endpoints are not ready, this will fail and we keep defaults
-        const [coins, merch] = await Promise.all([
-          storeService.getCoinPackages(),
-          storeService.getMerchItems(),
-        ]);
-
-        if (coins && coins.length > 0) setCoinPackages(coins);
-        if (merch && merch.length > 0) setMerchItems(merch);
-      } catch (err) {
-      }
-    };
-    fetchStoreData();
-  }, []);
 
   return (
-    <div className="min-h-screen bg-[#030303] text-white font-sans selection:bg-brand-gold/30 overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-white selection:bg-brand-gold/30 font-sans">
       <Header />
+      
+      {/* Immersive Hero */}
+      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+        {/* Abstract Background */}
+        <div className="absolute inset-0 bg-[#050505]">
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#111_1px,transparent_1px),linear-gradient(to_bottom,#111_1px,transparent_1px)] bg-[length:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-gold/10 rounded-full blur-[100px] animate-pulse" />
+        </div>
 
-      {/* Ambient Background Effects */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-violet-900/20 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px]" />
-        <div className="absolute top-[40%] left-[50%] transform -translate-x-1/2 w-[30%] h-[30%] bg-brand-gold/5 rounded-full blur-[100px]" />
-      </div>
-
-      <main className="relative z-10 pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-24">
-        {/* Hero & Wallet Widget */}
-        <section className="relative">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-12">
-            <div className="space-y-4">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm text-brand-gold font-medium"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Season 1 Store Update - Coming Soon Live</span>
-              </motion.div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="text-5xl md:text-7xl font-zentry font-black tracking-tighter uppercase"
-              >
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-500">
-                  Future
-                </span>
-                <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-gold via-yellow-300 to-brand-gold">
-                  Marketplace
-                </span>
-              </motion.h1>
-            </div>
-
-            {/* Wallet Widget */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="w-full md:w-auto"
+        <div className="container mx-auto px-4 relative z-10 text-center">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.8 }}
+                className="mb-8"
             >
-              <div className="p-1 rounded-2xl bg-gradient-to-br from-white/10 to-white/0 backdrop-blur-xl border border-white/10">
-                <div className="bg-[#0a0a0a]/80 rounded-xl p-5 flex items-center gap-6 min-w-[280px]">
-                  <div className="p-3 rounded-full bg-brand-gold/10">
-                    <Wallet className="w-6 h-6 text-brand-gold" />
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wider font-bold">
-                      Current Balance
-                    </p>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold text-white">
-                        {userCoins.toLocaleString()}
-                      </span>
-                      <span className="text-brand-gold font-bold text-sm">TVK</span>
-                    </div>
-                  </div>
-                  <button className="ml-auto p-2 rounded-lg bg-brand-gold text-black hover:bg-white transition-colors">
-                    <TrendingUp className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
+                <h1 className="text-5xl md:text-8xl font-zentry font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/10 mb-2">
+                    VJ FANS HUB STORE
+                </h1>
+                <p className="text-xl md:text-2xl text-brand-gold font-bold tracking-[0.5em] uppercase">
+                    Official Merch
+                </p>
             </motion.div>
-          </div>
-        </section>
 
-        {/* Coin Packages Section */}
-        <section>
-          <SectionTitle
-            title="Digital Currency"
-            subtitle="Purchase TVK coins to unlock premium content and power-ups."
-            icon={Coins}
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-            {coinPackages.map((pkg, idx) => (
-  <motion.div
-    key={pkg.id}
-    initial={{ opacity: 0, scale: 0.9 }}
-    whileInView={{ opacity: 1, scale: 1 }}
-    viewport={{ once: true }}
-    transition={{ delay: idx * 0.1 }}
-    className={`relative group rounded-2xl p-[1px] overflow-visible transition-all duration-300 ${
-      pkg.popular
-        ? 'transform lg:-translate-y-4 shadow-[0_0_30px_rgba(246,168,0,0.15)]'
-        : ''
-    }`}
-  >
-    {/* Animated Border Gradient */}
-    <div
-      className={`absolute inset-0 bg-gradient-to-br ${pkg.color} opacity-30 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl`}
-    />
-    <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500 rounded-2xl" />
-
-    {/* Main Card - overflow-hidden kept only here for internal effects */}
-    <div className="relative h-full bg-[#121212] rounded-2xl p-6 flex flex-col items-center text-center border border-white/10 group-hover:border-transparent transition-colors overflow-hidden">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={pkg.image}
-          alt=""
-          className="w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity duration-500 scale-110 group-hover:scale-100"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/90 to-transparent" />
-      </div>
-
-      <div className="relative z-10 w-full flex flex-col items-center h-full pt-8">
-        {/* Coin Icon Circle */}
-        <div className="relative w-24 h-24 mb-6">
-          <div
-            className={`absolute inset-0 bg-gradient-to-br ${pkg.color} rounded-full opacity-20 blur-xl group-hover:opacity-40 transition-opacity`}
-          />
-          <div className="relative w-full h-full bg-white/5 rounded-full flex items-center justify-center border border-white/10 backdrop-blur-sm group-hover:scale-110 transition-transform duration-500 shadow-inner">
-            <Coins className="w-10 h-10 text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]" />
-          </div>
-        </div>
-
-        <h3 className="text-4xl font-black text-white mb-1 tracking-tight">
-          {pkg.amount}
-        </h3>
-        <p className="text-gray-400 text-sm font-bold uppercase tracking-wider mb-6">
-          TVK Coins
-        </p>
-
-        {pkg.bonus && (
-          <div className="mb-6 px-3 py-1 rounded-lg bg-green-500/20 border border-green-500/30 text-green-400 text-xs font-bold shadow-[0_0_10px_rgba(74,222,128,0.1)]">
-            {pkg.bonus}
-          </div>
-        )}
-
-        {/* Coming Soon Button */}
-        <div className="mt-auto w-full z-20 relative">
-          <button
-            disabled
-            className="w-full py-4 rounded-xl font-bold text-lg relative overflow-hidden bg-white/5 text-gray-500 border border-white/5 cursor-not-allowed"
-          >
-            <span className="relative z-30">Coming Soon</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    {/* MOST POPULAR BADGE - Now outside the overflow-hidden card, fully visible and in front */}
-    {pkg.popular && (
-      <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-30 pointer-events-none">
-        <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 text-black px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.5)] border border-yellow-300/50 whitespace-nowrap">
-          <Star className="w-4 h-4 fill-black" />
-          <span className="text-xs font-black uppercase tracking-widest">
-            Most Popular
-          </span>
-        </div>
-      </div>
-    )}
-  </motion.div>
-))}
-          </div>
-        </section>
-
-        {/* Premium Merch Section */}
-        <section>
-          <SectionTitle
-            title="Premium Gear"
-            subtitle="Limited edition physical and digital merchandise."
-            icon={ShoppingBag}
-          />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {merchItems.map((item, idx) => (
-              <MerchCard key={item.id} item={item} index={idx} />
-            ))}
-          </div>
-        </section>
-
-        {/* Game Power-ups (Horizontal Scroll) */}
-        <section className="pb-10">
-          <SectionTitle
-            title="Power Ups"
-            subtitle="Enhance your gameplay with exclusive abilities."
-            icon={Zap}
-          />
-
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-blue-600/10 rounded-3xl blur-3xl -z-10" />
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {[
-                {
-                  name: 'Quantum Shield',
-                  price: '500',
-                  icon: Shield,
-                  color: 'text-yellow-400',
-                  bg: 'bg-yellow-400/10',
-                  desc: 'Invincibility for 15s',
-                },
-                {
-                  name: 'Time Freeze',
-                  price: '750',
-                  icon: Snowflake,
-                  color: 'text-cyan-400',
-                  bg: 'bg-cyan-400/10',
-                  desc: 'Freeze enemies for 5s',
-                },
-                {
-                  name: 'Mega Nuke',
-                  price: '1200',
-                  icon: Bomb,
-                  color: 'text-red-500',
-                  bg: 'bg-red-500/10',
-                  desc: 'Clear all enemies instantly',
-                },
-              ].map((item, idx) => (
-                <motion.div
-                  key={idx}
-                  // UPDATED: Removed hover animation and interactive cursor
-                  className="bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl p-6 flex items-center gap-5 opacity-75"
-                >
-                  <div
-                    className={`w-16 h-16 rounded-xl ${item.bg} flex items-center justify-center`}
-                  >
-                    <item.icon className={`w-8 h-8 ${item.color}`} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-white">{item.name}</h3>
-                    <p className="text-gray-400 text-sm mb-2">{item.desc}</p>
-                    {/* UPDATED: Price replaced with Coming Soon */}
-                    <div className="flex items-center gap-1 text-gray-400 font-bold text-sm uppercase tracking-wider">
-                      <Lock className="w-3.5 h-3.5" />
-                      <span>Coming Soon</span>
+            {/* Floating Search Bar */}
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="max-w-xl mx-auto"
+            >
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-brand-gold/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity rounded-full" />
+                    <div className="relative bg-white/5 border border-white/10 rounded-full p-2 flex items-center backdrop-blur-md">
+                        <Search className="text-neutral-500 ml-4" size={20} />
+                        <input 
+                            type="text"
+                            placeholder="Search artifacts, gear, collectibles..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full bg-transparent border-none outline-none text-white placeholder-neutral-500 px-4 py-2 font-medium"
+                        />
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                </div>
+            </motion.div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 pb-24 -mt-10 relative z-20">
+        
+        {/* Sticky Filters */}
+        <div className="sticky top-0 z-40 mb-12 pointer-events-none">
+            <div className="pointer-events-auto inline-block w-full">
+               <CategoryFilter 
+                   categories={categories} 
+                   activeCategory={activeCategory} 
+                   onSelect={setActiveCategory} 
+               />
             </div>
-          </div>
-        </section>
-      </main>
+        </div>
+
+        {/* Results Grid */}
+        <AnimatePresence mode="wait">
+            {loading ? (
+                 <motion.div 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8"
+                 >
+                    {[...Array(8)].map((_, i) => (
+                         <div key={i} className="aspect-[4/5] bg-white/5 rounded-2xl animate-pulse" />
+                    ))}
+                 </motion.div>
+            ) : products.length > 0 ? (
+                <>
+                    <motion.div 
+                        initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8 mb-12"
+                    >
+                        {products.map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </motion.div>
+                    
+                    {hasMore && (
+                        <div className="flex justify-center">
+                            <button
+                                onClick={handleLoadMore}
+                                disabled={loadingMore}
+                                className="px-8 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-white font-bold uppercase tracking-widest transition-all disabled:opacity-50"
+                            >
+                                {loadingMore ? 'Loading Signals...' : 'Load More Artifacts'}
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <motion.div 
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                    className="flex flex-col items-center justify-center py-32 border border-white/5 rounded-3xl bg-white/[0.02]"
+                >
+                    <div className="bg-white/5 p-6 rounded-full mb-6">
+                        <ShoppingBag size={40} className="text-white/20" />
+                    </div>
+                    <h3 className="text-2xl font-zentry font-bold text-white mb-2">
+                        {searchQuery ? 'NO PRODUCTS FOUND' : 'PRODUCTS COMING SOON'}
+                    </h3>
+                    <p className="text-neutral-500">
+                        {searchQuery 
+                            ? 'Try adjusting your search or check back later.' 
+                            : 'Exciting new products are on their way to the VJ Fans Hub Store. Stay tuned!'}
+                    </p>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+      </section>
       <Footer />
     </div>
   );

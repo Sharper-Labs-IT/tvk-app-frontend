@@ -92,47 +92,47 @@ const ENEMY_COLS = 10;
 const PARTICLE_COUNT = 15;
 
 const KILL_SCENARIOS = [
-  { alien: "Unit 45 destroyed! He's too strong!", vijay: "I am the storm that is approaching!" },
-  { alien: "Our defenses are crumbling!", vijay: "Your tyranny ends today!" },
-  { alien: "He is wiping us out!", vijay: "For every tear shed, you will pay!" },
-  { alien: "Retreat! He is unstoppable!", vijay: "There is no escape from justice!" },
-  { alien: "My brother! You will pay!", vijay: "Don't start a war you can't win!" },
-  { alien: "Impossible! Our fleet is infinite!", vijay: "Then I will fight for eternity!" },
-  { alien: "He fights like a demon!", vijay: "I fight with the heart of a lion!" },
-  { alien: "Stop him! He's breaking the formation!", vijay: "Your formation is as weak as your cause!" },
-  { alien: "We are losing ground!", vijay: "This is my land! Get out!" },
-  { alien: "How does he have this power?", vijay: "The power of the people is with me!" },
-  { alien: "Another unit down! Reinforcements!", vijay: "Send them all! I am ready!" },
-  { alien: "He is relentless!", vijay: "I will not rest until you are gone!" },
-  { alien: "Our technology is superior!", vijay: "But your spirit is hollow!" }
+  { alien: "Unit 45 destroyed! He's too strong!", vj: "I am the storm that is approaching!" },
+  { alien: "Our defenses are crumbling!", vj: "Your tyranny ends today!" },
+  { alien: "He is wiping us out!", vj: "For every tear shed, you will pay!" },
+  { alien: "Retreat! He is unstoppable!", vj: "There is no escape from justice!" },
+  { alien: "My brother! You will pay!", vj: "Don't start a war you can't win!" },
+  { alien: "Impossible! Our fleet is infinite!", vj: "Then I will fight for eternity!" },
+  { alien: "He fights like a demon!", vj: "I fight with the heart of a lion!" },
+  { alien: "Stop him! He's breaking the formation!", vj: "Your formation is as weak as your cause!" },
+  { alien: "We are losing ground!", vj: "This is my land! Get out!" },
+  { alien: "How does he have this power?", vj: "The power of the people is with me!" },
+  { alien: "Another unit down! Reinforcements!", vj: "Send them all! I am ready!" },
+  { alien: "He is relentless!", vj: "I will not rest until you are gone!" },
+  { alien: "Our technology is superior!", vj: "But your spirit is hollow!" }
 ];
 
 const HIT_SCENARIOS = [
-  { alien: "Direct hit! His shield is failing!", vijay: "Pain only makes me stronger!" },
-  { alien: "Look at him bleed!", vijay: "I bleed for my people. I will not fall!" },
-  { alien: "Give up, earthling!", vijay: "I will never kneel before you!" },
-  { alien: "Target acquired. He is weak!", vijay: "You mistake my silence for weakness!" },
-  { alien: "Got him! Finish him off!", vijay: "I am just warming up!" },
-  { alien: "He is slowing down!", vijay: "I'm just catching my breath!" },
-  { alien: "Shields critical! Finish him!", vijay: "My will is my shield!" },
-  { alien: "You cannot win this war!", vijay: "I have already won the hearts of the people!" },
-  { alien: "Feel the burn of our lasers!", vijay: "This fire only fuels my rage!" },
-  { alien: "One more hit and he is done!", vijay: "I can do this all day!" },
-  { alien: "Your resistance is futile!", vijay: "Resistance is my duty!" },
-  { alien: "See? You are mortal!", vijay: "Mortal, but my legacy is eternal!" }
+  { alien: "Direct hit! His shield is failing!", vj: "Pain only makes me stronger!" },
+  { alien: "Look at him bleed!", vj: "I bleed for my people. I will not fall!" },
+  { alien: "Give up, earthling!", vj: "I will never kneel before you!" },
+  { alien: "Target acquired. He is weak!", vj: "You mistake my silence for weakness!" },
+  { alien: "Got him! Finish him off!", vj: "I am just warming up!" },
+  { alien: "He is slowing down!", vj: "I'm just catching my breath!" },
+  { alien: "Shields critical! Finish him!", vj: "My will is my shield!" },
+  { alien: "You cannot win this war!", vj: "I have already won the hearts of the people!" },
+  { alien: "Feel the burn of our lasers!", vj: "This fire only fuels my rage!" },
+  { alien: "One more hit and he is done!", vj: "I can do this all day!" },
+  { alien: "Your resistance is futile!", vj: "Resistance is my duty!" },
+  { alien: "See? You are mortal!", vj: "Mortal, but my legacy is eternal!" }
 ];
 
 const START_SCENARIOS = [
-  { alien: "Prepare for annihilation!", vijay: "I will protect this galaxy!" },
-  { alien: "Surrender now, earthling!", vijay: "Never! I stand for justice!" },
-  { alien: "Your world is ours!", vijay: "Not while I'm still standing!" },
-  { alien: "Finish him!", vijay: "Bring it on!" },
-  { alien: "We have come to conquer!", vijay: "And you will leave in defeat!" },
-  { alien: "Bow before your new masters!", vijay: "I bow to no one but the people!" },
-  { alien: "This planet is ripe for the taking!", vijay: "You'll have to go through me first!" },
-  { alien: "Fear us!", vijay: "I fear nothing but failure!" },
-  { alien: "Your time is up, hero!", vijay: "My time has just begun!" },
-  { alien: "Look at the little hero trying to save them.", vijay: "Watch closely, you might learn something." }
+  { alien: "Prepare for annihilation!", vj: "I will protect this galaxy!" },
+  { alien: "Surrender now, earthling!", vj: "Never! I stand for justice!" },
+  { alien: "Your world is ours!", vj: "Not while I'm still standing!" },
+  { alien: "Finish him!", vj: "Bring it on!" },
+  { alien: "We have come to conquer!", vj: "And you will leave in defeat!" },
+  { alien: "Bow before your new masters!", vj: "I bow to no one but the people!" },
+  { alien: "This planet is ripe for the taking!", vj: "You'll have to go through me first!" },
+  { alien: "Fear us!", vj: "I fear nothing but failure!" },
+  { alien: "Your time is up, hero!", vj: "My time has just begun!" },
+  { alien: "Look at the little hero trying to save them.", vj: "Watch closely, you might learn something." }
 ];
 
 interface GameObject {
@@ -263,7 +263,7 @@ const SpaceInvadersGame: React.FC = () => {
 
   // --- Feedback State ---
   const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState<'vijay' | 'alien'>('vijay');
+  const [feedbackType, setFeedbackType] = useState<'vj' | 'alien'>('vj');
   const [feedbackText, setFeedbackText] = useState('');
   const [feedbackSide, setFeedbackSide] = useState<'left' | 'right'>('right'); 
   const feedbackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -397,8 +397,8 @@ const SpaceInvadersGame: React.FC = () => {
     lastFeedbackTimeRef.current = now;
 
     feedbackTimeoutRef.current = setTimeout(() => {
-      setFeedbackType('vijay');
-      setFeedbackText(scenario.vijay);
+      setFeedbackType('vj');
+      setFeedbackText(scenario.vj);
       setFeedbackSide('right');
       
       feedbackTimeoutRef.current = setTimeout(() => {
@@ -890,7 +890,7 @@ const SpaceInvadersGame: React.FC = () => {
       <div className="z-20 w-full flex justify-between items-center p-2 md:p-4 text-white bg-red-900/80 backdrop-blur-sm border-b border-yellow-500/50 shadow-lg shadow-red-900/20 shrink-0">
         <div className="flex items-center gap-2 md:gap-4">
           <button
-            onClick={() => navigate('/game/protect-area')}
+            onClick={() => navigate('/games/protect-area')}
             className="p-1.5 md:p-2 hover:bg-red-800 rounded-full transition-colors"
           >
             <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-yellow-400" />
@@ -970,8 +970,8 @@ const SpaceInvadersGame: React.FC = () => {
               <div className={`flex ${feedbackType === 'alien' ? 'items-start' : 'items-end'} ${feedbackSide === 'right' ? 'flex-row-reverse' : 'flex-row'}`}>
                   
                   <img 
-                    src={feedbackType === 'vijay' ? "/img/angry-vijay.png" : "/img/angry-alien.webp"} 
-                    alt={feedbackType === 'vijay' ? "Vijay" : "Alien"} 
+                    src={feedbackType === 'vj' ? "/img/angry-vijay.png" : "/img/angry-alien.webp"} 
+                    alt={feedbackType === 'vj' ? "VJ" : "Alien"} 
                     className={`w-16 sm:w-24 md:w-56 h-auto drop-shadow-[0_0_15px_rgba(0,0,0,0.8)] filter brightness-110 relative z-10 ${
                         feedbackSide === 'left' ? 'scale-x-[-1]' : ''
                     }`}
@@ -990,7 +990,7 @@ const SpaceInvadersGame: React.FC = () => {
                        initial={{ scale: 0, opacity: 0 }}
                        animate={{ scale: 1, opacity: 1 }}
                        className={`relative px-3 py-1.5 md:px-6 md:py-3 rounded-xl md:rounded-2xl border-2 shadow-xl ${
-                         feedbackType === 'vijay' 
+                         feedbackType === 'vj' 
                            ? 'bg-yellow-400 border-yellow-200 text-black' 
                            : 'bg-red-600 border-red-400 text-white'
                        }`}
@@ -1000,7 +1000,7 @@ const SpaceInvadersGame: React.FC = () => {
                         </p>
                         
                         <div className={`absolute w-3 h-3 md:w-4 md:h-4 transform border-r-2 border-b-2 ${
-                           feedbackType === 'vijay' ? 'bg-yellow-400 border-yellow-200' : 'bg-red-600 border-red-400'
+                           feedbackType === 'vj' ? 'bg-yellow-400 border-yellow-200' : 'bg-red-600 border-red-400'
                         } ${
                             /* Tail position logic */
                             'bottom-[-6px] md:bottom-[-8px]' 
@@ -1119,7 +1119,7 @@ const SpaceInvadersGame: React.FC = () => {
                     ONCE MORE
                   </button>
                   <button
-                    onClick={() => navigate('/game/protect-area')}
+                    onClick={() => navigate('/games/protect-area')}
                     className="w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors text-sm md:text-base"
                   >
                     EXIT
@@ -1170,7 +1170,7 @@ const SpaceInvadersGame: React.FC = () => {
                     </button>
                   )}
                   <button
-                    onClick={() => navigate('/game/protect-area')}
+                    onClick={() => navigate('/games/protect-area')}
                     className="w-full md:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 border border-slate-600 rounded-full font-bold transition-colors text-sm md:text-base"
                   >
                     EXIT

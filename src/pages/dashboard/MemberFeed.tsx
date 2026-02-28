@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import api from '../../utils/api';
 import type { IContent, IContentResponse } from '../../types/content';
 import CreatePostWidget from '../../components/dashboard/CreatePostWidget';
 import PostCard from '../../components/dashboard/PostCard';
-import { Loader as LoaderIcon, AlertCircle, RefreshCw, X } from 'lucide-react';
+import { Loader as LoaderIcon, AlertCircle, RefreshCw, X, Clock, CheckCircle } from 'lucide-react';
 
 const MemberFeed: React.FC = () => {
   const [contents, setContents] = useState<IContent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [myPendingCount, setMyPendingCount] = useState(0);
 
   // Initialize Search Params for Filtering
   const [searchParams, setSearchParams] = useSearchParams();
@@ -19,6 +20,11 @@ const MemberFeed: React.FC = () => {
   useEffect(() => {
     fetchFeed();
     checkUserStatus();
+    fetchMyPendingCount();
+    
+    // Auto-refresh pending count every 10 seconds
+    const interval = setInterval(fetchMyPendingCount, 10000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categoryFilter]); // Re-run when the URL category change
 
@@ -38,6 +44,24 @@ const MemberFeed: React.FC = () => {
     }
   };
 
+  const fetchMyPendingCount = async () => {
+    try {
+      const response = await api.get('/v1/contents/my-content?page=1');
+      if (response.data?.contents?.data) {
+        const pendingPosts = response.data.contents.data.filter(
+          (post: any) => {
+            // Backend uses approval_status field
+            const status = post.approval_status || post.status;
+            return status === 'pending' || !status;
+          }
+        );
+        setMyPendingCount(pendingPosts.length);
+      }
+    } catch (err) {
+      // Silently fail - this is not critical
+    }
+  };
+
   const fetchFeed = async () => {
     try {
       setLoading(true);
@@ -45,10 +69,10 @@ const MemberFeed: React.FC = () => {
       setContents([]); // Clear list for better UX while loading
 
       let response;
+      const postId = searchParams.get('post');
 
       // Logic: If category ID exists in URL, use the Filter Endpoint
       if (categoryFilter) {
-        console.log(`Fetching filtered content for Category ID: ${categoryFilter}`);
         response = await api.get<IContentResponse>(`/v1/contents/filter`, {
           params: { category_id: categoryFilter },
         });
@@ -57,13 +81,58 @@ const MemberFeed: React.FC = () => {
         response = await api.get<IContentResponse>('/v1/contents');
       }
 
+      let fetchedContents: IContent[] = [];
+
       if (response.data?.contents?.data) {
-        setContents(response.data.contents.data);
-      } else {
-        setContents([]);
+        // Filter to show only approved content
+        fetchedContents = response.data.contents.data.filter(
+          (post) => post.status === 'approved' || !post.status
+        );
       }
+
+      // Handle Linked Post from Share URL
+      if (postId) {
+        const targetId = parseInt(postId);
+        // Check if it's already in the fetched list
+        const exists = fetchedContents.find((c) => c.id === targetId);
+
+        if (!exists) {
+          try {
+            // Fetch single post
+            const singleRes = await api.get(`/v1/contents/${targetId}`);
+            const singlePost = singleRes.data.content || singleRes.data;
+
+            if (singlePost) {
+              const status = singlePost.status || singlePost.approval_status;
+              // Only add if approved or status undefined
+              if (!status || status === 'approved') {
+                fetchedContents.unshift(singlePost);
+              }
+            }
+          } catch (e) {
+            console.error('Failed to load shared post', e);
+          }
+        }
+      }
+
+      setContents(fetchedContents);
+
+      // Scroll to the post if postId param exists
+      if (postId) {
+        setTimeout(() => {
+          const el = document.getElementById(`post-${postId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Add highlight visual cue
+            el.classList.add('ring-2', 'ring-gold', 'ring-offset-2', 'ring-offset-[#121212]', 'rounded-2xl');
+            setTimeout(() => {
+              el.classList.remove('ring-2', 'ring-gold', 'ring-offset-2', 'ring-offset-[#121212]');
+            }, 2500);
+          }
+        }, 800);
+      }
+
     } catch (err) {
-      console.error(err);
       setError('Failed to load feed.');
     } finally {
       setLoading(false);
@@ -108,7 +177,36 @@ const MemberFeed: React.FC = () => {
       </div>
 
       {/* Widget to Create Posts */}
-      <CreatePostWidget onPostCreated={fetchFeed} isPremiumUser={isPremiumUser} />
+      <CreatePostWidget onPostCreated={() => {
+        fetchFeed();
+        fetchMyPendingCount();
+      }} isPremiumUser={isPremiumUser} />
+
+      {/* Pending Content Notification */}
+      {myPendingCount > 0 && (
+        <div className="bg-gradient-to-r from-orange-500/10 to-orange-600/5 border border-orange-500/20 rounded-xl p-4 mb-6 flex items-start gap-4">
+          <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center flex-shrink-0 border border-orange-500/30">
+            <Clock className="w-5 h-5 text-orange-400" />
+          </div>
+          <div className="flex-grow">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="text-orange-300 font-bold text-sm">
+                {myPendingCount} Post{myPendingCount > 1 ? 's' : ''} Pending Review
+              </h3>
+            </div>
+            <p className="text-orange-400/80 text-sm mb-3">
+              Your content is being reviewed by our moderation team. You'll be notified once it's approved.
+            </p>
+            <Link
+              to="/dashboard/my-content"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/20 hover:bg-orange-500/30 text-orange-300 rounded-lg text-sm font-medium transition-all border border-orange-500/30"
+            >
+              <CheckCircle className="w-4 h-4" />
+              View My Content
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Error Alert */}
       {error && (
@@ -137,12 +235,13 @@ const MemberFeed: React.FC = () => {
         <div className="space-y-6">
           {contents.length > 0 ? (
             contents.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                isPremiumUser={isPremiumUser}
-                onPostDeleted={fetchFeed} // Refreshes list after a successful delete
-              />
+              <div key={post.id} id={`post-${post.id}`} className="transition-all duration-300">
+                <PostCard
+                  post={post}
+                  isPremiumUser={isPremiumUser}
+                  onPostDeleted={fetchFeed} // Refreshes list after a successful delete
+                />
+              </div>
             ))
           ) : (
             /* Empty State when no posts match */

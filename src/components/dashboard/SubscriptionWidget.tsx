@@ -7,6 +7,8 @@ interface SubscriptionWidgetProps {
   isPremium: boolean;
   onUpgradeClick: () => void;
   onCancelClick: () => void;
+  onResubscribeClick?: () => void;
+  isResubscribing?: boolean;
 }
 
 const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
@@ -14,6 +16,8 @@ const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
   isPremium,
   onUpgradeClick,
   onCancelClick,
+  onResubscribeClick,
+  isResubscribing = false,
 }) => {
   // --- HELPERS ---
   const formatDate = (dateString: string) => {
@@ -31,11 +35,17 @@ const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
 
     const isPaidPlan = user.membership.plan_id !== 1;
     const isActive = user.membership.status === 'active';
-    const isAutoRenew = user.membership.auto_renew === true;
+    // Handle lax boolean (1/0/true/false)
+    const isAutoRenew = !!user.membership.auto_renew;
+    
+    // Check if subscription has not expired (even if status is 'cancelled')
+    const endDate = user.membership.end_date ? new Date(user.membership.end_date) : null;
+    const isNotExpired = endDate ? endDate > new Date() : false;
 
-    if (isPaidPlan && isActive) {
-      if (isAutoRenew) return 'active_auto_renew_on';
-      return 'active_auto_renew_off'; // Grace period after cancellation
+    // Use isNotExpired instead of just isActive to catch "cancelled but still in grace period"
+    if (isPaidPlan && (isActive || isNotExpired)) {
+      if (isAutoRenew && isActive) return 'active_auto_renew_on'; // Must be active AND auto-renew for ON state
+      return 'active_auto_renew_off'; // Grace period or manually cancelled
     }
 
     return 'free';
@@ -114,10 +124,18 @@ const SubscriptionWidget: React.FC<SubscriptionWidgetProps> = ({
 
       {membershipStatus === 'active_auto_renew_off' && (
         <button
-          disabled
-          className="w-full py-2.5 bg-white/5 border border-white/10 text-gray-500 rounded-lg font-bold text-sm cursor-not-allowed"
+          onClick={onResubscribeClick}
+          disabled={isResubscribing}
+          className="w-full py-2.5 bg-green-600 hover:bg-green-700 text-white transition-all rounded-lg font-bold text-sm shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2"
         >
-          Cancelled Auto Reneval
+          {isResubscribing ? (
+            <>
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Reactivating...
+            </>
+          ) : (
+            'Resubscribe'
+          )}
         </button>
       )}
 

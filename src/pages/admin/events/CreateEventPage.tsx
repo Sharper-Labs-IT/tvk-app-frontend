@@ -137,7 +137,7 @@ const CreateEventPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-400 text-sm mb-2 flex items-center gap-2">
+              <label className="text-gray-400 text-sm mb-2 flex items-center gap-2">
                 <MapPin size={16} /> Venue Name *
               </label>
               <input
@@ -201,7 +201,7 @@ const CreateEventPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-400 text-sm mb-2 flex items-center gap-2">
+              <label className="text-gray-400 text-sm mb-2 flex items-center gap-2">
                 <Calendar size={16} /> Start Date & Time *
               </label>
               <input
@@ -214,7 +214,7 @@ const CreateEventPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-gray-400 text-sm mb-2 flex items-center gap-2">
+              <label className="text-gray-400 text-sm mb-2 flex items-center gap-2">
                 <Calendar size={16} /> End Date & Time *
               </label>
               <input
@@ -261,7 +261,7 @@ const CreateEventPage: React.FC = () => {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-400 text-sm mb-2 flex items-center gap-2">
+              <label className="text-gray-400 text-sm mb-2 flex items-center gap-2">
                 <Trophy size={16} /> Reward Points
               </label>
               <input
@@ -275,7 +275,7 @@ const CreateEventPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-gray-400 text-sm mb-2 flex items-center gap-2">
+              <label className="text-gray-400 text-sm mb-2 flex items-center gap-2">
                 <Upload size={16} /> Event Poster
               </label>
               <div className="relative">

@@ -45,7 +45,7 @@ const Footer: React.FC = () => {
             <Link to="/">
               <img
                 src="/images/tvk-logo.png"
-                alt="TVK Logo"
+                alt="VJ Fans Hub Logo"
                 className="h-20 w-auto object-contain hover:scale-105 transition-transform duration-300"
               />
             </Link>
@@ -69,8 +69,8 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/community" className="hover:text-brand-gold transition-colors">
-                  Community
+                <Link to="/about" className="hover:text-brand-gold transition-colors">
+                  About Us
                 </Link>
               </li>
               <li>
@@ -104,13 +104,13 @@ const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/shop" className="hover:text-brand-gold transition-colors">
-                  Shop
+                <Link to="/store" className="hover:text-brand-gold transition-colors">
+                  Store
                 </Link>
               </li>
               <li>
-                <Link to="/global-map" className="hover:text-brand-gold transition-colors">
-                  Global Map
+                <Link to="/leaderboard" className="hover:text-brand-gold transition-colors">
+                  Leaderboard
                 </Link>
               </li>
             </ul>
@@ -125,7 +125,7 @@ const Footer: React.FC = () => {
             <div className="flex space-x-6 text-2xl">
               {/* Facebook */}
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/profile.php?id=61585391693093"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
@@ -134,7 +134,7 @@ const Footer: React.FC = () => {
               </a>
               {/* Instagram */}
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/tvk_members/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-brand-gold hover:-translate-y-1 transition-all duration-300"
@@ -152,7 +152,7 @@ const Footer: React.FC = () => {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="text-center text-gray-500 text-sm"
         >
-          © {new Date().getFullYear()} TVK GLOBAL Membership Programme. All rights reserved.
+          © {new Date().getFullYear()} VJ Fans Hub. All rights reserved.
         </motion.div>
       </div>
     </footer>

@@ -4,21 +4,32 @@ import BlurText from '../components/BlurText';
 import { Instagram, Facebook, Youtube } from 'lucide-react';
 
 const Snowfall = () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [snowflakes] = useState<any[]>(() => [...Array(30)].map((_, i) => ({
+    id: i,
+    left: `${Math.random() * 100}%`,
+    animationDelay: `${Math.random() * 10}s`,
+    animationDuration: `${Math.random() * 10 + 10}s`,
+    opacity: Math.random() * 0.6 + 0.2,
+    fontSize: `${Math.random() * 10 + 10}px`,
+    symbol: ['❄', '❅', '❆'][Math.floor(Math.random() * 3)]
+  })));
+
   return (
     <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden" aria-hidden="true">
-      {[...Array(30)].map((_, i) => (
+      {snowflakes.map((flake) => (
         <div
-          key={i}
+          key={flake.id}
           className="snowflake text-white absolute top-[-10%]"
           style={{
-            left: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 10}s`,
-            animationDuration: `${Math.random() * 10 + 10}s`,
-            opacity: Math.random() * 0.6 + 0.2,
-            fontSize: `${Math.random() * 10 + 10}px`,
+            left: flake.left,
+            animationDelay: flake.animationDelay,
+            animationDuration: flake.animationDuration,
+            opacity: flake.opacity,
+            fontSize: flake.fontSize,
           }}
         >
-          {['❄', '❅', '❆'][Math.floor(Math.random() * 3)]}
+          {flake.symbol}
         </div>
       ))}
       <style>{`

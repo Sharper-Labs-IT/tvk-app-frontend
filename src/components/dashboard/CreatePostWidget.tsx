@@ -136,7 +136,7 @@ const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPr
           </h3>
 
           <p className="text-gray-400 text-sm max-w-md mx-auto mb-4">
-            Posting content is exclusive to our Premium Members. Upgrade your plan to join the
+            Posting content is exclusive to our Premium Members (Super Fans). Upgrade your plan to join the
             conversation and share with the community!
           </p>
 
@@ -172,7 +172,7 @@ const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPr
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Post Title (Optional)"
+            placeholder="Post Title"
             className="w-full bg-transparent border-b border-white/10 px-2 py-1 text-sm text-gold placeholder-gold/40 focus:outline-none focus:border-gold transition-all"
           />
 
@@ -218,65 +218,67 @@ const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPr
       <hr className="border-white/5 my-3" />
 
       {/* Action Buttons */}
-<div className="flex flex-col min-[430px]:flex-row min-[430px]:items-center justify-between gap-4 min-[430px]:gap-0">
-  {/* Left: Icons + Category – always stay in one row, never wrap */}
-  <div className="flex items-center gap-3 flex-nowrap overflow-hidden">
-    {/* Hidden File Input */}
-    <input type="file" ref={fileInputRef} className="hidden" />
+      <div className="flex flex-col min-[430px]:flex-row min-[430px]:items-center justify-between gap-4 min-[430px]:gap-0">
+        {/* Left: Icons + Category – always stay in one row, never wrap */}
+        <div className="flex items-center gap-3 flex-nowrap overflow-hidden">
+          {/* Hidden File Input */}
+          <input type="file" ref={fileInputRef} className="hidden" />
 
-    {/* Compact icon-only buttons */}
-    <button
-      onClick={() => triggerFileInput('image')}
-      className="p-2.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-green-400 transition-shrink"
-      title="Photo"
-    >
-      <Image size={19} />
-    </button>
+          {/* Compact icon-only buttons */}
+          <button
+            onClick={() => triggerFileInput('image')}
+            className="p-2.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-green-400 transition-shrink"
+            title="Photo"
+          >
+            <Image size={19} />
+          </button>
 
-    <button
-      onClick={() => triggerFileInput('video')}
-      className="p-2.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-red-400 transition-shrink"
-      title="Video"
-    >
-      <Video size={19} />
-    </button>
+          <button
+            onClick={() => triggerFileInput('video')}
+            className="p-2.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-red-400 transition-shrink"
+            title="Video"
+          >
+            <Video size={19} />
+          </button>
 
-    <button
-      onClick={() => triggerFileInput('file')}
-      className="p-2.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-blue-400 transition-shrink"
-      title="File"
-    >
-      <Paperclip size={19} />
-    </button>
+          <button
+            onClick={() => triggerFileInput('file')}
+            className="p-2.5 rounded-lg hover:bg-white/5 text-gray-400 hover:text-blue-400 transition-shrink"
+            title="File"
+          >
+            <Paperclip size={19} />
+          </button>
 
-    {/* Thin divider */}
-    <div className="h-6 w-[1px] bg-white/10 mx-2" />
+          {/* Thin divider */}
+          <div className="h-6 w-[1px] bg-white/10 mx-2" />
 
-    {/* Category – truncates long names, takes available space */}
-    <select
-      value={categoryId}
-      onChange={(e) => setCategoryId(e.target.value)}
-      className="bg-white/5 px-3 py-2 rounded-lg text-xs text-gray-300 hover:text-gold focus:outline-none cursor-pointer truncate min-w-0 flex-1 max-w-[160px]"
-    >
-      <option value="" disabled>Category</option>
-      {categories.map((cat) => (
-        <option key={cat.id} value={cat.id} className="bg-gray-900 text-white">
-          {cat.name}
-        </option>
-      ))}
-    </select>
-  </div>
+          {/* Category – truncates long names, takes available space */}
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="bg-white/5 px-3 py-2 rounded-lg text-xs text-gray-300 hover:text-gold focus:outline-none cursor-pointer truncate min-w-0 flex-1 max-w-[160px]"
+          >
+            <option value="" disabled>
+              Category
+            </option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id} className="bg-gray-900 text-white">
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-  {/* Post Button – full width on small screens, normal on larger */}
-  <button
-    onClick={handleSubmit}
-    disabled={loading || (!description && !file)}
-    className="bg-gold hover:bg-goldDark text-black px-6 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed w-full min-[430px]:w-auto"
-  >
-    {loading ? <LoaderIcon size={17} className="animate-spin" /> : <Send size={17} />}
-    Post
-  </button>
-</div>
+        {/* Post Button – full width on small screens, normal on larger */}
+        <button
+          onClick={handleSubmit}
+          disabled={loading || (!description && !file)}
+          className="bg-gold hover:bg-goldDark text-black px-6 py-2.5 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-50 disabled:cursor-not-allowed w-full min-[430px]:w-auto"
+        >
+          {loading ? <LoaderIcon size={17} className="animate-spin" /> : <Send size={17} />}
+          Post
+        </button>
+      </div>
     </div>
   );
 };

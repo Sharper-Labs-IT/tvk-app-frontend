@@ -4,6 +4,7 @@ import { Plus, Trash2, Gamepad2, AlertCircle, Edit } from 'lucide-react';
 import { adminGameService } from '../../../services/adminGameService';
 import { type Game } from '../../../types/game';
 import Loader from '../../../components/Loader';
+import toast from 'react-hot-toast';
 
 const GameListPage: React.FC = () => {
   const [games, setGames] = useState<Game[]>([]);
@@ -31,7 +32,7 @@ const GameListPage: React.FC = () => {
       // Remove from local state immediately
       setGames((prev) => prev.filter((g) => g.id !== id));
     } catch (err) {
-      alert('Failed to delete game');
+      toast.error('Failed to delete game');
     }
   };
 

@@ -47,6 +47,15 @@ export const userService = {
   },
 
   /**
+   * Delete Account (GDPR)
+   * Requires password for confirmation
+   */
+  deleteAccount: async (password: string) => {
+    const response = await api.post('/v1/auth/delete-account', { password });
+    return response.data;
+  },
+
+  /**
    * Fetch User Stats (Points, Games, etc.)
    * ⚠️ This assumes a new endpoint exists. If not, it returns mock data for now so UI doesn't break.
    */

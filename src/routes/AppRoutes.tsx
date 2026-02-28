@@ -15,9 +15,10 @@ import AdminProfile from '../pages/admin/profile/AdminProfile';
 import PostListPage from '../pages/admin/posts/PostListPage';
 import PostCreatePage from '../pages/admin/posts/PostCreatePage';
 import PostDetailsPage from '../pages/admin/posts/PostDetailsPage';
+import PostEditPage from '../pages/admin/posts/PostEditPage';
+import PendingContentPage from '../pages/admin/posts/PendingContentPage';
 import MembershipPlanList from '../pages/admin/membership/MembershipPlanList';
 import MembershipPlanCreate from '../pages/admin/membership/MembershipPlanCreate';
-import PostEditPage from '../pages/admin/posts/PostEditPage';
 
 // --- NEW IMPORTS FOR MEMBER MANAGEMENT ---
 const MemberListPage = React.lazy(() => import('../pages/admin/member/MemberListPage'));
@@ -36,6 +37,13 @@ const MembershipSuccessPage = React.lazy(() => import('../pages/MembershipSucces
 
 const Leaderboards = React.lazy(() => import('../pages/Leaderboard'));
 const Store = React.lazy(() => import('../pages/Store'));
+const ProductDetails = React.lazy(() => import('../pages/ProductDetails'));
+// const Cart = React.lazy(() => import('../pages/Cart')); // Unused import
+const Orders = React.lazy(() => import('../pages/Orders'));
+const OrderDetails = React.lazy(() => import('../pages/OrderDetails'));
+const TrackOrder = React.lazy(() => import('../pages/TrackOrder'));
+const Checkout = React.lazy(() => import('../pages/Checkout'));
+const Wishlist = React.lazy(() => import('../pages/Wishlist'));
 
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
@@ -45,11 +53,13 @@ const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
 const CookiePolicy = React.lazy(() => import('../pages/CookiePolicy'));
 const Terms = React.lazy(() => import('../components/common/TermsModal'));
 const Privacy = React.lazy(() => import('../components/common/PrivacyPolicyModal'));
+const AboutUs = React.lazy(() => import('../pages/AboutUs'));
 
 // Member Dashboard Pages
 const MemberProfile = React.lazy(() => import('../pages/dashboard/MemberProfile'));
 const MemberFeed = React.lazy(() => import('../pages/dashboard/MemberFeed'));
 const MemberPostEditPage = React.lazy(() => import('../pages/dashboard/MemberPostEditPage'));
+const MyContentPage = React.lazy(() => import('../pages/dashboard/MyContentPage'));
 
 // Game Pages
 const MemoryChallenge = React.lazy(() => import('../pages/games/MemoryStart'));
@@ -72,9 +82,33 @@ const GameListPage = React.lazy(() => import('../pages/admin/games/GameListPage'
 const CreateGamePage = React.lazy(() => import('../pages/admin/games/CreateGamePage'));
 const EditGamePage = React.lazy(() => import('../pages/admin/games/EditGamePage'));
 
+
 const EventListPage = React.lazy(() => import('../pages/admin/events/EventListPage'));
 const CreateEventPage = React.lazy(() => import('../pages/admin/events/CreateEventPage'));
 const EditEventPage = React.lazy(() => import('../pages/admin/events/EditEventPage'));
+
+const ProductListPage = React.lazy(() => import('../pages/admin/products/ProductListPage'));
+const CreateProductPage = React.lazy(() => import('../pages/admin/products/CreateProductPage'));
+
+const ViewProductPage = React.lazy(() => import('../pages/admin/products/ViewProductPage'));
+const EditProductPage = React.lazy(() => import('../pages/admin/products/EditProductPage'));
+
+const AdminOrdersPage = React.lazy(() => import('../pages/admin/orders/AdminOrdersPage'));
+const AdminOrderDetailsPage = React.lazy(() => import('../pages/admin/orders/AdminOrderDetailsPage'));
+
+const RefundListPage = React.lazy(() => import('../pages/admin/refunds/RefundListPage'));
+const RefundDetailsPage = React.lazy(() => import('../pages/admin/refunds/RefundDetailsPage'));
+
+const AnalyticsReportPage = React.lazy(() => import('../pages/admin/reports/AnalyticsReportPage'));
+
+// Story Feature Pages
+const StoryStudioPage = React.lazy(() => import('../pages/StoryStudioPage'));
+const StoryDetailPage = React.lazy(() => import('../pages/StoryDetailPage'));
+const MyStoriesPage = React.lazy(() => import('../pages/MyStoriesPage'));
+const StoryFeed = React.lazy(() => import('../components/story/StoryFeed'));
+
+// AI Studio
+const AIStudioPage = React.lazy(() => import('../pages/AIStudioPage'));
 
 /**
  * Helper to safely get role name string
@@ -196,9 +230,26 @@ const AppRoutes: React.FC = () => {
           <Route path="/membership" element={<Membership />} />
           <Route path="/membership/success" element={<MembershipSuccessPage />} />
           <Route path="/fan-of-the-month" element={<FanOfMonthPage />} />
-          <Route path="/game" element={<Game />} />
+          <Route path="/games" element={<Game />} />
           <Route path="/events" element={<EventPage />} />
           <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/about" element={<AboutUs />} />
+          
+          {/* ── AI Studio Routes ─────────────────────────────────────── */}
+          {/* Main landing: Selfie with VJ */}
+          <Route path="/ai-studio" element={<UserRoute element={<AIStudioPage />} />} />
+
+          {/* AI Story Studio sub-routes */}
+          <Route path="/ai-studio/stories" element={<UserRoute element={<StoryFeed />} />} />
+          <Route path="/ai-studio/stories/create" element={<UserRoute element={<StoryStudioPage />} />} />
+          <Route path="/ai-studio/stories/my-stories" element={<UserRoute element={<MyStoriesPage />} />} />
+          <Route path="/ai-studio/stories/:id" element={<UserRoute element={<StoryDetailPage />} />} />
+
+          {/* Legacy redirects – keeps old bookmarks/links working */}
+          <Route path="/stories" element={<Navigate to="/ai-studio/stories" replace />} />
+          <Route path="/stories/create" element={<Navigate to="/ai-studio/stories/create" replace />} />
+          <Route path="/stories/my-stories" element={<Navigate to="/ai-studio/stories/my-stories" replace />} />
+          <Route path="/stories/:id" element={<Navigate to="/ai-studio/stories/:id" replace />} />
 
           {/* Resolved Conflict: Merged these three routes */}
           <Route path="/dashboard-access" element={<DashboardRedirect />} />
@@ -208,6 +259,7 @@ const AppRoutes: React.FC = () => {
           {/* MEMBER DASHBOARD ROUTES (Protected) */}
           <Route path="/dashboard" element={<UserRoute element={<MemberLayout />} />}>
             <Route index element={<MemberProfile />} />
+            <Route path="my-content" element={<MyContentPage />} />
             <Route path="feed" element={<MemberFeed />} />
             <Route path="posts/edit/:id" element={<MemberPostEditPage />} />
           </Route>
@@ -225,20 +277,33 @@ const AppRoutes: React.FC = () => {
           {/* Game Routes */}
           <Route path="/leaderboard" element={<Leaderboards />} />
           <Route path="/store" element={<Store />} />
+          <Route path="/store/products/:id" element={<ProductDetails />} />
+          
+          {/* E-commerce Routes */}
+          {/* Cart page redirected to Checkout as Drawer handles viewing cart */}
+          <Route path="/cart" element={<Navigate to="/checkout" replace />} /> 
+          <Route path="/wishlist" element={<UserRoute element={<Wishlist />} />} />
+          <Route path="/checkout" element={<UserRoute element={<Checkout />} />} />
+
+          <Route path="/orders" element={<UserRoute element={<Orders />} />} />
+          <Route path="/orders/:id" element={<UserRoute element={<OrderDetails />} />} />
+          <Route path="/track-order" element={<TrackOrder />} />
+          <Route path="/track-order/:orderNumber" element={<TrackOrder />} />
+          
           <Route path="/events/:id" element={<EventDetailsPage />} />
-          <Route path="/game/memory-challenge" element={<MemoryChallenge />} />
-          <Route path="/game/memory-challenge/start" element={<MemoryGame />} />
-          <Route path="/game/protect-queen" element={<ProtectQueenStart />} />
-          <Route path="/game/protect-area" element={<SpaceInvadersTVK />} />
-          <Route path="/game/protect-area/start" element={<SpaceInvadersGame />} />
-          <Route path="/game/villain-hunt" element={<WhackAMoleStart />} />
-          <Route path="/game/villain-hunt/start" element={<WhackAMoleGame />} />
-          <Route path="/game/trivia" element={<TriviaGameStart />} />
-          <Route path="/game/trivia/start" element={<TriviaGame />} />
-          <Route path="/game/jigsaw-puzzle" element={<JigsawPuzzleStart />} />
-          <Route path="/game/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
-          <Route path="/game/city-defender" element={<CityDefenderStart />} />
-          <Route path="/game/city-defender/start" element={<CityDefenderGame />} />
+          <Route path="/games/memory-challenge" element={<MemoryChallenge />} />
+          <Route path="/games/memory-challenge/start" element={<MemoryGame />} />
+          <Route path="/games/protect-queen" element={<ProtectQueenStart />} />
+          <Route path="/games/protect-area" element={<SpaceInvadersTVK />} />
+          <Route path="/games/protect-area/start" element={<SpaceInvadersGame />} />
+          <Route path="/games/villain-hunt" element={<WhackAMoleStart />} />
+          <Route path="/games/villain-hunt/start" element={<WhackAMoleGame />} />
+          <Route path="/games/trivia" element={<TriviaGameStart />} />
+          <Route path="/games/trivia/start" element={<TriviaGame />} />
+          <Route path="/games/jigsaw-puzzle" element={<JigsawPuzzleStart />} />
+          <Route path="/games/jigsaw-puzzle/start" element={<JigsawPuzzleGame />} />
+          <Route path="/games/city-defender" element={<CityDefenderStart />} />
+          <Route path="/games/city-defender/start" element={<CityDefenderGame />} />
 
           {/* Admin Routes */}
           <Route path="/admin" element={<AdminRoute />}>
@@ -246,6 +311,7 @@ const AppRoutes: React.FC = () => {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="profile" element={<AdminProfile />} />
             <Route path="posts" element={<PostListPage />} />
+            <Route path="posts/pending" element={<PendingContentPage />} />
             <Route path="posts/create" element={<PostCreatePage />} />
             <Route path="posts/:id" element={<PostDetailsPage />} />
             <Route path="posts/:id/edit" element={<PostEditPage />} />
@@ -260,11 +326,25 @@ const AppRoutes: React.FC = () => {
             <Route path="events/create" element={<CreateEventPage />} />
             <Route path="events/edit/:id" element={<EditEventPage />} />
 
+            <Route path="products" element={<ProductListPage />} />
+            <Route path="products/create" element={<CreateProductPage />} />
+            <Route path="products/view/:id" element={<ViewProductPage />} />
+            <Route path="products/edit/:id" element={<EditProductPage />} />
+
+            <Route path="orders" element={<AdminOrdersPage />} />
+            <Route path="orders/:id" element={<AdminOrderDetailsPage />} />
+            
+            <Route path="refunds" element={<RefundListPage />} />
+            <Route path="refunds/:id" element={<RefundDetailsPage />} />
+
             {/* MEMBER MANAGEMENT ROUTES */}
             <Route path="members" element={<MemberListPage />} />
             <Route path="members/admins" element={<AdminListPage />} />
             <Route path="members/admins/create" element={<CreateAdminPage />} />
             <Route path="members/admins/edit/:id" element={<EditAdminPage />} />
+
+            {/* ANALYTICS REPORT ROUTE */}
+            <Route path="reports/analytics" element={<AnalyticsReportPage />}/>
 
             <Route path="settings" element={<div className="text-white p-8">Settings</div>} />
           </Route>

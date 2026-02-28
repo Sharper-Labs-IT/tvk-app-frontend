@@ -7,6 +7,7 @@ import WhatYouGet from '../components/WhatYouGet';
 import FanOfMonth from '../components/FanOfMonth';
 import MembersExclusiveBlog from '../components/MembersExclusiveBlog';
 import GameSection from '../components/GameSection';
+import AIStudioBanner from '../components/AIStudioBanner';
 /* import CommunityHighlights from '../components/CommunityHighlights'; */
 import Snowfall from '../components/Snowfall';
 
@@ -16,6 +17,7 @@ const Home: React.FC = () => {
       <Snowfall />
       <Header />
       <HomeHero />
+      <AIStudioBanner />
       <MembershipPlan />
       <WhatYouGet />
       <FanOfMonth />
