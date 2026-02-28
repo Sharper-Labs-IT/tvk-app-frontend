@@ -12,9 +12,12 @@ import Cookies from 'js-cookie';
  * - Request/response interceptors
  */
 
-const baseURL = import.meta.env.DEV 
-  ? `/api/${import.meta.env.VITE_API_VERSION || 'v1'}`
-  : `${import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}/api/${import.meta.env.VITE_API_VERSION || 'v1'}`;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
+const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
+
+const baseURL = import.meta.env.DEV
+  ? `/api/${API_VERSION}`
+  : `${API_BASE}/api/${API_VERSION}`;
 
 const axiosClient = axios.create({
   baseURL,
