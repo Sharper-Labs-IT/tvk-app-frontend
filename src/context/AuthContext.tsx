@@ -56,11 +56,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Function called on successful login
   const login = useCallback((newToken: string, userData: IUser) => {
     setToken(newToken);
-    Cookies.set('authToken', newToken, { expires: 7 });
+    Cookies.set('authToken', newToken, { 
+      expires: 7,
+      sameSite: 'lax',
+      secure: window.location.protocol === 'https:'
+    });
 
-    // MERGE FIX: Used logic from 'development' branch to handle avatar normalization
-    // Note: The userData coming from login MIGHT be missing roles depending on backend.
-    // We set it for now, but the useEffect below will fix it on next reload.
     // Normalize avatar field (backend sends 'avatar' but we use 'avatar_url')
     let avatar_url = userData.avatar_url || userData.avatar || null;
     if (avatar_url) {
