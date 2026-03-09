@@ -47,6 +47,7 @@ const Wishlist = React.lazy(() => import('../pages/Wishlist'));
 
 const Login = React.lazy(() => import('../pages/Login'));
 const Signup = React.lazy(() => import('../pages/Signup'));
+const GoogleCallback = React.lazy(() => import('../pages/GoogleCallback'));
 const VerifyOtp = React.lazy(() => import('../pages/VerifyOtp'));
 const ForgotPassword = React.lazy(() => import('../pages/ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../pages/ResetPassword'));
@@ -267,6 +268,8 @@ const AppRoutes: React.FC = () => {
           {/* Auth Routes */}
           <Route path="/login" element={<PublicOnlyRoute element={<Login />} />} />
           <Route path="/signup" element={<PublicOnlyRoute element={<Signup />} />} />
+          <Route path="/auth/callback" element={<GoogleCallback />} />
+          <Route path="/auth/google/callback" element={<GoogleCallback />} /> {/* Legacy support */}
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route
             path="/forgot-password"

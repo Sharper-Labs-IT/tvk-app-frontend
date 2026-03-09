@@ -309,18 +309,34 @@ const Signup: React.FC = () => {
 
   const handleGoogleSignup = async () => {
     try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('🔐 Initiating Google OAuth signup...');
+      console.log('🔐 API Base URL:', import.meta.env.VITE_API_BASE_URL);
+      
+      // Get the Google OAuth URL from Laravel backend
       const response = await api.get('/v1/auth/google');
-      if (response.data && response.data.url) {
+      
+      console.log('🔐 Response received:', response.data);
+      
+      if (response.data?.url) {
+        console.log('✅ Redirecting to Google OAuth URL:', response.data.url);
+        // Redirect to Google's OAuth page
         window.location.href = response.data.url;
-      } else if (typeof response.data === 'string' && response.data.startsWith('http')) {
-         window.location.href = response.data;
       } else {
-        console.error("Invalid Google Auth URL received", response.data);
-        setError("Unable to initiate Google Sign Up. Please try again.");
+        console.error('❌ No URL in response:', response.data);
+        throw new Error('Invalid OAuth URL received from server');
       }
-    } catch (err) {
-      console.error("Google signup failed", err);
-      setError("Google Sign Up failed. Please try again.");
+    } catch (err: any) {
+      console.error('❌ Google signup failed:', err);
+      console.error('❌ Error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+      setError(err.response?.data?.message || 'Unable to connect to Google. Please try again.');
+      setLoading(false);
     }
   };
 
