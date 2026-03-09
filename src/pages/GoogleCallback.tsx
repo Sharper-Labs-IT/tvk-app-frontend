@@ -108,11 +108,11 @@ const GoogleCallback: React.FC = () => {
         await new Promise(resolve => setTimeout(resolve, 200));
 
         // Determine redirect path
-        let redirectPath = '/dashboard';
+        let redirectPath = '/';
         if (authData.is_first_login) {
-          redirectPath = '/dashboard?firstLogin=true';
+          redirectPath = '/?firstLogin=true';
         } else if (authData.daily_loot_box?.available) {
-          redirectPath = '/dashboard?lootbox=true';
+          redirectPath = '/?lootbox=true';
         }
 
         console.log('✅ Redirecting to:', redirectPath);
