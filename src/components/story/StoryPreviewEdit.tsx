@@ -35,8 +35,43 @@ const StoryPreviewEdit: React.FC = () => {
   // Normalized response structure (guaranteed by storyGenerationService):
   // { success, data: { story: { title, content, ... }, scenes: [...], estimated_read_time } }
   const responseData: any = (generatedStory as any)?.data || {};
-  const story: any = responseData?.story || {};
-  const scenes: any[] = Array.isArray(responseData?.scenes) ? responseData.scenes : [];
+  
+  // Extract story object - check multiple locations
+  let story: any = responseData?.story || {};
+  // Fallback: if 'story' is empty but responseData itself looks like a story (has title/content)
+  if (!story.title && !story.content && (responseData.title || responseData.content)) {
+    story = responseData;
+  }
+
+  // Robust Scene Finder
+  const findScenes = (obj: any): any[] => {
+    if (!obj || typeof obj !== 'object') return [];
+    
+    // Check common keys
+    const candidates = [
+      obj.scenes,
+      obj.scenes_with_urls,
+      obj.scenesWithUrls,
+      obj.data?.scenes,
+      obj.story?.scenes,
+      obj.story?.scenes_with_urls
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate) && candidate.length > 0) {
+        return candidate;
+      }
+    }
+    
+    return [];
+  };
+
+  // Attempt to find scenes in various scopes
+  let scenes: any[] = findScenes(responseData);
+  if (scenes.length === 0) scenes = findScenes(story);
+  if (scenes.length === 0) scenes = findScenes(generatedStory);
+
+  
 
   const actualContent: string = story?.content || '';
   const actualTitle: string = story?.title || '';
@@ -45,11 +80,12 @@ const StoryPreviewEdit: React.FC = () => {
 
   // Sync extracted title into the input field once story loads
   useEffect(() => {
-    if (actualTitle) {
+    // If title is empty in state but exists in story, update it
+    if (actualTitle && !title) {
       setTitle(actualTitle);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [generatedStory]);
+  }, [generatedStory, actualTitle]);
 
   if (!generatedStory || generationState !== 'SUCCESS') {
     return null;
@@ -96,13 +132,13 @@ const StoryPreviewEdit: React.FC = () => {
       
       const coverImagePath = typeof coverImg === 'string' ? coverImg : coverImg?.path || '';
 
-      // Ensure scenes data is consistently formatted (snake_case) for the backend
+      // Ensure scenes data is consistently formatted (CamelCase) for the backend
       const formattedScenes = (scenes || []).map((scene: any) => ({
-        scene_number: scene.scene_number || scene.sceneNumber,
+        sceneNumber: scene.scene_number || scene.sceneNumber,
         title: scene.title || '',
         content: scene.content || '',
-        image_url: scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url || '',
-        image_prompt: scene.image_prompt || scene.imagePrompt || ''
+        imageUrl: scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url || '',
+        imagePrompt: scene.image_prompt || scene.imagePrompt || ''
       }));
 
       const saveData: SaveStoryRequest = {
@@ -240,9 +276,9 @@ const StoryPreviewEdit: React.FC = () => {
                  <>
                    <div className="space-y-12">
                    {scenes.map((scene: any, index: number) => {
-                     // Support nested image object and legacy fields
+                     // Support nested image object and legacy fields - PRIORITIZE flat URL
                      // @ts-ignore
-                     const sceneImg = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
+                     const sceneImg = scene.imageUrl || scene.image_url || scene.image?.previewUrl || scene.image?.path;
                      const scenePrompt = scene.imagePrompt || scene.image_prompt;
                      const displayUrl = sceneImg ? getStoryImageUrl(sceneImg) : null;
                      const sceneTitle = scene.title || `Scene ${index + 1}`;

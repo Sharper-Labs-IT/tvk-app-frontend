@@ -312,16 +312,16 @@ const Signup: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      console.log('🔐 Initiating Google OAuth signup...');
-      console.log('🔐 API Base URL:', import.meta.env.VITE_API_BASE_URL);
+      
+      
       
       // Get the Google OAuth URL from Laravel backend
       const response = await api.get('/v1/auth/google');
       
-      console.log('🔐 Response received:', response.data);
+      
       
       if (response.data?.url) {
-        console.log('✅ Redirecting to Google OAuth URL:', response.data.url);
+        
         // Redirect to Google's OAuth page
         window.location.href = response.data.url;
       } else {

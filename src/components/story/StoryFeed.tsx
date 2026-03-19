@@ -47,8 +47,8 @@ const StoryFeed: React.FC = () => {
       
       const filter: StoryFeedFilter = {
         genre: selectedGenre,
-        sort_by: sortBy,
-        search: debouncedSearch || undefined,
+        sortBy: sortBy,
+        searchQuery: debouncedSearch || undefined,
         page,
         limit: 10,
       };
