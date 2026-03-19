@@ -59,7 +59,7 @@ const AIStudioBanner: React.FC = () => {
           }`}
         >
           <span className="inline-flex items-center gap-2 bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full">
-            Coming Soon — AI Studio
+            New — AI Studio
           </span>
         </div>
 
@@ -70,7 +70,7 @@ const AIStudioBanner: React.FC = () => {
           }`}
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight text-white">
-            We're Building Something{' '}
+            Experience Something{' '}
             <span className="relative inline-block">
               <span className="text-brand-gold drop-shadow-[0_0_18px_rgba(230,198,91,0.6)]">
                 Extraordinary
@@ -81,8 +81,7 @@ const AIStudioBanner: React.FC = () => {
           <p className="mt-4 text-gray-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
             Our{' '}
             <span className="text-brand-gold font-semibold">AI Studio</span> is
-            under active development — get ready to experience VJ fandom like
-            never before. Be the first to dive in.
+            now live. Dive in and experience VJ fandom like never before.
           </p>
         </div>
 
