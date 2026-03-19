@@ -112,8 +112,8 @@ const StoryReader: React.FC<StoryReaderProps> = ({ story, onClose }) => {
           }
 
           // 2. Image Page (if exists) - support nested image object and legacy fields
-          const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
-          const imagePrompt = scene.imagePrompt || scene.image_prompt;
+          const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.imageUrl;
+          const imagePrompt = scene.imagePrompt || scene.imagePrompt;
           
           if (imageUrl) {
               const imgUrl = getStoryImageUrl(imageUrl);

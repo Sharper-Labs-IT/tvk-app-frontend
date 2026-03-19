@@ -22,22 +22,18 @@ const GoogleCallback: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(true);
 
   // Log immediately when component mounts
-  console.log('🚨 GoogleCallback component LOADED');
-  console.log('🚨 Current URL:', window.location.href);
+  
+  
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        console.log('🔍 FULL URL:', window.location.href);
-        console.log('🔍 Search params:', window.location.search);
-        console.log('🔍 Hash params:', window.location.hash);
+        
+        
+        
         
         const urlParams = new URLSearchParams(window.location.search);
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-
-        // Log ALL parameters
-        console.log('🔍 URL Params:', Object.fromEntries(urlParams.entries()));
-        console.log('🔍 Hash Params:', Object.fromEntries(hashParams.entries()));
 
         // Check for error parameter
         const errorParam = urlParams.get('error') || hashParams.get('error');
@@ -54,12 +50,11 @@ const GoogleCallback: React.FC = () => {
 
         // Method 1: Base64-encoded data parameter (recommended approach)
         const dataParam = urlParams.get('data') || hashParams.get('data');
-        console.log('🔍 Data param exists:', !!dataParam);
+        
         if (dataParam) {
-          console.log('🔍 Data param (first 50 chars):', dataParam.substring(0, 50) + '...');
           try {
             authData = JSON.parse(atob(dataParam));
-            console.log('✅ Decoded base64 data successfully');
+            
           } catch (e) {
             console.error('❌ Failed to decode base64 data:', e);
           }
@@ -70,14 +65,14 @@ const GoogleCallback: React.FC = () => {
           const token = urlParams.get('token') || hashParams.get('token');
           const userParam = urlParams.get('user') || hashParams.get('user');
           
-          console.log('🔍 Token exists:', !!token);
-          console.log('🔍 User param exists:', !!userParam);
+          
+          
           
           if (token && userParam) {
             try {
               const user = JSON.parse(decodeURIComponent(userParam));
               authData = { token, user };
-              console.log('✅ Parsed individual query parameters');
+              
             } catch (e) {
               console.error('❌ Failed to parse user data:', e);
             }
@@ -94,12 +89,7 @@ const GoogleCallback: React.FC = () => {
           return;
         }
 
-        console.log('✅ Authentication data received:', {
-          userName: authData.user.name,
-          email: authData.user.email,
-          isFirstLogin: authData.is_first_login,
-          hasLootBox: authData.daily_loot_box?.available
-        });
+        
 
         // Save authentication
         login(authData.token, authData.user);
@@ -115,7 +105,7 @@ const GoogleCallback: React.FC = () => {
           redirectPath = '/?lootbox=true';
         }
 
-        console.log('✅ Redirecting to:', redirectPath);
+        
         
         // Use window.location for a hard redirect to ensure fresh page load
         window.location.href = redirectPath;

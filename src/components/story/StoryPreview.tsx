@@ -15,14 +15,11 @@ const StoryPreview = ({ story, scenes, onSave, onBack }: StoryPreviewProps) => {
   const [saving, setSaving] = useState(false);
 
   // Debug: Log scenes data
-  console.log('StoryPreview - scenes:', scenes);
-  console.log('StoryPreview - scenes count:', scenes?.length || 0);
+  
+  
   if (scenes && scenes.length > 0) {
-    console.log('StoryPreview - first scene:', scenes[0]);
-    console.log('StoryPreview - imageUrl fields:', {
-      imageUrl: scenes[0].imageUrl,
-      image_url: scenes[0].image_url
-    });
+    
+    
   }
 
   const handleSave = async () => {
@@ -159,24 +156,17 @@ const StoryPreview = ({ story, scenes, onSave, onBack }: StoryPreviewProps) => {
                    {/* Debug info - remove after testing */}
                    <div className="mb-6 p-4 bg-blue-900/20 border border-blue-500/30 rounded-lg text-sm">
                      <p className="text-blue-300">
-                       📊 Debug: Found {scenes.length} scene(s) with {scenes.filter(s => s.imageUrl || s.image_url).length} image(s)
+                       📊 Debug: Found {scenes.length} scene(s) with {scenes.filter(s => s.imageUrl || s.imageUrl).length} image(s)
                      </p>
                    </div>
                    
                    <div className="space-y-12">
                    {scenes.map((scene, index) => {
                      // Support nested image object and legacy fields
-                     const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
+                     const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.imageUrl;
                      const sceneImg = imageUrl ? getStoryImageUrl(imageUrl) : null;
                      
-                     console.log(`🎬 Scene ${index + 1} Image Check:`, {
-                       title: scene.title,
-                       'scene.image': scene.image,
-                       'scene.image?.previewUrl': scene.image?.previewUrl,
-                       'scene.image?.path': scene.image?.path,
-                       'extracted imageUrl': imageUrl,
-                       'final sceneImg': sceneImg
-                     });
+                     
                      
                      return (
                        <div key={scene.id || index} className="animate-fadeIn">

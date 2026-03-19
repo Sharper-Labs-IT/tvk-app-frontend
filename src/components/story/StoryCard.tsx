@@ -59,7 +59,7 @@ const StoryCard = ({ story, onUpdate }: StoryCardProps) => {
     try {
       await shareStory(story.id);
       // Copy link to clipboard
-      const url = `${window.location.origin}/story/${story.id}`;
+      const url = `${window.location.origin}/ai-studio/stories/${story.id}`;
       await navigator.clipboard.writeText(url);
       alert('Story link copied to clipboard!');
     } catch (error) {

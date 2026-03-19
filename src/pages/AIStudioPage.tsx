@@ -1,273 +1,195 @@
-// src/pages/AIStudioPage.tsx
-
-import React, { useCallback, useEffect, useState } from 'react';
-import Header from '../components/Header';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion'; 
 import { useAuth } from '../context/AuthContext';
-import SelfieUpload from '../components/ai-studio/SelfieUpload';
-import AIGenerationProgress from '../components/ai-studio/AIGenerationProgress';
-import GeneratedImageResult from '../components/ai-studio/GeneratedImageResult';
-import { generateSelfiWithVJ, fetchSelfieQuota } from '../services/aiStudioService';
-import type { AIStudioState, GeneratedSelfie, SelfieQuota } from '../types/aiStudio';
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-/** Returns true if the user holds a Super Fan membership tier */
-const checkIsSuperFan = (user: any): boolean => {
-  if (!user) return false;
-  const tier = (user.membership_tier || '').toLowerCase();
-  const planName = (user.membership?.plan?.name || '').toLowerCase();
-  return tier === 'super_fan' || planName.includes('super fan') || planName.includes('superfan');
-};
-
-// ── Component ────────────────────────────────────────────────────────────────
+import { fanSelfieService } from '../services/fanSelfieService';
+import PublicFeed from '../components/fan-selfie/PublicFeed';
+import GenerateSelfie from '../components/fan-selfie/GenerateSelfie';
+import MySelfiesGallery from '../components/fan-selfie/MySelfiesGallery';
+import Loader from '../components/Loader';
+import type { UsageStatusResponse } from '../types/fanSelfie';
+import { toast } from 'react-hot-toast';
+import { FaUserPlus, FaImages, FaStar, FaLock } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
 
 const AIStudioPage: React.FC = () => {
-  const { user } = useAuth();
-  const isSuperFan = checkIsSuperFan(user);
-
-  // Workflow state
-  const [state, setState] = useState<AIStudioState>('IDLE');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [result, setResult] = useState<GeneratedSelfie | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [quota, setQuota] = useState<SelfieQuota | null>(null);
-
-  // Fetch quota on mount
+  const { isLoggedIn } = useAuth();
+  const [activeTab, setActiveTab] = useState<'feed' | 'generate' | 'gallery'>('feed');
+  const [usageStatus, setUsageStatus] = useState<UsageStatusResponse | null>(null);
+  const [loadingUsage, setLoadingUsage] = useState(false);
+  
+  // Check usage on mount if logged in
   useEffect(() => {
-    fetchSelfieQuota()
-      .then(setQuota)
-      .catch(() => { /* quota is optional */ });
-  }, []);
-
-  // Revoke object URL on unmount to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-    };
-  }, [previewUrl]);
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-
-  const handleImageSelected = useCallback((file: File, preview: string) => {
-    setSelectedFile(file);
-    setPreviewUrl(preview);
-    setState('PREVIEWING');
-  }, []);
-
-  const handleGenerate = useCallback(async () => {
-    if (!selectedFile) return;
-    setState('GENERATING');
-    setError(null);
-    setUploadProgress(0);
-
-    try {
-      const response = await generateSelfiWithVJ(
-        { file: selectedFile },
-        (pct) => setUploadProgress(pct)
-      );
-
-      if (response.success && response.data) {
-        setResult(response.data);
-        if (response.quota) setQuota(response.quota);
-        setState('SUCCESS');
-      } else {
-        throw new Error(response.message || 'Generation failed.');
-      }
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        'Something went wrong. Please try again.';
-      setError(msg);
-      setState('ERROR');
+    if (isLoggedIn) {
+      checkUsage();
     }
-  }, [selectedFile]);
+  }, [isLoggedIn]);
 
-  const handleReset = useCallback(() => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    setResult(null);
-    setError(null);
-    setUploadProgress(0);
-    setState('IDLE');
-  }, []);
+  const checkUsage = async () => {
+    setLoadingUsage(true);
+    try {
+      const status = await fanSelfieService.checkUsageStatus();
+      setUsageStatus(status);
+    } catch (error) {
+      console.error("Failed to check usage status:", error);
+    } finally {
+      setLoadingUsage(false);
+    }
+  };
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  const handleTabChange = (tab: 'feed' | 'generate' | 'gallery') => {
+    if (tab === 'generate' && !isLoggedIn) {
+      toast.error("Please login to generate selfies.");
+      return;
+    }
+    
+    // Allow switching to generate tab even if not super fan, to show upgrade prompt
+    
+    setActiveTab(tab);
+  };
+
+  const isSuperFan = usageStatus?.data?.is_super_fan;
 
   return (
-    <div className="min-h-screen bg-brand-dark text-white">
+    <div className="min-h-screen bg-brand-dark text-white flex flex-col">
       <Header />
-
-      <main className="max-w-4xl mx-auto px-4 py-10 md:py-16">
-        {/* ── Page hero ─────────────────────────────────────────────────── */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-[#E6C65B]/10 border border-[#E6C65B]/30 rounded-full px-4 py-1.5 text-[#E6C65B] text-sm font-medium mb-4">
-             AI Studio
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">
-            Take a Selfie with{' '}
-            <span className="text-[#E6C65B]">VJ</span>
-          </h1>
-          <p className="text-white/50 mt-3 text-base max-w-xl mx-auto">
-            Upload your photo and our AI will create a realistic composite of you alongside VJ.
-            Share it with your friends, family, and the whole fandom!
-          </p>
-
-          {/* Quota pill */}
-          {quota && state === 'IDLE' && (
-            <div className="inline-flex items-center gap-2 mt-4 text-xs text-white/40 bg-white/5 border border-white/10 rounded-full px-3 py-1">
-              <span className={quota.remaining > 0 ? 'text-green-400' : 'text-red-400'}>●</span>
-              {quota.remaining > 0
-                ? `${quota.remaining} generation${quota.remaining !== 1 ? 's' : ''} remaining today`
-                : 'Daily limit reached — try again tomorrow'}
-            </div>
-          )}
+      
+      <main className="flex-grow pt-8 pb-12 relative overflow-hidden">
+         {/* Background Effects */}
+         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-600/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
 
-        {/* ── Workflow panel ─────────────────────────────────────────────── */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-10">
-
-          {/* IDLE: Upload prompt */}
-          {state === 'IDLE' && (
-            <SelfieUpload onImageSelected={handleImageSelected} />
-          )}
-
-          {/* PREVIEWING: Preview + confirm */}
-          {state === 'PREVIEWING' && previewUrl && (
-            <PreviewConfirm
-              previewUrl={previewUrl}
-              onConfirm={handleGenerate}
-              onCancel={handleReset}
-            />
-          )}
-
-          {/* GENERATING: Progress display */}
-          {state === 'GENERATING' && (
-            <AIGenerationProgress uploadProgress={uploadProgress} />
-          )}
-
-          {/* SUCCESS: Show result */}
-          {state === 'SUCCESS' && result && (
-            <GeneratedImageResult
-              result={result}
-              isSuperFan={isSuperFan}
-              onGenerateAnother={handleReset}
-            />
-          )}
-
-          {/* ERROR: Error message + retry */}
-          {state === 'ERROR' && (
-            <ErrorDisplay message={error} onRetry={handleReset} />
-          )}
-        </div>
-
-        {/* ── Feature info cards ─────────────────────────────────────────── */}
-        {state === 'IDLE' && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
-            {[
-              {
-                icon: '🤖',
-                title: 'Powered by AI',
-                desc: 'Advanced face-blend technology creates ultra-realistic results.',
-              },
-              {
-                icon: '⚡',
-                title: 'Fast Results',
-                desc: 'Your image is ready in under 40 seconds.',
-              },
-              {
-                icon: '👑',
-                title: 'Super Fan Perks',
-                desc: 'Unlock watermark-free HD downloads with a Super Fan membership.',
-              },
-            ].map(({ icon, title, desc }) => (
-              <div
-                key={title}
-                className="bg-white/5 border border-white/10 rounded-xl px-5 py-4 flex flex-col gap-2"
-              >
-                <span className="text-2xl">{icon}</span>
-                <p className="text-white font-semibold text-sm">{title}</p>
-                <p className="text-white/40 text-xs leading-relaxed">{desc}</p>
-              </div>
-            ))}
+        <div className="container mx-auto px-4 max-w-6xl relative z-10">
+          <div className="text-center mb-10">
+            <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-gradient-to-r from-red-500 to-yellow-500 bg-clip-text text-transparent">
+              Selfie with VJ
+            </h1>
+            <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+              Generate stunning AI selfies with Thalapathy VJ. Exclusive for Super Fans!
+            </p>
           </div>
-        )}
+
+          {/* Tabs */}
+          <div className="flex flex-wrap justify-center mb-8 gap-4">
+            <button 
+              onClick={() => handleTabChange('feed')}
+              className={`px-6 py-2 rounded-full font-semibold transition-all flex items-center gap-2
+                ${activeTab === 'feed' ? 'bg-white text-gray-900 shadow-lg scale-105' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+            >
+              <FaImages /> Public Gallery
+            </button>
+            
+            <button 
+              onClick={() => handleTabChange('generate')}
+              className={`px-6 py-2 rounded-full font-semibold transition-all flex items-center gap-2 relative overflow-hidden
+                ${activeTab === 'generate' ? 'bg-gradient-to-r from-red-600 to-yellow-600 text-white shadow-lg scale-105' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}
+              `}
+            >
+              <FaStar className={activeTab === 'generate' ? 'text-yellow-300' : ''} />
+              Generate Selfie
+              {!isSuperFan && isLoggedIn && (
+                <span className="absolute top-0 right-0 p-1">
+                  <FaLock className="text-xs text-yellow-500/80" />
+                </span>
+              )}
+            </button>
+
+            <button 
+              onClick={() => handleTabChange('gallery')}
+              disabled={!isLoggedIn}
+              className={`px-6 py-2 rounded-full font-semibold transition-all flex items-center gap-2
+                ${activeTab === 'gallery' ? 'bg-white text-gray-900 shadow-lg scale-105' : 'bg-gray-800 text-gray-400 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed'}
+              `}
+            >
+              <FaUserPlus /> My Selfies
+            </button>
+          </div>
+
+          {/* Content Area */}
+          <div className="bg-gray-900/60 backdrop-blur-md rounded-2xl p-4 sm:p-6 md:p-10 border border-gray-800 min-h-[400px]">
+            <AnimatePresence mode="wait">
+              {activeTab === 'feed' && (
+                <motion.div 
+                  key="feed"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PublicFeed />
+                </motion.div>
+              )}
+              
+              {activeTab === 'generate' && (
+                <motion.div 
+                  key="generate"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {loadingUsage ? (
+                    <div className="flex justify-center p-10"><Loader /></div>
+                  ) : !isLoggedIn ? (
+                    <div className="text-center py-10">
+                      <h3 className="text-2xl font-bold mb-4">Login Required</h3>
+                      <p className="text-gray-400 mb-6">You must be logged in to generate selfies.</p>
+                      <Link to="/login" className="px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-red-700 transition">
+                        Login / Signup
+                      </Link>
+                    </div>
+                  ) : !isSuperFan ? (
+                    <div className="text-center py-10 max-w-2xl mx-auto">
+                      <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <FaLock className="text-yellow-500 text-4xl" />
+                      </div>
+                      <h2 className="text-3xl font-bold text-white mb-4">Super Fan Exclusive Feature</h2>
+                      <p className="text-gray-300 text-lg mb-8">
+                        Generating AI selfies with Thalapathy Vijay is a premium feature available only to Super Fan members.
+                        Upgrade your membership to unlock this and many other exclusive benefits!
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <Link to="/membership" className="px-8 py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 text-black font-bold rounded-full hover:from-yellow-400 hover:to-yellow-500 transition shadow-lg shadow-yellow-500/20 transform hover:-translate-y-1">
+                          Become a Super Fan
+                        </Link>
+                      </div>
+                    </div>
+                  ) : (
+                    <GenerateSelfie 
+                      usage={usageStatus?.data?.usage || null}
+                      loadingUsage={loadingUsage}
+                      onSuccess={() => {
+                        checkUsage(); // Refresh usage limits
+                        setActiveTab('gallery'); // Redirect to gallery
+                      }}
+                    />
+                  )}
+                </motion.div>
+              )}
+
+              {activeTab === 'gallery' && (
+                <motion.div 
+                  key="gallery"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <h2 className="text-2xl font-bold mb-6 text-center text-primary">Your Collection</h2>
+                  <MySelfiesGallery />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </main>
+      
+      <Footer />
     </div>
   );
 };
-
-// ── Preview Confirm sub-component ────────────────────────────────────────────
-
-interface PreviewConfirmProps {
-  previewUrl: string;
-  onConfirm: () => void;
-  onCancel: () => void;
-}
-
-const PreviewConfirm: React.FC<PreviewConfirmProps> = ({ previewUrl, onConfirm, onCancel }) => (
-  <div className="flex flex-col items-center gap-6">
-    <p className="text-white/60 text-sm">
-      Looks good? Hit <span className="text-[#E6C65B] font-semibold">Generate</span> to create your AI photo.
-    </p>
-
-    {/* Preview image */}
-    <div className="relative w-56 h-56 rounded-2xl overflow-hidden border-2 border-[#E6C65B]/40 shadow-lg">
-      <img src={previewUrl} alt="Your selfie preview" className="w-full h-full object-cover" />
-    </div>
-
-    {/* Consent note */}
-    <p className="text-white/30 text-xs text-center max-w-sm">
-      By proceeding you confirm this is your own photo and you consent to AI processing.
-    </p>
-
-    {/* Actions */}
-    <div className="flex gap-3 w-full max-w-sm">
-      <button
-        onClick={onCancel}
-        className="flex-1 py-3 rounded-xl border border-white/10 text-white/60 hover:bg-white/10 transition-colors font-medium"
-      >
-        Change Photo
-      </button>
-      <button
-        onClick={onConfirm}
-        className="flex-1 py-3 rounded-xl bg-[#E6C65B] hover:bg-[#B68D40] text-black font-bold transition-colors"
-      >
-        Generate
-      </button>
-    </div>
-  </div>
-);
-
-// ── Error Display sub-component ──────────────────────────────────────────────
-
-interface ErrorDisplayProps {
-  message: string | null;
-  onRetry: () => void;
-}
-
-const ErrorDisplay: React.FC<ErrorDisplayProps> = ({ message, onRetry }) => (
-  <div className="flex flex-col items-center gap-5 py-8 text-center">
-    <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center">
-      <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-      </svg>
-    </div>
-    <div>
-      <p className="text-white font-semibold text-lg">Generation Failed</p>
-      <p className="text-white/50 text-sm mt-1 max-w-sm">
-        {message || 'Something went wrong. Please try again.'}
-      </p>
-    </div>
-    <button
-      onClick={onRetry}
-      className="bg-[#E6C65B] hover:bg-[#B68D40] text-black font-bold px-8 py-3 rounded-xl transition-colors"
-    >
-      Try Again
-    </button>
-  </div>
-);
 
 export default AIStudioPage;

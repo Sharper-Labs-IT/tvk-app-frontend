@@ -47,17 +47,17 @@ const StoryView = () => {
       let data = await getStoryById(storyId!);
       
       // 🔍 DEBUG: Check received URLs
-      console.log('=== STORY LOADED ===');
-      console.log('Story ID:', data.id);
-      console.log('Cover Image URL:', data.cover_image_url || data.cover_image);
+      
+      
+      
       if (data.scenes && data.scenes.length > 0) {
-        console.log('First Scene Image URL:', data.scenes[0].image_url || data.scenes[0].imageUrl);
+        
         // Check if URL has AWS signature
-        const sceneUrl = data.scenes[0].image_url || data.scenes[0].imageUrl;
+        const sceneUrl = data.scenes[0].imageUrl || data.scenes[0].imageUrl;
         if (sceneUrl && sceneUrl.includes('X-Amz-Date')) {
           const match = sceneUrl.match(/X-Amz-Date=(\d{8}T\d{6}Z)/);
           if (match) {
-            console.log('🕐 URL Signed Date:', match[1], '(Expected: 20260218 for today)');
+            console.log("X-Amz-Date found: ", match[1]);
           }
         }
       }
@@ -289,8 +289,8 @@ const StoryView = () => {
             {/* Use scenes_with_urls if available (has full AWS URLs), otherwise use scenes */}
             {(story.scenes_with_urls || story.scenes || []).map((scene, index) => {
               // Support nested image object and legacy fields
-              const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
-              const sceneNumber = scene.sceneNumber || scene.scene_number;
+              const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.imageUrl;
+              const sceneNumber = scene.sceneNumber || scene.sceneNumber;
               
               return (
               <div

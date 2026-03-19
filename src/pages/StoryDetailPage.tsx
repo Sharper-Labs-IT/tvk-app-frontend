@@ -54,17 +54,17 @@ const StoryDetailPage: React.FC = () => {
         let storyData = await getStoryById(id);
         
         // 🔍 DEBUG: Check received URLs
-        console.log('=== STORY DETAIL LOADED ===');
-        console.log('Story ID:', storyData.id);
-        console.log('Cover Image URL:', storyData.cover_image_url || storyData.cover_image);
+        
+        
+        
         if (storyData.scenes && storyData.scenes.length > 0) {
-          console.log('First Scene Image URL:', storyData.scenes[0].image_url || storyData.scenes[0].imageUrl);
+          
           // Check if URL has AWS signature
-          const sceneUrl = storyData.scenes[0].image_url || storyData.scenes[0].imageUrl;
+          const sceneUrl = storyData.scenes[0].imageUrl || storyData.scenes[0].imageUrl;
           if (sceneUrl && sceneUrl.includes('X-Amz-Date')) {
             const match = sceneUrl.match(/X-Amz-Date=(\d{8}T\d{6}Z)/);
             if (match) {
-              console.log('🕐 URL Signed Date:', match[1], '(Expected: 20260218 for today)');
+              console.log('AWS Signature match:', match[1]);
             }
           }
         }
@@ -310,10 +310,10 @@ const StoryDetailPage: React.FC = () => {
               // Scene-based rendering (Interleaved Text & Images)
               <div className="space-y-12">
                 {story.scenes.map((scene: any, index: number) => {
-                  // Support nested image object and legacy fields
-                  const sceneImageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
+                  // Support nested image object and legacy fields - PRIORITIZE flat URL (which normalizeStory populates with signed URL)
+                  const sceneImageUrl = scene.imageUrl || scene.imageUrl || scene.image?.previewUrl || scene.image?.path;
                   const sceneTitle = scene.title || `Scene ${index + 1}`;
-                  const _sceneNumber = scene.sceneNumber || scene.scene_number || index + 1; void _sceneNumber;
+                  const _sceneNumber = scene.sceneNumber || scene.sceneNumber || index + 1; void _sceneNumber;
                   
                   return (
                   <div key={scene.id || index} className="animate-fadeIn">

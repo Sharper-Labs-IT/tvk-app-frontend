@@ -97,18 +97,15 @@ export interface Story {
 
 export interface StoryScene {
   id?: string;
-  scene_number?: number; // snake_case from backend
-  sceneNumber?: number; // camelCase from backend
+  sceneNumber: number; 
   title: string;
   content: string;
-  image_url?: string; // snake_case from backend
-  imageUrl?: string; // camelCase from backend
+  imageUrl?: string;
   image?: { // Nested image object from backend
     path: string;
     previewUrl: string;
   };
-  image_prompt?: string; // snake_case from backend
-  imagePrompt?: string; // camelCase from backend
+  imagePrompt?: string;
 }
 
 export interface StoryComment {
@@ -166,13 +163,16 @@ export interface SaveStoryRequest {
   mood: StoryMood;
   length: StoryLength;
   character_name: string;
+  character_avatar?: string;
   character_traits?: string[];
   character_background?: string;
   cover_image?: string;
   scenes?: StoryScene[];
   tags?: string[];
-  status: StoryStatus;
+  status?: StoryStatus;
   is_public: boolean;
+  ai_model?: string;
+  prompt?: string;
 }
 
 export interface SaveStoryResponse {
@@ -183,11 +183,10 @@ export interface SaveStoryResponse {
 
 export interface StoryFeedFilter {
   genre?: StoryGenre;
-  sort_by?: SortOption;
-  search?: string;
-  user_id?: string;
-  page?: number;
+  sortBy?: SortOption;
+  searchQuery?: string;
   limit?: number;
+  page?: number;
 }
 
 export interface StoryFeedResponse {

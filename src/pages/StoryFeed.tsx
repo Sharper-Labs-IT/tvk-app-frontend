@@ -22,7 +22,7 @@ const StoryFeed = () => {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<StoryFeedFilter>({
-    sort_by: 'recent',
+    sortBy: 'popular',
   });
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -37,9 +37,9 @@ const StoryFeed = () => {
       setLoading(true);
       const apiFilter: StoryFeedFilter = {
         ...filter,
-        page,
         limit: 12,
-        search: searchQuery || undefined
+        searchQuery: searchQuery || undefined,
+        page: page,
       };
       const response = await getStoryFeed(apiFilter);
       setStories(response.data.stories);
@@ -108,9 +108,9 @@ const StoryFeed = () => {
                 {(['recent', 'popular', 'trending'] as const).map((option) => (
                   <button
                     key={option}
-                    onClick={() => setFilter({ ...filter, sort_by: option })}
+                    onClick={() => setFilter({ ...filter, sortBy: option })}
                     className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold capitalize transition-all whitespace-nowrap ${
-                      filter.sort_by === option
+                      filter.sortBy === option
                         ? 'bg-brand-gold text-brand-dark shadow-md'
                         : 'text-gray-400 hover:text-white hover:bg-gray-800'
                     }`}
@@ -219,7 +219,7 @@ const StoryFeed = () => {
             </p>
             <button 
               onClick={() => {
-                setFilter({ sort_by: 'recent' });
+                setFilter({ sortBy: 'recent' });
                 setSearchQuery('');
               }}
               className="px-8 py-3 bg-brand-gold text-brand-dark rounded-xl font-bold hover:bg-brand-goldDark transition-colors"

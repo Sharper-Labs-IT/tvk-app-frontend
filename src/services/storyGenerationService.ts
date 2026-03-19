@@ -56,27 +56,68 @@ export const generateStory = async (
     // Backend returns story data directly, but frontend expects it wrapped
     // Check if response is already in expected format or needs transformation
     const rawData = response.data;
+    
 
     // Check if already in expected format: { success, data: { story, scenes, estimated_read_time } }
-    // Use Array.isArray so empty scenes array [] is still treated as valid
-    if (rawData?.data && rawData.data.story && Array.isArray(rawData.data.scenes)) {
-      // Already in expected format — but pull scenes from story if the top-level array is empty
-      const topScenes: any[] = rawData.data.scenes;
-      const storyObj = rawData.data.story;
-      const nestedScenes: any[] = storyObj?.scenes_with_urls || storyObj?.scenes || [];
-      const resolvedScenes = topScenes.length > 0 ? topScenes : nestedScenes;
-      return {
-        ...rawData,
-        data: { ...rawData.data, scenes: resolvedScenes }
-      };
+    // Unwrap 'data' wrapper if present - common in Laravel resources
+    let normalizedData = rawData;
+    if (rawData.data && !rawData.story && !rawData.content) {
+      normalizedData = rawData.data;
     }
 
-    // Backend envelope: { story: {...}, scenes: [...], estimatedReadTime: N }
-    // Extract the inner story object and scenes directly
-    if (rawData?.story && typeof rawData.story === 'object') {
-      const actualStory = rawData.story;
-      const scenes: any[] = rawData.scenes_with_urls || rawData.scenes || actualStory.scenes_with_urls || actualStory.scenes || [];
-      const readTime = rawData.estimatedReadTime || rawData.estimated_read_time || actualStory.estimated_read_time
+    // Check if the unwrapped data has the expected structure
+    if (normalizedData?.story && typeof normalizedData.story === 'object') {
+      const actualStory = normalizedData.story;
+      
+      // FIX FOR RAW JSON CONTENT:
+      // If content is a JSON string (LLM output not fully parsed by backend), parse it here
+      if (typeof actualStory.content === 'string' && actualStory.content.trim().startsWith('{')) {
+        try {
+          // Check if it's a valid JSON object with title/content/scenes
+          // e.g. {"title": "...", "content": "...", "scenes": [...]}
+          const parsedContent = JSON.parse(actualStory.content);
+          
+          if (parsedContent && typeof parsedContent === 'object') {
+             // 1. Update title if 'Untitled Story' or missing
+             if (parsedContent.title && (!actualStory.title || actualStory.title === 'Untitled Story')) {
+               actualStory.title = parsedContent.title;
+             }
+             
+             // 2. Extract scenes if present
+             if (Array.isArray(parsedContent.scenes)) {
+               // Assign to story object so it can be found below
+               actualStory.scenes = parsedContent.scenes;
+               // Also populate parsedContent.scenes to actualStory.scenes_with_urls if needed, standardizing
+               actualStory.scenes_with_urls = parsedContent.scenes;
+             }
+             
+             // 3. Update main text content (remove the JSON string)
+             if (parsedContent.content) {
+               actualStory.content = parsedContent.content;
+             }
+             
+             // 4. Update tags if present
+             if (Array.isArray(parsedContent.tags)) {
+                actualStory.tags = parsedContent.tags;
+             }
+          }
+        } catch (e) {
+          console.warn('Failed to parse potential JSON content string:', e);
+          // Continue with original content if parsing fails
+        }
+      }
+
+      // Aggressively search for scenes in various locations
+      const scenes: any[] = 
+        normalizedData.scenes_with_urls || 
+        normalizedData.scenes || 
+        actualStory.scenes_with_urls || 
+        actualStory.scenes || 
+        // Handles case where scenes might be nested in 'data' inside story (API inconsistency check)
+        actualStory.data?.scenes ||
+        [];
+        
+      const readTime = normalizedData.estimatedReadTime || normalizedData.estimated_read_time || actualStory.estimated_read_time
         || Math.ceil((actualStory.content || '').split(' ').length / 200);
       return {
         success: true,
@@ -88,14 +129,22 @@ export const generateStory = async (
       };
     }
 
-    // Fallback: rawData is the story itself (flat object with title, content, scenes)
-    const scenes: any[] = rawData.scenes_with_urls || rawData.scenes || [];
+    // Fallback: normalizedData is the story itself (flat object with title, content, scenes)
+    // Aggressively search for scenes here too
+    const scenes: any[] = 
+      normalizedData.scenes_with_urls || 
+      normalizedData.scenes || 
+      // If flat story object has scenes inside a 'story' property (nested accidentally)
+      normalizedData.story?.scenes ||
+      [];
+      
+    // If normalizedData IS the story, we use it directly
     return {
       success: true,
       data: {
-        story: rawData,
+        story: normalizedData,
         scenes,
-        estimated_read_time: rawData.estimated_read_time || Math.ceil((rawData.content || '').split(' ').length / 200)
+        estimated_read_time: normalizedData.estimated_read_time || Math.ceil((normalizedData.content || '').split(' ').length / 200)
       }
     };
   } catch (error: any) {

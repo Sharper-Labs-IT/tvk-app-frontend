@@ -31,12 +31,22 @@ export const getStoryImageUrl = (img: any): string | null => {
     // Handle relative path (S3 key)
     // Remove leading slash if present to avoid double slashes
     const cleanPath = img.startsWith('/') ? img.slice(1) : img;
-    const fullUrl = `https://tvk-content.s3.eu-north-1.amazonaws.com/${cleanPath}`;
+    // Use environment variable for base URL if available, otherwise fallback
+    const baseUrl = import.meta.env.VITE_S3_BASE_URL || 'https://tvk-content-test.s3.eu-north-1.amazonaws.com';
+    // Ensure baseUrl doesn't end with slash
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    const fullUrl = `${cleanBaseUrl}/${cleanPath}`;
     return fullUrl;
   }
   
-  // Handle object with previewUrl/url properties
-  const url = img.previewUrl || img.url || null;
+  // Handle object with previewUrl/url/imageUrl properties
+  const url = img.previewUrl || img.url || img.imageUrl || img.path || null;
+  
+  // Recursively handle if the extracted property is a string key
+  if (typeof url === 'string' && !url.startsWith('http')) {
+     return getStoryImageUrl(url);
+  }
+
   return url;
 };
 
@@ -162,7 +172,7 @@ export const needsImageRefresh = (story: Story | null | undefined): boolean => {
   // Check scene images - support nested image object and legacy fields
   if (scenesToCheck) {
     for (const scene of scenesToCheck) {
-      const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.image_url;
+      const imageUrl = scene.image?.previewUrl || scene.image?.path || scene.imageUrl || scene.imageUrl;
       if (imageUrl && isImageUrlExpired(imageUrl)) {
         return true;
       }
