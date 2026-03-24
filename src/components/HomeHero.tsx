@@ -117,7 +117,7 @@ const HomeHero: React.FC = () => {
         {/* Right: Hero Image */}
         <div className="flex justify-center items-center flex-1">
           <img
-            src="/images/hero.png"
+            src="/img/home1.png"
             alt="Thalapathy VJ"
             className={`w-full max-w-[500px] lg:max-w-[600px] 2xl:max-w-[900px] h-auto max-h-[85vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
               isVisible ? 'opacity-100' : 'opacity-0'
