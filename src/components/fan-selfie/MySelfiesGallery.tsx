@@ -6,10 +6,18 @@ import { FaTrash, FaEye, FaEyeSlash, FaDownload } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getFullImageUrl } from '../../utils/imageUrl';
+import ShareToFeedModal from '../common/ShareToFeedModal';
 
 const MySelfiesGallery: React.FC = () => {
     const [selfies, setSelfies] = useState<FanSelfie[]>([]);
     const [loading, setLoading] = useState(true);
+    const [shareModalOpen, setShareModalOpen] = useState(false);
+    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+
+    const handleShareToFeed = (url: string) => {
+        setSelectedImageUrl(url);
+        setShareModalOpen(true);
+    };
 
     const fetchMySelfies = async (showGlobalLoader = true) => {
         try {
@@ -172,6 +180,15 @@ const MySelfiesGallery: React.FC = () => {
                                 >
                                     <FaDownload /> Download
                                 </button>
+                                {selfie.status === 'completed' && selfie.generated_image_url && (
+                                    <button
+                                        onClick={() => handleShareToFeed(selfie.generated_image_url!)}
+                                        className="p-2 bg-blue-900/20 text-blue-400 hover:bg-blue-900/40 rounded transition"
+                                        title="Share to Feed"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                    </button>
+                                )}
                                 <button
                                     onClick={() => handleDelete(selfie.id)}
                                     className="p-2 bg-red-900/20 text-red-500 hover:bg-red-900/40 rounded transition"
@@ -184,6 +201,13 @@ const MySelfiesGallery: React.FC = () => {
                     </motion.div>
                 ))}
             </AnimatePresence>
+
+            <ShareToFeedModal
+                isOpen={shareModalOpen}
+                onClose={() => setShareModalOpen(false)}
+                imageUrl={selectedImageUrl || undefined}
+                defaultTitle="Check out my new AI Selfie with VJ!"
+            />
         </div>
     );
 };

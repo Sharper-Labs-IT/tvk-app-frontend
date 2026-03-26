@@ -157,20 +157,19 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
             )}
           </motion.li>
 
-          {isLoggedIn && (
-            <motion.li
-              initial={{ opacity: 0, x: 50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 + (navItems.length + 1) * 0.05 }}
-            >
-              <button
-                onClick={() => setStoriesExpanded(!storiesExpanded)}
+          <motion.li
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 + (navItems.length + 1) * 0.05 }}
+          >
+            <button
+              onClick={() => setStoriesExpanded(!storiesExpanded)}
                 className={`
                   w-full flex items-center justify-between text-lg font-medium p-2 transition-colors uppercase tracking-wide
                   ${location.pathname.startsWith('/ai-studio') ? 'text-brand-gold' : 'hover:text-brand-gold'}
                 `}
               >
-                AI STUDIO
+                VJ STUDIO
                 <svg
                   className={`w-5 h-5 transition-transform ${storiesExpanded ? 'rotate-180' : ''}`}
                   fill="none"
@@ -197,16 +196,18 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                   >
                     Selfie with VJ
                   </Link>
-                  <Link
-                    to="/ai-studio/stories/create"
-                    onClick={onClose}
-                    className={`
-                      block text-base font-medium p-2 transition-colors
-                      ${isActive('/ai-studio/stories/create') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
-                    `}
-                  >
-                    AI Stories
-                  </Link>
+                  {isLoggedIn && (
+                    <Link
+                      to="/ai-studio/stories/create"
+                      onClick={onClose}
+                      className={`
+                        block text-base font-medium p-2 transition-colors
+                        ${isActive('/ai-studio/stories/create') ? 'text-brand-gold' : 'text-gray-300 hover:text-brand-gold'}
+                      `}
+                    >
+                      VJ Stories
+                    </Link>
+                  )}
                   <Link
                     to="/ai-studio/stories"
                     onClick={onClose}
@@ -220,7 +221,6 @@ const MobileMenu: React.FC<MobileMenuProps> = ({
                 </motion.div>
               )}
             </motion.li>
-          )}
 
 
           <motion.li
