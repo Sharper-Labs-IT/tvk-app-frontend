@@ -7,6 +7,9 @@ import { toggleLikeStory, addComment, trackStoryView, copyStoryLink } from '../s
 import { refreshStory, formatStoryContent, formatStoryDate, getStoryImageUrl } from '../utils/storyUtils';
 import { getErrorMessage } from '../utils/storyErrorHandling';
 import StoryReader from '../components/story/StoryReader';
+import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-hot-toast';
+import ShareToFeedModal from '../components/common/ShareToFeedModal';
 
 /**
  * Story Detail Page
@@ -22,6 +25,7 @@ import StoryReader from '../components/story/StoryReader';
 const StoryDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   
   const [story, setStory] = useState<Story | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +36,8 @@ const StoryDetailPage: React.FC = () => {
   const [submittingComment, setSubmittingComment] = useState(false);
   const [togglingLike, setTogglingLike] = useState(false);
   const [isReading, setIsReading] = useState(false);
+  // Share to Feed Modal
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   // Fallback for image loading error
   const [imageError, setImageError] = useState(false);
   
@@ -89,12 +95,21 @@ const StoryDetailPage: React.FC = () => {
   
   // Handle like
   const handleLike = async () => {
+    if (!isLoggedIn) {
+      toast.error('Please login to like stories');
+      return;
+    }
     if (!story || togglingLike) return;
     
     setTogglingLike(true);
     try {
       const updated = await toggleLikeStory(story.id);
-      setStory(updated);
+      setStory({
+        ...story,
+        liked_by_user: updated.liked_by_user,
+        likes: updated.likes !== undefined ? updated.likes : (updated.likes_count || 0),
+        likes_count: updated.likes_count !== undefined ? updated.likes_count : updated.likes,
+      });
     } catch (err: any) {
       console.error('Failed to like story:', err);
     } finally {
@@ -105,14 +120,25 @@ const StoryDetailPage: React.FC = () => {
   // Handle comment
   const handleComment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      toast.error('Please login to comment');
+      return;
+    }
     if (!story || !commentText.trim() || submittingComment) return;
     
     setSubmittingComment(true);
     try {
       const newComment = await addComment(story.id, commentText.trim());
+      
+      const formattedComment = {
+        ...newComment,
+        created_at: newComment.created_at || new Date().toISOString(),
+        id: newComment.id || Date.now().toString(),
+      };
+
       setStory({
         ...story,
-        comments: [newComment, ...story.comments],
+        comments: [formattedComment, ...(story.comments || [])],
         comments_count: (story.comments_count ?? 0) + 1,
       });
       setCommentText('');
@@ -283,17 +309,26 @@ const StoryDetailPage: React.FC = () => {
         </div>
         
         {/* Read Mode Button */}
-        <div className="flex justify-center mb-12">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-12">
             <button
                 onClick={() => setIsReading(true)}
-                className="group relative px-10 py-5 bg-gradient-to-r from-brand-gold via-[#FFE587] to-brand-goldDark text-brand-dark font-black text-xl rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(230,198,91,0.3)] hover:shadow-[0_0_50px_rgba(230,198,91,0.6)] transition-all transform hover:scale-[1.03] active:scale-[0.98]"
+                className="group relative px-8 py-4 bg-gradient-to-r from-brand-gold via-[#FFE587] to-brand-goldDark text-brand-dark font-black text-xl rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(230,198,91,0.3)] hover:shadow-[0_0_50px_rgba(230,198,91,0.6)] transition-all transform hover:scale-[1.03] active:scale-[0.98] w-full sm:w-auto"
             >
                 <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.4),transparent)]" />
                 
                 <span className="relative flex items-center gap-3 font-zentry tracking-wider">
-                    <span className="text-3xl animate-pulse">📖</span> 
+                    <span className="text-2xl animate-pulse">📖</span> 
                     ENTER IMMERSIVE READER
+                </span>
+            </button>
+            <button
+                onClick={() => setShareModalOpen(true)}
+                className="group relative px-8 py-4 bg-brand-dark border-2 border-brand-gold text-brand-gold hover:bg-brand-gold/10 font-black text-xl rounded-2xl overflow-hidden transition-all transform hover:scale-[1.03] active:scale-[0.98] w-full sm:w-auto"
+            >
+                <span className="relative flex items-center gap-3 font-zentry tracking-wider">
+                    <span className="text-2xl">📢</span> 
+                    SHARE TO FEED
                 </span>
             </button>
         </div>
@@ -412,17 +447,25 @@ const StoryDetailPage: React.FC = () => {
           <textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Share your thoughts on this story..."
+            placeholder={isLoggedIn ? "Share your thoughts on this story..." : "Please sign in to comment."}
+            disabled={!isLoggedIn}
             rows={3}
-            className="w-full px-5 py-4 bg-black/30 border border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold text-white placeholder-gray-500 resize-none transition-all"
+            className="w-full px-5 py-4 bg-black/30 border border-gray-700 rounded-xl focus:ring-2 focus:ring-brand-gold/50 focus:border-brand-gold text-white placeholder-gray-500 resize-none transition-all disabled:opacity-50"
           />
           <div className="flex justify-end mt-3">
              <button
                 type="submit"
-                disabled={!commentText.trim() || submittingComment}
-                className="px-6 py-2 bg-brand-gold text-brand-dark font-bold rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!commentText.trim() || submittingComment || !isLoggedIn}
+                className="px-6 py-2 bg-brand-gold text-brand-dark font-bold rounded-lg hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[140px]"
             >
-                {submittingComment ? 'Posting...' : 'Post Comment'}
+                {submittingComment ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-brand-dark border-t-white rounded-full animate-spin mr-2"></div>
+                    Posting...
+                  </>
+                ) : (
+                  'Post Comment'
+                )}
             </button>
           </div>
         </form>
@@ -452,7 +495,7 @@ const StoryDetailPage: React.FC = () => {
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-bold text-white">{cUserName}</span>
                     <span className="text-xs text-gray-500">
-                      {formatStoryDate(comment.created_at)}
+                        {formatStoryDate(comment.created_at || (comment as any).createdAt)}
                     </span>
                   </div>
                   <p className="text-gray-300 leading-relaxed">{comment.content}</p>
@@ -474,6 +517,17 @@ const StoryDetailPage: React.FC = () => {
     {/* Immersive Reader Modal */}
     {isReading && story && (
       <StoryReader story={story} onClose={() => setIsReading(false)} />
+    )}
+
+    {/* Share to Feed Modal */}
+    {story && (
+      <ShareToFeedModal
+         isOpen={shareModalOpen}
+         onClose={() => setShareModalOpen(false)}
+         imageUrl={(story.cover_image || story.cover_image_url) ? (getStoryImageUrl(story.cover_image_url || story.cover_image) || undefined) : undefined}
+         storyContent={`Check out my new AI story "${story.title}" set in the Thalapathy universe! Read it here: ${window.location.origin}/ai-studio/stories/${story.id}`}
+         defaultTitle={`New Story: ${story.title}`}
+      />
     )}
   </div>
 );

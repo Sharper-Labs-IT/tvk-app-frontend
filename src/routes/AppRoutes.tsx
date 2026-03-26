@@ -246,10 +246,10 @@ const AppRoutes: React.FC = () => {
           <Route path="/ai-studio" element={<AIStudioPage />} />
 
           {/* AI Story Studio sub-routes */}
-          <Route path="/ai-studio/stories" element={<UserRoute element={<StoryFeed />} />} />
-          <Route path="/ai-studio/stories/create" element={<UserRoute element={<StoryStudioPage />} />} />
-          <Route path="/ai-studio/stories/my-stories" element={<UserRoute element={<MyStoriesPage />} />} />
-          <Route path="/ai-studio/stories/:id" element={<UserRoute element={<StoryDetailPage />} />} />
+            <Route path="/ai-studio/stories" element={<StoryFeed />} />
+            <Route path="/ai-studio/stories/create" element={<UserRoute element={<StoryStudioPage />} />} />
+            <Route path="/ai-studio/stories/my-stories" element={<UserRoute element={<MyStoriesPage />} />} />
+            <Route path="/ai-studio/stories/:id" element={<StoryDetailPage />} />
 StoryRedirect
           {/* Legacy redirects – keeps old bookmarks/links working */}
           <Route path="/stories" element={<Navigate to="/ai-studio/stories" replace />} />

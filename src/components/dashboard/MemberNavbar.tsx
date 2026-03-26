@@ -48,12 +48,12 @@ const MemberNavbar: React.FC = () => {
     { name: 'Games', path: '/games', icon: <Gamepad2 size={20} />, subLinks: null },
     { name: 'Store', path: '/store', icon: <ShoppingBag size={20} />, subLinks: null },
     {
-      name: 'AI Studio',
+      name: 'VJ Studio',
       path: null,
       icon: <Sparkles size={20} />,
       subLinks: [
         { name: 'Selfie with VJ', path: '/ai-studio', icon: <Sparkles size={20} /> },
-        { name: 'AI Stories', path: '/ai-studio/stories/create', icon: <Film size={20} /> },
+        { name: 'VJ Stories', path: '/ai-studio/stories/create', icon: <Film size={20} /> },
         { name: 'Story Feed', path: '/ai-studio/stories', icon: <Film size={20} /> },
       ],
     },
@@ -90,11 +90,11 @@ const MemberNavbar: React.FC = () => {
                   key={link.name}
                   className="relative"
                   onMouseEnter={() => {
-                    if (link.name === 'AI Studio') setStoriesDropdownOpen(true);
+                    if (link.name === 'VJ Studio') setStoriesDropdownOpen(true);
                     if (link.name === 'Dashboard') setDashboardDropdownOpen(true);
                   }}
                   onMouseLeave={() => {
-                    if (link.name === 'AI Studio') setStoriesDropdownOpen(false);
+                    if (link.name === 'VJ Studio') setStoriesDropdownOpen(false);
                     if (link.name === 'Dashboard') setDashboardDropdownOpen(false);
                   }}
                 >
@@ -132,7 +132,7 @@ const MemberNavbar: React.FC = () => {
 
                   {/* Sub-links dropdown */}
                   {link.subLinks &&
-                    ((link.name === 'AI Studio' && storiesDropdownOpen) ||
+                    ((link.name === 'VJ Studio' && storiesDropdownOpen) ||
                       (link.name === 'Dashboard' && dashboardDropdownOpen)) && (
                       <div className="absolute top-full left-0 mt-1 bg-[#1a1a1a] border border-gold/20 rounded-md shadow-lg py-1 min-w-[150px] z-50">
                         {link.subLinks.map((subLink) => (
@@ -198,7 +198,7 @@ const MemberNavbar: React.FC = () => {
                     className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-gold"
                   >
                     <Sparkles size={16} />
-                    AI Studio
+                    VJ Studio
                   </Link>
 
                   <Link

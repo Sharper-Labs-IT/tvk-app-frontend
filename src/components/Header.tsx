@@ -228,22 +228,21 @@ const Header: React.FC = () => {
               )}
             </motion.li>
 
-            {/* AI Studio Dropdown - only show when logged in */}
-            {isLoggedIn && (
-              <motion.li 
-                key="AI_STUDIO" 
-                variants={majorItemVariants}
-                className="relative"
-                onMouseEnter={() => setStoriesDropdownOpen(true)}
-                onMouseLeave={() => setStoriesDropdownOpen(false)}
-              >
+            {/* VJ Studio Dropdown */}
+            <motion.li
+              key="AI_STUDIO"
+              variants={majorItemVariants}
+              className="relative"
+              onMouseEnter={() => setStoriesDropdownOpen(true)}
+              onMouseLeave={() => setStoriesDropdownOpen(false)}
+            >
                 <button
                   className={`
                     text-sm lg:text-base font-bold transition-colors relative group uppercase tracking-wider
                     ${location.pathname.startsWith('/ai-studio') ? 'text-brand-gold' : 'text-white hover:text-brand-gold'}
                   `}
                 >
-                  AI STUDIO
+                  VJ STUDIO
                   <span
                     className={`
                       absolute -bottom-1 left-0 h-0.5 bg-brand-gold transition-all duration-300
@@ -265,12 +264,14 @@ const Header: React.FC = () => {
                     >
                       SELFIE WITH VJ
                     </Link>
-                    <Link
-                      to="/ai-studio/stories/create"
-                      className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
-                    >
-                      AI STORIES
-                    </Link>
+                    {isLoggedIn && (
+                      <Link
+                        to="/ai-studio/stories/create"
+                        className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors font-medium"
+                      >
+                        VJ STORIES
+                      </Link>
+                    )}
                     <Link
                       to="/ai-studio/stories"
                       className="block px-3 lg:px-4 py-2 lg:py-3 text-sm lg:text-base text-white hover:bg-brand-gold/20 hover:text-brand-gold transition-colors last:rounded-b-lg font-medium"
@@ -279,8 +280,7 @@ const Header: React.FC = () => {
                     </Link>
                   </motion.div>
                 )}
-              </motion.li>
-            )}
+            </motion.li>
 
             {dynamicNavItems.map((item) => (
               // Regular nav item

@@ -6,20 +6,20 @@ const FEATURES = [
   {
     icon: <Camera size={22} className="text-brand-gold" />,
     title: 'Selfie with VJ',
-    desc: 'Upload your photo and step into a scene with Thalapathy VJ using VJ magic',
+    desc: 'Upload your photo and step into a scene with Thalapathy VJ using AI magic',
     cta: 'Try Now',
-    href: '/ai-studio',
+    href: '/vj-studio',
   },
   {
     icon: <BookOpen size={22} className="text-brand-gold" />,
-    title: 'VJ Story Creator',
-    desc: 'Write epic fan stories starring VJ with VJ-powered narrative generation.',
+    title: 'AI Story Creator',
+    desc: 'Write epic fan stories starring VJ with AI-powered narrative generation.',
     cta: 'Create Story',
-    href: '/ai-studio/stories/create',
+    href: '/vj-studio/stories/create',
   },
 ];
 
-const AIStudioBanner: React.FC = () => {
+const VJStudioBanner: React.FC = () => {
   const [visible, setVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -59,7 +59,7 @@ const AIStudioBanner: React.FC = () => {
           }`}
         >
           <span className="inline-flex items-center gap-2 bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full">
-            New — VJ Studio
+            New â€” VJ Studio
           </span>
         </div>
 
@@ -121,13 +121,13 @@ const AIStudioBanner: React.FC = () => {
           }`}
         >
           <Link
-            to="/ai-studio"
+            to="/vj-studio"
             className="flex items-center gap-2 bg-brand-gold hover:bg-brand-goldDark text-black font-bold px-7 py-3 rounded-full text-sm sm:text-base shadow-[0_0_20px_rgba(230,198,91,0.3)] hover:shadow-[0_0_30px_rgba(230,198,91,0.5)] transition-all duration-300"
           >
             Explore VJ Studio
           </Link>
           <Link
-            to="/ai-studio/stories/create"
+            to="/vj-studio/stories/create"
             className="flex items-center gap-2 border border-brand-gold/40 hover:border-brand-gold text-brand-gold hover:bg-brand-gold/5 font-semibold px-7 py-3 rounded-full text-sm sm:text-base transition-all duration-300"
           >
             <BookOpen size={17} />
@@ -146,4 +146,4 @@ const AIStudioBanner: React.FC = () => {
   );
 };
 
-export default AIStudioBanner;
+export default VJStudioBanner;

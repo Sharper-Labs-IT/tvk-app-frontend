@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heart, Eye, Share2, MessageCircle, Clock, Trash2, Edit } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import type { Story } from '../../types/story';
 import { deleteStory } from '../../services/storyService';
 import { toggleLikeStory, shareStory } from '../../services/storyInteractionService';
@@ -26,8 +27,8 @@ const GENRE_COLORS: Record<string, string> = {
 
 const StoryCard = ({ story, onUpdate }: StoryCardProps) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  
+  const { user, isLoggedIn } = useAuth();
+
   // Safe access to likes using either backend field 'likes' or frontend alias 'likes_count'
   const initialLikes = story.likes !== undefined ? story.likes : (story.likes_count || 0);
   const [isLiked, setIsLiked] = useState(story.liked_by_user || false);
@@ -44,6 +45,10 @@ const StoryCard = ({ story, onUpdate }: StoryCardProps) => {
 
   const handleLike = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isLoggedIn) {
+      toast.error('Please login to like stories');
+      return;
+    }
     try {
       const updated = await toggleLikeStory(story.id);
       setIsLiked(updated.liked_by_user || false);
