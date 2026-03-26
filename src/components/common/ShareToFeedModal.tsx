@@ -56,18 +56,6 @@ const ShareToFeedModal: React.FC<ShareToFeedModalProps> = ({
     }
   };
 
-  const getFileFromUrl = async (url: string, defaultType = 'image/jpeg') => {
-    try {
-      const response = await fetch(url);
-      const data = await response.blob();
-      const filename = `generated-ai-content-${Date.now()}.${defaultType.split('/')[1]}`;
-      return new File([data], filename, { type: data.type || defaultType });
-    } catch (error) {
-      console.error("Error fetching file from URL", error);
-      throw error;
-    }
-  };
-
   const handleSubmit = async () => {
     if (!categoryId) {
       toast.error('Please select a category');
@@ -77,12 +65,17 @@ const ShareToFeedModal: React.FC<ShareToFeedModalProps> = ({
     setLoading(true);
 
     try {
-      let fileToSend: File | null = null;
+      let filePathToSend = '';
       let postType: 'post' | 'image' | 'video' | 'file' = 'post';
 
       if (imageUrl) {
-        const fullUrl = getFullImageUrl(imageUrl);
-        fileToSend = await getFileFromUrl(fullUrl);
+        // Instead of downloading and sending file again, just trigger via file_path
+        try {
+          const urlObj = new URL(imageUrl);
+          filePathToSend = urlObj.pathname.replace(/^\/+/, '');
+        } catch (_err) {
+          filePathToSend = imageUrl;
+        }
         postType = 'image';
       }
 
@@ -92,7 +85,8 @@ const ShareToFeedModal: React.FC<ShareToFeedModalProps> = ({
         category_id: categoryId,
         type: postType,
         is_premium: true,
-        file: fileToSend || null,
+        file: null, // no need to append file if backend accepts URL
+        file_path: filePathToSend || undefined,
       });
 
       toast.success('Successfully shared to Community Feed!');

@@ -131,7 +131,8 @@ export interface ICreateContentPayload {
   description: string;
   type: string;
   is_premium: boolean;
-  file: File | null;
+  file?: File | null;
+  file_path?: string;
 }
 
 // 10. Generic Paginated Response
