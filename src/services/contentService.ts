@@ -67,6 +67,10 @@ export const contentService = {
       formData.append('file', payload.file);
     }
 
+    if (payload.file_path) {
+      formData.append('file_path', payload.file_path);
+    }
+
     try {
       const response = await api.post('/v1/contents/upload', formData, {
         headers: {
@@ -144,6 +148,10 @@ export const contentService = {
 
     if (payload.file) {
       formData.append('file', payload.file);
+    }
+
+    if (payload.file_path) {
+      formData.append('file_path', payload.file_path);
     }
 
     const response = await api.post('/v1/contents/upload', formData, {
