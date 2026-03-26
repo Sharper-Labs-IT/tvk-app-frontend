@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import { useAuth } from './AuthContext';
+import { isPremiumUser } from '../utils/userUtils';
 import type {
   GenerateStoryRequest,
   GenerateStoryResponse,
@@ -67,6 +69,8 @@ interface StoryGenerationProviderProps {
 }
 
 export const StoryGenerationProvider: React.FC<StoryGenerationProviderProps> = ({ children }) => {
+  const { user } = useAuth();
+  
   const [generationState, setGenerationState] = useState<GenerationState>('IDLE');
   const [progress, setProgress] = useState<GenerationProgress>({
     state: 'IDLE',
@@ -147,6 +151,39 @@ export const StoryGenerationProvider: React.FC<StoryGenerationProviderProps> = (
   }, []);
   
   // =================================
+  // Fetch Quota
+  // =================================
+  
+  const fetchQuota = useCallback(async () => {
+    try {
+      const quotaData = await getGenerationQuota();
+      let finalQuota = { ...quotaData };
+
+      // Free user 1 generation per day check
+      if (user && !isPremiumUser(user)) {
+        const today = new Date().toISOString().split('T')[0];
+        const lastGenDate = localStorage.getItem(`free_story_gen_date_${user.id}`);
+        
+        let remaining = 1;
+        if (lastGenDate === today) {
+          remaining = 0;
+        }
+
+        finalQuota = {
+          ...quotaData,
+          remaining: remaining,
+          limit: 1, // Only 1 generated limit for visual output
+        };
+      }
+
+      setQuota(finalQuota);
+    } catch (err: any) {
+      logError('Fetch Quota', err);
+      // Don't throw - quota fetch failure shouldn't block user
+    }
+  }, [user]);
+
+  // =================================
   // Generate Story
   // =================================
   
@@ -169,6 +206,12 @@ export const StoryGenerationProvider: React.FC<StoryGenerationProviderProps> = (
       const response = await generateStory(request);
       
       cleanup();
+      
+      // Update Free User quota internally if they generate successfully
+      if (user && !isPremiumUser(user)) {
+        const today = new Date().toISOString().split('T')[0];
+        localStorage.setItem(`free_story_gen_date_${user.id}`, today);
+      }
       
       // Success
       setGenerationState('SUCCESS');
@@ -198,7 +241,7 @@ export const StoryGenerationProvider: React.FC<StoryGenerationProviderProps> = (
       
       throw err;
     }
-  }, [simulateProgress]);
+  }, [simulateProgress, user, fetchQuota]);
   
   // =================================
   // Save Story
@@ -224,20 +267,6 @@ export const StoryGenerationProvider: React.FC<StoryGenerationProviderProps> = (
       setError(err);
       
       throw err;
-    }
-  }, []);
-  
-  // =================================
-  // Fetch Quota
-  // =================================
-  
-  const fetchQuota = useCallback(async () => {
-    try {
-      const quotaData = await getGenerationQuota();
-      setQuota(quotaData);
-    } catch (err: any) {
-      logError('Fetch Quota', err);
-      // Don't throw - quota fetch failure shouldn't block user
     }
   }, []);
   

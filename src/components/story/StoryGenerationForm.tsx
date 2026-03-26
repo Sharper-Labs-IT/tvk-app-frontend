@@ -3,6 +3,9 @@ import { useStoryGeneration } from '../../context/StoryGenerationContext';
 import type { StoryFormData, StoryGenre, StoryMood, StoryLength } from '../../types/story';
 import { validateCharacterName } from '../../utils/storyUtils';
 
+import { useAuth } from '../../context/AuthContext';
+import { isPremiumUser } from '../../utils/userUtils';
+
 /**
  * Story Generation Form Component
  * 
@@ -170,25 +173,41 @@ const StoryGenerationForm: React.FC = () => {
     }
   };
   
+  const isFree = !isPremiumUser(useAuth().user);
+
   // Render quota warning
   const renderQuotaWarning = () => {
     if (!quota) return null;
     
     if (quota.remaining === 0) {
+      if (isFree) {
+        return (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-2 text-red-800">
+              <span className="text-2xl">⚠️</span>
+              <div>
+                <p className="font-semibold">Daily Limit Reached</p>
+                <p className="text-sm">As a free member, you can generate 1 story per day. Upgrade to Premium for unlimited stories!</p>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       return (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
           <div className="flex items-center gap-2 text-red-800">
             <span className="text-2xl">⚠️</span>
             <div>
               <p className="font-semibold">Generation Limit Reached</p>
-              <p className="text-sm">You've used all 10 story generations this hour. Limit resets soon.</p>
+              <p className="text-sm">You've used all generations this hour. Limit resets soon.</p>
             </div>
           </div>
         </div>
       );
     }
     
-    if (quota.remaining <= 3) {
+    if (quota.remaining <= 3 && !isFree) {
       return (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
           <div className="flex items-center gap-2 text-yellow-800">
@@ -208,7 +227,7 @@ const StoryGenerationForm: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto py-4 px-4 text-white">
       {/* Page Title */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-6">
         <h1 className="text-4xl md:text-5xl font-bold mb-4 font-zentry tracking-wide">
           CREATE YOUR <span className="text-brand-gold">VJ STORY</span>
         </h1>
@@ -216,8 +235,43 @@ const StoryGenerationForm: React.FC = () => {
           Let AI craft an epic tale set in the Thalapathy universe.
         </p>
       </div>
+
+      {/* Quota Indicator Banner */}
+      {quota && (
+        <div className="flex justify-center mb-8">
+          <div className={`border rounded-full px-5 py-2 flex items-center gap-3 shadow-md ${
+            quota.remaining === 0 ? 'bg-red-900/20 border-red-800/50' : 'bg-black/40 border-gray-700'
+          }`}>
+            <span className="text-xl">
+              {quota.remaining > 0 ? "✨" : "⚠️"}
+            </span>
+            <div className="text-sm font-medium">
+              {isFree ? (
+                <span>
+                 <span className={quota.remaining > 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                   {quota.remaining}
+                 </span>
+                 <span className="text-gray-300"> / {quota.limit} Daily Story Available</span>
+                 {quota.remaining === 0 && (
+                   <span className="ml-2 text-brand-gold border-b border-brand-gold/30 hover:border-brand-gold pb-0.5 cursor-pointer transition-all">
+                     Upgrade for unlimited!
+                   </span>
+                 )}
+                </span>
+              ) : (
+                <span>
+                 <span className={quota.remaining > 0 ? "text-green-400 font-bold" : "text-red-400 font-bold"}>
+                   {quota.remaining}
+                 </span>
+                 <span className="text-gray-300"> / {quota.limit} Hourly Stories</span>
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       
-      {/* Quota Warning */}
+      {/* Quota Warning (Legacy warnings if any) */}
       {renderQuotaWarning()}
 
       {/* Progress Steps */}
