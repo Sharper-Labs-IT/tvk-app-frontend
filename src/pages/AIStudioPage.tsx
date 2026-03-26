@@ -148,7 +148,7 @@ const AIStudioPage: React.FC = () => {
                       </div>
                       <h2 className="text-3xl font-bold text-white mb-4">Super Fan Exclusive Feature</h2>
                       <p className="text-gray-300 text-lg mb-8">
-                        Generating AI selfies with Thalapathy Vijay is a premium feature available only to Super Fan members.
+                        Generating selfies with Thalapathy VJ is a premium feature available only to Super Fan members.
                         Upgrade your membership to unlock this and many other exclusive benefits!
                       </p>
                       <div className="flex flex-col sm:flex-row gap-4 justify-center">
