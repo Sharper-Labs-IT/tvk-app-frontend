@@ -68,7 +68,7 @@ const AIStudioPage: React.FC = () => {
               Selfie with VJ
             </h1>
             <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-              Generate stunning AI selfies with Thalapathy VJ. Exclusive for Super Fans!
+              Generate stunning selfies with Thalapathy VJ. Exclusive for Super Fans!
             </p>
           </div>
 
