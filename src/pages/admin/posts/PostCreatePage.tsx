@@ -51,6 +51,7 @@ const PostCreatePage: React.FC = () => {
       await contentService.create({
         ...formData,
         file: file,
+        file_path: (!file && formData.type === 'post') ? 'text-only' : undefined,
       });
 
       // Redirect on success

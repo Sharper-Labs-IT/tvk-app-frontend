@@ -72,11 +72,7 @@ export const contentService = {
     }
 
     try {
-      const response = await api.post('/v1/contents/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data', // Explicitly set for file uploads
-        },
-      });
+      const response = await api.post('/v1/contents/upload', formData);
 
       return response.data;
     } catch (error) {
@@ -108,11 +104,7 @@ export const contentService = {
     }
 
     try {
-      const response = await api.post(`/v1/contents/${payload.id}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await api.post(`/v1/contents/${payload.id}`, formData);
       return response.data;
     } catch (error) {
       throw error;
@@ -154,11 +146,7 @@ export const contentService = {
       formData.append('file_path', payload.file_path);
     }
 
-    const response = await api.post('/v1/contents/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    const response = await api.post('/v1/contents/upload', formData);
 
     return response.data;
   },
