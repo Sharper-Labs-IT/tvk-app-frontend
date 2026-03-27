@@ -100,7 +100,7 @@ const HomeHero: React.FC = () => {
                     className="relative px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap 2xl:px-8 2xl:py-4 2xl:text-base group"
                   >
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                      First 100 Users Only!
+                      First 1000 Users Only!
                     </span>
                     Become a Super Fan £2.99
                   </button>
@@ -205,7 +205,7 @@ const HomeHero: React.FC = () => {
                       className="relative px-7 py-3.5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
                     >
                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                        First 100 Users Only!
+                        First 1000 Users Only!
                       </span>
                       Become a Super Fan £2.99
                     </button>
@@ -299,7 +299,7 @@ const HomeHero: React.FC = () => {
                     className="relative w-full px-8 py-3.5 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark active:bg-yellow-600 transition-colors duration-200 uppercase tracking-wide text-sm"
                   >
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                      First 100 Users Only!
+                      First 1000 Users Only!
                     </span>
                     Become a Super Fan £2.99
                   </button>

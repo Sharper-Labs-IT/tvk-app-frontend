@@ -57,7 +57,6 @@ const Header: React.FC = () => {
     const items = [
       { name: 'MEMBERSHIP', path: '/membership' },
       { name: 'STORE', path: '/store' },
-      { name: 'EVENTS', path: '/events' },
     ];
     
     // Story Studio removed - still in development

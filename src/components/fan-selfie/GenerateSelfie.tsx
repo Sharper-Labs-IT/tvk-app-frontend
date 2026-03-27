@@ -133,7 +133,7 @@ const GenerateSelfie: React.FC<GenerateSelfieProps> = ({ onSuccess, usage, loadi
                 <div className="w-16 h-16 mb-4 rounded-full bg-gray-800 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <FaUpload className="w-8 h-8 text-primary" />
                 </div>
-                <p className="mb-2 text-lg text-gray-300 font-semibold">Click to upload or drag & drop</p>
+                <p className="mb-2 text-lg text-gray-300 font-semibold">Click to upload</p>
                 <p className="text-sm text-gray-500">JPG, PNG or WEBP (Max. 10MB)</p>
               </div>
             )}

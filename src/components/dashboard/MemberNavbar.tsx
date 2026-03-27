@@ -6,7 +6,6 @@ import {
   X,
   LayoutDashboard,
   Gamepad2,
-  Calendar,
   Crown,
   LogOut,
   ChevronDown,
@@ -57,7 +56,6 @@ const MemberNavbar: React.FC = () => {
         { name: 'Story Feed', path: '/ai-studio/stories', icon: <Film size={20} /> },
       ],
     },
-    { name: 'Events', path: '/events', icon: <Calendar size={20} />, subLinks: null },
     { name: 'Membership', path: '/membership', icon: <Crown size={20} />, subLinks: null },
   ];
 

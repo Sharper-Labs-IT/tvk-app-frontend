@@ -315,7 +315,7 @@ const MembershipPage: React.FC = () => {
                 priceSuffix={isPlanFree ? '/ Lifetime' : `/ Monthly (${selectedCurrency})`}
                 features={(plan.benefits || []).map((b) => ({ label: b, available: true }))}
                 highlight={isPlanPaid}
-                badgeLabel={isPlanPaid ? 'First 100 Users Only!' : undefined}
+                badgeLabel={isPlanPaid ? 'First 1000 Users Only!' : undefined}
                 onSubscribe={() => handleSubscribeClick(plan)}
                 buttonText={buttonText}
                 buttonDisabled={buttonDisabled}
