@@ -99,11 +99,6 @@ const Footer: React.FC = () => {
             <h4 className="text-white text-lg font-bold mb-4 uppercase">Connect</h4>
             <ul className="space-y-2">
               <li>
-                <Link to="/events" className="hover:text-brand-gold transition-colors">
-                  Events
-                </Link>
-              </li>
-              <li>
                 <Link to="/store" className="hover:text-brand-gold transition-colors">
                   Store
                 </Link>

@@ -33,8 +33,8 @@ const HomeHero: React.FC = () => {
       <div className="absolute bottom-0 left-0 w-full h-1.5 sm:h-2 bg-red-600 z-20" />
 
       {/* Desktop Layout (xl+) - Grid with image on right */}
-      {/* Desktop Layout (xl+) - Flex instead of grid, better spacing */}
-<div className="hidden xl:block">
+      {/* Desktop Layout (lg+) - Flex instead of grid, better spacing */}
+<div className="hidden lg:block">
   <div className="relative h-screen">
     <div className="max-w-7xl 2xl:max-w-[90vw] mx-auto px-6 lg:px-12 h-full flex items-center justify-center">
       <div className="flex flex-row items-center justify-between gap-12 w-full max-w-[95%]">
@@ -100,7 +100,7 @@ const HomeHero: React.FC = () => {
                     className="relative px-6 py-3 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl hover:scale-105 transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap 2xl:px-8 2xl:py-4 2xl:text-base group"
                   >
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                      First 100 Users Only!
+                      First 1000 Users Only!
                     </span>
                     Become a Super Fan £2.99
                   </button>
@@ -129,8 +129,8 @@ const HomeHero: React.FC = () => {
   </div>
 </div>
 
-      {/* Tablet Layout (md to xl) */}
-      <div className="hidden md:block xl:hidden">
+      {/* Tablet Layout (md to lg) */}
+      <div className="hidden md:block lg:hidden">
         <div className="relative h-screen flex flex-col justify-center px-6 py-12">
           <div className="max-w-3xl lg:max-w-5xl mx-auto w-full h-full flex flex-col justify-center">
             {/* Text Content - Centered */}
@@ -205,7 +205,7 @@ const HomeHero: React.FC = () => {
                       className="relative px-7 py-3.5 bg-brand-gold text-brand-dark font-bold rounded-md shadow-lg hover:bg-brand-goldDark hover:shadow-xl transition-all duration-200 uppercase tracking-wide text-sm whitespace-nowrap"
                     >
                       <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                        First 100 Users Only!
+                        First 1000 Users Only!
                       </span>
                       Become a Super Fan £2.99
                     </button>
@@ -222,7 +222,7 @@ const HomeHero: React.FC = () => {
             {/* Tablet Hero Image */}
             <div className="flex-1 flex justify-center items-end mt-6">
               <img
-                src="/images/hero.png"
+                src="/img/home1.png"
                 alt="Thalapathy VJ"
                 className={`w-auto max-w-full h-auto max-h-[55vh] object-contain object-bottom pointer-events-none transition-opacity duration-1000 ${
                   isVisible ? 'opacity-100' : 'opacity-0'
@@ -299,7 +299,7 @@ const HomeHero: React.FC = () => {
                     className="relative w-full px-8 py-3.5 bg-brand-gold text-brand-dark font-bold rounded shadow hover:bg-brand-goldDark active:bg-yellow-600 transition-colors duration-200 uppercase tracking-wide text-sm"
                   >
                     <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full whitespace-nowrap shadow-sm">
-                      First 100 Users Only!
+                      First 1000 Users Only!
                     </span>
                     Become a Super Fan £2.99
                   </button>
@@ -316,7 +316,7 @@ const HomeHero: React.FC = () => {
           {/* Mobile Hero Image - Flow below buttons */}
           <div className="mt-2 flex justify-center items-start flex-1">
             <img
-              src="/images/hero.png"
+              src="/img/home1.png"
               alt="Thalapathy VJ"
               className={`w-auto max-w-full h-auto max-h-[60vh] object-contain object-top pointer-events-none transition-opacity duration-1000 ${
                 isVisible ? 'opacity-100' : 'opacity-0'

@@ -358,7 +358,7 @@ const EventPage: React.FC = () => {
           <section className="rounded-3xl bg-gradient-to-r from-slate-900 via-slate-900 to-slate-950 border border-slate-700/70 px-6 md:px-8 py-8 md:py-10 text-center shadow-[0_22px_60px_rgba(15,23,42,0.9)]">
             <p className="text-sm md:text-base font-semibold mb-2">Ready to Join?</p>
             <p className="text-[11px] sm:text-xs text-neutral-300 mb-5 max-w-xl mx-auto">
-              Become a TVK Member and unlock access to exclusive events, live experiences, and our
+              Become a VJ Fans Member and unlock access to exclusive events, live experiences, and our
               premium community.
             </p>
             <Link

@@ -94,6 +94,7 @@ const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPr
         type: postType,
         is_premium: true, // Member feed posts are premium
         file: file,
+        file_path: (!file && postType === 'post') ? 'text-only' : undefined,
       });
 
       // Reset Form
@@ -101,8 +102,21 @@ const CreatePostWidget: React.FC<CreatePostWidgetProps> = ({ onPostCreated, isPr
       setDescription('');
       clearFile();
       if (onPostCreated) onPostCreated(); // Refresh parent list
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to post content');
+    } catch (err: any) {      
+      let errorMsg = 'Failed to post content. Server returned a fatal 500 error or CORS failed.';
+      
+      if (err.response) {
+        errorMsg = err.response?.data?.message || 'Failed to post content';
+
+        // Extract detailed validation errors if they exist
+        if (err.response?.data?.errors) {
+          const errors = err.response.data.errors;
+          const errorDetails = Object.keys(errors).map(key => `${key}: ${errors[key].join(', ')}`).join(' | ');
+          errorMsg = `Validation failed - ${errorDetails}`;
+        }
+      }
+
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

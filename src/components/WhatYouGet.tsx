@@ -23,8 +23,8 @@ const WhatYouGet: React.FC = () => {
   const benefits: BenefitItem[] = [
     { id: 1, title: 'Blog Page Access', description: 'International news + translations.', icon: Globe },
     { id: 2, title: 'Welcome Band', description: 'Personalized banner with country flag.', icon: Award },
-    { id: 3, title: 'VJ Special Sticker Pack', description: 'Digital stickers.', icon: Sticker },
-    { id: 4, title: 'Exclusive Gallery', description: 'Behind-the-scenes content.', icon: Clapperboard },
+    { id: 3, title: 'Selfi with VJ', description: 'Upload your photo and step into a scene with Thalapathy VJ.', icon: Sticker },
+    { id: 4, title: 'VJ Story Creator', description: 'Create your own stories with Thalapathy VJ.', icon: Clapperboard },
     { id: 5, title: 'Events & Live Streams', description: 'Global access.', icon: Mic },
     { id: 6, title: 'Global Fan Community', description: 'Regional groups.', icon: Users },
     { id: 7, title: 'Merchandise Access', description: 'International shipping.', icon: ShoppingCart },

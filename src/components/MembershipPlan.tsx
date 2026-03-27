@@ -133,6 +133,10 @@ const MembershipPlan: React.FC = () => {
                       <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 shrink-0"></span>
                       <span>Limited Media Content Library</span>
                     </li>
+                    <li className="flex items-start gap-3">
+                      <span className="w-1.5 h-1.5 bg-black rounded-full mt-2 shrink-0"></span>
+                      <span>1 Story Generation Per day</span>
+                    </li>
                   </ul>
 
                   <button
@@ -165,7 +169,7 @@ const MembershipPlan: React.FC = () => {
                 {/* Badge */}
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
                     <span className="bg-red-600 text-white text-xs md:text-sm font-extrabold px-4 py-1.5 rounded-full whitespace-nowrap shadow-lg border border-red-400">
-                      First 100 Users Only!
+                      First 1000 Users Only!
                     </span>
                 </div>
 
@@ -250,7 +254,7 @@ const MembershipPlan: React.FC = () => {
 
                       <div className="flex items-center gap-3">
                         <Sparkles className="text-brand-gold shrink-0 w-8 h-8" />
-                        <span className="text-sm font-medium">AI Generated Visuals</span>
+                        <span className="text-sm font-medium">Access to Selfi with VJ & Story Creator</span>
                       </div>
                     </div>
                   </div>

@@ -57,7 +57,6 @@ const Header: React.FC = () => {
     const items = [
       { name: 'MEMBERSHIP', path: '/membership' },
       { name: 'STORE', path: '/store' },
-      { name: 'EVENTS', path: '/events' },
     ];
     
     // Story Studio removed - still in development
@@ -140,7 +139,7 @@ const Header: React.FC = () => {
         </motion.div>
 
         {/* Navigation Links (Desktop Only) */}
-        <motion.nav className="hidden md:block ml-auto mr-2 md:mr-4" variants={navStaggerVariants}>
+        <motion.nav className="hidden lg:block ml-auto mr-2 md:mr-4" variants={navStaggerVariants}>
           <motion.ul className="flex space-x-3 xl:space-x-6" variants={navStaggerVariants}>
             {/* Added HOME link explicitly for desktop menu */}
             <motion.li key="HOME" variants={majorItemVariants}>
@@ -389,7 +388,7 @@ const Header: React.FC = () => {
             )}
           </button>
           
-          <div className="hidden md:block">
+          <div className="hidden lg:block">
             {isLoggedIn ? (
               <div 
                 id="tour-profile-menu-container"
@@ -474,7 +473,7 @@ const Header: React.FC = () => {
           </div>
 
           <button
-            className="md:hidden p-2 transition-colors hover:text-brand-gold"
+            className="lg:hidden p-2 transition-colors hover:text-brand-gold"
             onClick={toggleMenu}
             aria-label="Open menu"
           >
