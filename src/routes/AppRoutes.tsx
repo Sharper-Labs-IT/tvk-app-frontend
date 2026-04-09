@@ -291,7 +291,7 @@ StoryRedirect
           {/* Cart page redirected to Checkout as Drawer handles viewing cart */}
           <Route path="/cart" element={<Navigate to="/checkout" replace />} /> 
           <Route path="/wishlist" element={<UserRoute element={<Wishlist />} />} />
-          <Route path="/checkout" element={<UserRoute element={<Checkout />} />} />
+          <Route path="/checkout" element={<Checkout />} />
 
           <Route path="/orders" element={<UserRoute element={<Orders />} />} />
           <Route path="/orders/:id" element={<UserRoute element={<OrderDetails />} />} />

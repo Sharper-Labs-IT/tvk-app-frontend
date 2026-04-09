@@ -53,6 +53,7 @@ export interface CreateOrderPayload {
     referral_code?: string;
     customer_notes?: string;
     currency?: string;
+    cart_items?: Array<{ product_id: number; quantity: number; variant_id?: number }>;
 }
 
 export interface RefundRequest {
