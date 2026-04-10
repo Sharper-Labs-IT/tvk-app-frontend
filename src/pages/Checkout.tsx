@@ -73,7 +73,12 @@ const Checkout: React.FC = () => {
         const payload: CreateOrderPayload = {
             shipping_address: shippingAddress,
             referral_code: referralValid ? referralCode : undefined,
-            currency: 'GBP'
+            currency: 'GBP',
+            cart_items: items.map(item => ({
+                product_id: item.productId,
+                quantity: item.quantity,
+                variant_id: item.variantId
+            }))
         };
 
         try {

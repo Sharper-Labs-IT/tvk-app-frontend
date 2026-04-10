@@ -110,7 +110,7 @@ const CartDrawer: React.FC = () => {
                                             {item.variant && (
                                                 <p className="text-xs text-brand-gold font-mono mb-2">{item.variant}</p>
                                             )}
-                                            <div className="text-sm font-bold text-white">£{item.price.toFixed(2)}</div>
+                                            <div className="text-sm font-bold text-white">£{Number(item.price).toFixed(2)}</div>
                                         </div>
 
                                         {/* Quantity Controls */}

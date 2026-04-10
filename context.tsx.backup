@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+﻿import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { storeService } from '../services/storeService';
@@ -62,16 +62,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     if (isLoggedIn) {
       fetchCart();
     } else {
-      const savedCart = localStorage.getItem('guestCart');
-      if (savedCart) {
-        try {
-          setItems(JSON.parse(savedCart));
-        } catch (e) {
-          setItems([]);
-        }
-      } else {
-        setItems([]);
-      }
+      setItems([]); // Clear cart or load from local storage if supporting guest cart
     }
   }, [isLoggedIn]);
 
@@ -119,21 +110,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const addToCart = async (newItem: Omit<CartItem, 'id'>) => {
     if (!isLoggedIn) {
-      const updatedItems = [...items];
-      const existingItemIndex = updatedItems.findIndex(i => i.productId === newItem.productId && i.variantId === newItem.variantId);
-      
-      if (existingItemIndex >= 0) {
-        updatedItems[existingItemIndex].quantity += newItem.quantity;
-      } else {
-        const mockId = Math.random().toString(36).substring(2, 9);
-        const guestItem = { ...newItem, id: mockId } as CartItem;
-        updatedItems.push(guestItem);
-      }
-      
-      setItems(updatedItems);
-      localStorage.setItem('guestCart', JSON.stringify(updatedItems));
-      toast.success('Added to cart!');
-      setIsCartOpen(true);
+      toast.error('Please login to add items to cart');
       return;
     }
 
@@ -153,14 +130,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   const removeFromCart = async (itemId: string) => {
-    if (!isLoggedIn) {
-      const updatedItems = items.filter(item => item.id !== itemId);
-      setItems(updatedItems);
-      localStorage.setItem('guestCart', JSON.stringify(updatedItems));
-      toast.success('Item removed');
-      return;
-    }
-
     try {
       // Optimistic update
       // const previousItems = [...items]; // Unused variable removed
@@ -187,13 +156,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         return;
     }
 
-    if (!isLoggedIn) {
-      const updatedItems = items.map(i => i.id === itemId ? { ...i, quantity } : i);
-      setItems(updatedItems);
-      localStorage.setItem('guestCart', JSON.stringify(updatedItems));
-      return;
-    }
-
     try {
       // Optimistic update
       setItems(items.map(i => i.id === itemId ? { ...i, quantity } : i));
@@ -208,13 +170,6 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const clearCart = async () => {
     if (window.confirm('Are you sure you want to clear your cart?')) {
-      if (!isLoggedIn) {
-        setItems([]);
-        localStorage.removeItem('guestCart');
-        toast.success('Cart cleared');
-        return;
-      }
-
       try {
         setItems([]);
         await storeService.clearCart();
