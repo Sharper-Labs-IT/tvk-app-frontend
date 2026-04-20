@@ -110,6 +110,25 @@ const ProductCard = ({ product }: { product: Product }) => {
     });
   };
 
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // If product has variants, we must go to details page to select one
+    if (hasVariants) {
+        navigate(`/store/products/${product.id}`);
+        return;
+    }
+    addToCart({
+      productId: product.id,
+      name: product.name,
+      price: product.discount_price || product.price,
+      quantity: 1,
+      image: activeImage,
+      type: product.type === 'game_item' ? 'coins' : 'merch',
+      stock: product.stock_quantity
+    });
+    navigate('/checkout');
+  };
+
   const toDetails = () => navigate(`/store/products/${product.id}`);
 
   const discountPercentage = product.discount_price 
@@ -198,7 +217,7 @@ const ProductCard = ({ product }: { product: Product }) => {
                         <button 
                             onClick={handleAddToCart}
                             disabled={product.stock_quantity <= 0}
-                            className={`w-full font-heavy font-black py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                            className={`w-full font-heavy font-black py-3 rounded-lg transition-colors flex items-center justify-center gap-2 mb-2 ${
                                 product.stock_quantity <= 0
                                     ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                                     : 'bg-white text-black hover:bg-brand-gold'
@@ -213,6 +232,27 @@ const ProductCard = ({ product }: { product: Product }) => {
                                 <>
                                     <ShoppingBag size={18} />
                                     {hasVariants ? 'VIEW OPTIONS' : 'ADD TO CART'}
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={handleBuyNow}
+                            disabled={product.stock_quantity <= 0}
+                            className={`w-full font-heavy font-black py-3 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                                product.stock_quantity <= 0
+                                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                                    : 'bg-brand-gold text-black hover:brightness-110 active:scale-95'
+                            }`}
+                        >
+                            {product.stock_quantity <= 0 ? (
+                                <>
+                                    <XCircle size={18} />
+                                    OUT OF STOCK
+                                </>
+                            ) : (
+                                <>
+                                    <Zap size={18} />
+                                    BUY NOW
                                 </>
                             )}
                         </button>
@@ -257,12 +297,21 @@ const ProductCard = ({ product }: { product: Product }) => {
                         )}
                     </div>
                      {/* Mobile Quick Add */}
-                     <button 
-                        onClick={handleAddToCart}
-                        className="md:hidden w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-gold hover:text-black transition-colors"
-                     >
-                         {hasVariants ? <Eye size={14} /> : <ShoppingBag size={14} />}
-                     </button>
+                     <div className="md:hidden flex items-center gap-2">
+                         <button 
+                            onClick={handleAddToCart}
+                            className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-brand-gold hover:text-black transition-colors"
+                         >
+                             {hasVariants ? <Eye size={14} /> : <ShoppingBag size={14} />}
+                         </button>
+                         <button 
+                            onClick={handleBuyNow}
+                            disabled={product.stock_quantity <= 0}
+                            className="bg-brand-gold text-black px-3 py-1.5 rounded-lg font-black text-[10px] uppercase disabled:opacity-50"
+                         >
+                             BUY NOW
+                         </button>
+                     </div>
                 </div>
             </div>
         </div>

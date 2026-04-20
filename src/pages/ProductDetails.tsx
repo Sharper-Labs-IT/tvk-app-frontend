@@ -7,7 +7,7 @@ import {
   ChevronRight,
   ShieldCheck,
   RotateCcw,
-  Truck
+  Truck,
 } from 'lucide-react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -100,6 +100,38 @@ const ProductDetails = () => {
                 variant: selectedVariant ? `${selectedVariant.attributes?.color || ''} ${selectedVariant.attributes?.size || ''}` : undefined
             });
             // Optional: Open cart or just toast (handled in context)
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setAddingToCart(false);
+        }
+    };
+
+    const handleBuyNow = async () => {
+        if (product.has_variants && !selectedVariant) {
+            toast.error("Please select a valid option");
+            return;
+        }
+
+        if (quantity > currentStock) {
+            toast.error(`Only ${currentStock} items in stock`);
+            return;
+        }
+
+        setAddingToCart(true);
+        try {
+            await addToCart({
+                productId: product.id,
+                name: product.name,
+                price: currentPrice,
+                quantity,
+                image: activeImage,
+                type: product.type === 'game_item' ? 'coins' : 'merch',
+                stock: currentStock,
+                variantId: selectedVariant?.id,
+                variant: selectedVariant ? `${selectedVariant.attributes?.color || ''} ${selectedVariant.attributes?.size || ''}` : undefined
+            });
+            navigate('/checkout');
         } catch (error) {
             console.error(error);
         } finally {
@@ -206,7 +238,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Actions */}
-                        <div className="flex gap-4 mb-8">
+                        <div className="flex gap-4 mb-4">
                             {/* Quantity */}
                             <div className="flex items-center bg-[#111] border border-white/10 rounded-xl h-14 px-2">
                                 <button 
@@ -233,7 +265,7 @@ const ProductDetails = () => {
                             <button
                                 onClick={handleAddToCart}
                                 disabled={isOutOfStock || addingToCart || (product.has_variants && !selectedVariant)}
-                                className="flex-1 bg-brand-gold text-black font-black text-lg rounded-xl uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(230,198,91,0.2)]"
+                                className="flex-1 bg-white text-black font-black text-lg rounded-xl uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(255,255,255,0.1)]"
                             >
                                 {addingToCart ? (
                                     <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
@@ -256,6 +288,25 @@ const ProductDetails = () => {
                                 }`}
                             >
                                 <Heart size={20} className={isInWishlist(product.id) ? "fill-current" : ""} />
+                            </button>
+                        </div>
+                        
+                        <div className="flex gap-4 mb-8">
+                            <button
+                                onClick={handleBuyNow}
+                                disabled={isOutOfStock || addingToCart || (product.has_variants && !selectedVariant)}
+                                className="w-full bg-brand-gold text-black font-black text-lg h-14 rounded-xl uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(230,198,91,0.2)]"
+                            >
+                                {addingToCart ? (
+                                    <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                                ) : isOutOfStock ? (
+                                    "Out of Stock"
+                                ) : (
+                                    <>
+                                       
+                                        Buy Now
+                                    </>
+                                )}
                             </button>
                         </div>
 
