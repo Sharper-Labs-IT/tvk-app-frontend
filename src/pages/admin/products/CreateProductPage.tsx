@@ -38,6 +38,7 @@ const CreateProductPage: React.FC = () => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
   const [shippingCost, setShippingCost] = useState('');
+  const [sizes, setSizes] = useState('');
 
   // Game Item Attributes
   const [gameItemType, setGameItemType] = useState('coins');
@@ -132,6 +133,10 @@ const CreateProductPage: React.FC = () => {
         formData.append('width', width);
         formData.append('height', height);
         if (shippingCost) formData.append('shipping_cost', shippingCost);
+        if (sizes) {
+            const sizesArray = sizes.split(',').map(s => s.trim()).filter(s => s);
+            sizesArray.forEach(s => formData.append('metadata[sizes][]', s));
+        }
       }
 
       if (type === 'game_item') {
@@ -302,10 +307,16 @@ const CreateProductPage: React.FC = () => {
                 </div>
               </div>
               
+              
               <div className="mt-4">
                   <label className="block text-gray-300 text-sm mb-1">Manual Shipping Cost (£)</label>
                   <input type="number" step="0.01" value={shippingCost} onChange={(e) => setShippingCost(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="Leave blank to calculate automatically" />
                   <p className="text-xs text-gray-500 mt-1">Leave blank to calculate based on weight/dimensions at checkout.</p>
+              </div>
+
+              <div className="mt-4">
+                  <label className="block text-gray-300 text-sm mb-1">Sizes (Comma separated) <span className="text-gray-500 text-xs">(e.g. S, M, L, XL)</span></label>
+                  <input type="text" value={sizes} onChange={(e) => setSizes(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="For T-shirts or apparel" />
               </div>
             </div>
           )}

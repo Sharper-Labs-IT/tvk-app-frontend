@@ -22,7 +22,18 @@ export default ({ mode }: ConfigEnv) => {
       },
       proxy: {
         '/api': {
-          target: env.VITE_API_BASE_URL || env.VITE_API_URL, // Loaded dynamically from .env
+          target: env.VITE_API_BASE_URL || env.VITE_API_URL || 'https://api.tvkmembers.com', // Loaded dynamically from .env
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
+    preview: {
+      host: '0.0.0.0',
+      port: 5173,
+      proxy: {
+        '/api': {
+          target: env.VITE_API_BASE_URL || env.VITE_API_URL || 'https://api.tvkmembers.com',
           changeOrigin: true,
           secure: false,
         },

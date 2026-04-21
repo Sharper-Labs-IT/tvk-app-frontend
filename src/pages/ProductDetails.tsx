@@ -28,6 +28,7 @@ const ProductDetails = () => {
     const [loading, setLoading] = useState(true);
     const [activeImage, setActiveImage] = useState<string>('');
     const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [quantity, setQuantity] = useState(1);
     const [addingToCart, setAddingToCart] = useState(false);
 
@@ -81,6 +82,12 @@ const ProductDetails = () => {
             return;
         }
 
+        const hasMetadataSizes = product.metadata?.sizes && Array.isArray(product.metadata.sizes) && product.metadata.sizes.length > 0;
+        if (hasMetadataSizes && !selectedSize) {
+            toast.error("Please select a size");
+            return;
+        }
+
         if (quantity > currentStock) {
             toast.error(`Only ${currentStock} items in stock`);
             return;
@@ -88,6 +95,13 @@ const ProductDetails = () => {
 
         setAddingToCart(true);
         try {
+            let variantString = undefined;
+            if (selectedVariant) {
+                variantString = `${selectedVariant.attributes?.color || ''} ${selectedVariant.attributes?.size || ''}`.trim();
+            } else if (selectedSize) {
+                variantString = selectedSize;
+            }
+
             await addToCart({
                 productId: product.id,
                 name: product.name,
@@ -97,7 +111,8 @@ const ProductDetails = () => {
                 type: product.type === 'game_item' ? 'coins' : 'merch',
                 stock: currentStock,
                 variantId: selectedVariant?.id,
-                variant: selectedVariant ? `${selectedVariant.attributes?.color || ''} ${selectedVariant.attributes?.size || ''}` : undefined
+                variant: variantString,
+                size: selectedSize || undefined,
             });
             // Optional: Open cart or just toast (handled in context)
         } catch (error) {
@@ -113,6 +128,12 @@ const ProductDetails = () => {
             return;
         }
 
+        const hasMetadataSizes = product.metadata?.sizes && Array.isArray(product.metadata.sizes) && product.metadata.sizes.length > 0;
+        if (hasMetadataSizes && !selectedSize) {
+            toast.error("Please select a size");
+            return;
+        }
+
         if (quantity > currentStock) {
             toast.error(`Only ${currentStock} items in stock`);
             return;
@@ -120,6 +141,13 @@ const ProductDetails = () => {
 
         setAddingToCart(true);
         try {
+            let variantString = undefined;
+            if (selectedVariant) {
+                variantString = `${selectedVariant.attributes?.color || ''} ${selectedVariant.attributes?.size || ''}`.trim();
+            } else if (selectedSize) {
+                variantString = selectedSize;
+            }
+
             await addToCart({
                 productId: product.id,
                 name: product.name,
@@ -129,7 +157,8 @@ const ProductDetails = () => {
                 type: product.type === 'game_item' ? 'coins' : 'merch',
                 stock: currentStock,
                 variantId: selectedVariant?.id,
-                variant: selectedVariant ? `${selectedVariant.attributes?.color || ''} ${selectedVariant.attributes?.size || ''}` : undefined
+                variant: variantString,
+                size: selectedSize || undefined,
             });
             navigate('/checkout');
         } catch (error) {
@@ -231,6 +260,28 @@ const ProductDetails = () => {
                                                 <span>{v.attributes?.color} {v.attributes?.size && `- ${v.attributes.size}`}</span>
                                                 {v.stock_quantity <= 0 && <span className="text-[10px] text-red-500 font-bold uppercase">Sold Out</span>}
                                             </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Metadata Sizes */}
+                        {!product.has_variants && product.metadata?.sizes && Array.isArray(product.metadata.sizes) && product.metadata.sizes.length > 0 && (
+                            <div className="mb-8 space-y-4">
+                                <label className="text-sm font-bold text-neutral-400 uppercase tracking-wider">Select Size</label>
+                                <div className="flex flex-wrap gap-3">
+                                    {product.metadata.sizes.map((size: string) => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`px-4 py-3 rounded-lg border font-mono text-sm transition-all relative overflow-hidden flex items-center justify-center min-w-[3rem] ${
+                                                selectedSize === size
+                                                    ? 'border-brand-gold bg-brand-gold/10 text-brand-gold'
+                                                    : 'border-white/10 hover:border-white/30 text-neutral-300'
+                                            }`}
+                                        >
+                                            <span className="relative z-10">{size}</span>
                                         </button>
                                     ))}
                                 </div>

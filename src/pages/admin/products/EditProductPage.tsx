@@ -48,6 +48,7 @@ const EditProductPage: React.FC = () => {
   const [width, setWidth] = useState('');
   const [height, setHeight] = useState('');
   const [shippingCost, setShippingCost] = useState('');
+  const [sizes, setSizes] = useState('');
 
   // Game Item Attributes
   const [gameItemType, setGameItemType] = useState('coins');
@@ -93,6 +94,10 @@ const EditProductPage: React.FC = () => {
                     setWidth(prod.dimensions?.width.toString() || '');
                     setHeight(prod.dimensions?.height.toString() || '');
                     setShippingCost(prod.shipping_cost?.toString() || '');
+                    
+                    if (prod.metadata?.sizes) {
+                        setSizes(Array.isArray(prod.metadata.sizes) ? prod.metadata.sizes.join(', ') : '');
+                    }
                 }
 
                 if (prod.type === 'game_item' && prod.game_item_metadata) {
@@ -178,6 +183,10 @@ const EditProductPage: React.FC = () => {
         formData.append('width', width);
         formData.append('height', height);
         if (shippingCost) formData.append('shipping_cost', shippingCost);
+        if (sizes) {
+            const sizesArray = sizes.split(',').map(s => s.trim()).filter(s => s);
+            sizesArray.forEach(s => formData.append('metadata[sizes][]', s));
+        }
       }
 
       if (type === 'game_item') {
@@ -298,6 +307,10 @@ const EditProductPage: React.FC = () => {
                 <div><label className="block text-gray-300 text-sm mb-1">Length (cm)</label><input type="number" step="0.1" value={length} onChange={(e) => setLength(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-blue-500 outline-none" /></div>
                 <div><label className="block text-gray-300 text-sm mb-1">Width (cm)</label><input type="number" step="0.1" value={width} onChange={(e) => setWidth(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-blue-500 outline-none" /></div>
                 <div><label className="block text-gray-300 text-sm mb-1">Height (cm)</label><input type="number" step="0.1" value={height} onChange={(e) => setHeight(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-blue-500 outline-none" /></div>
+              </div>
+              <div className="mt-4">
+                  <label className="block text-gray-300 text-sm mb-1">Sizes (Comma separated) <span className="text-gray-500 text-xs">(e.g. S, M, L, XL)</span></label>
+                  <input type="text" value={sizes} onChange={(e) => setSizes(e.target.value)} className="w-full bg-black/30 border border-white/10 rounded-lg p-3 text-white focus:border-blue-500 outline-none" placeholder="For T-shirts or apparel" />
               </div>
             </div>
           )}

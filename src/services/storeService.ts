@@ -113,11 +113,12 @@ export const storeService = {
     return response.data;
   },
 
-  addToCart: async (productId: number, quantity: number, variantId?: number) => {
+  addToCart: async (productId: number, quantity: number, variantId?: number, metadata?: Record<string, any>) => {
     const response = await axiosClient.post('/cart', {
       product_id: productId,
       quantity,
-      variant_id: variantId
+      variant_id: variantId,
+      metadata: metadata // Allows passing selected sizes or options
     });
     return response.data;
   },
