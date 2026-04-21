@@ -21,7 +21,7 @@ export const wishlistService = {
     },
 
     removeFromWishlist: async (productId: number): Promise<any> => {
-        const response = await axiosClient.delete(`/wishlist/${productId}`);
+        const response = await axiosClient.post(`/wishlist/${productId}`, { _method: 'DELETE' });
         return response.data;
     },
     
