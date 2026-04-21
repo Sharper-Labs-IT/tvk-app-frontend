@@ -75,6 +75,9 @@ export interface Product {
   };
   shipping_cost?: number;
 
+  // Meta  
+  metadata?: Record<string, any>;
+
   // Game Item specific
   game_item_metadata?: GameItemMetadata;
 

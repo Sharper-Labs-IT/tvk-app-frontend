@@ -15,7 +15,9 @@ import Cookies from 'js-cookie';
 const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL;
 const API_VERSION = import.meta.env.VITE_API_VERSION || 'v1';
 
-const baseURL = import.meta.env.DEV
+const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+const baseURL = (isLocalhost || import.meta.env.DEV)
   ? `/api/${API_VERSION}`
   : `${API_BASE}/api/${API_VERSION}`;
 
@@ -39,14 +41,21 @@ axiosClient.interceptors.request.use(
     const token = Cookies.get('authToken');
     
     if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
+      if (typeof config.headers.set === 'function') {
+        config.headers.set('Authorization', `Bearer ${token}`);
+      } else {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     
     // Add CSRF token if available (Sanctum)
     const csrfToken = Cookies.get('XSRF-TOKEN');
     if (csrfToken) {
-      config.headers['X-XSRF-TOKEN'] = csrfToken;
+      if (typeof config.headers.set === 'function') {
+        config.headers.set('X-XSRF-TOKEN', csrfToken);
+      } else {
+        config.headers['X-XSRF-TOKEN'] = csrfToken;
+      }
     }
     
     return config;

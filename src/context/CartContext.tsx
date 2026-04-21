@@ -17,6 +17,7 @@ export interface CartItem {
   stock: number;
   variantId?: number;
   variant?: string; // Descriptive string like "Red - Large"
+  metadata?: Record<string, any>;
 }
 
 interface CartContextType {
@@ -105,7 +106,8 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         variantId: item.variant_id,
         variant: item.variant 
           ? [item.variant.attributes?.color, item.variant.attributes?.size].filter(Boolean).join(' - ') 
-          : undefined
+          : (item.metadata?.size || item.size || undefined),
+        metadata: item.metadata
       }));
       setItems(mappedItems);
     } catch (error) {
@@ -118,15 +120,23 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const toggleCart = () => setIsCartOpen(!isCartOpen);
 
   const addToCart = async (newItem: Omit<CartItem, 'id'>) => {
+    // If no variantId is provided but variant string or size exists, try to structure it in metadata for guest cart.
+    const itemMetadata = newItem.metadata || (newItem.size ? { size: newItem.size } : {});
+    
     if (!isLoggedIn) {
       const updatedItems = [...items];
-      const existingItemIndex = updatedItems.findIndex(i => i.productId === newItem.productId && i.variantId === newItem.variantId);
+      // Match by product, variantId, and size/metadata
+      const existingItemIndex = updatedItems.findIndex(i => 
+          i.productId === newItem.productId && 
+          i.variantId === newItem.variantId &&
+          (i.size === newItem.size || i.variant === newItem.variant)
+      );
       
       if (existingItemIndex >= 0) {
         updatedItems[existingItemIndex].quantity += newItem.quantity;
       } else {
         const mockId = Math.random().toString(36).substring(2, 9);
-        const guestItem = { ...newItem, id: mockId } as CartItem;
+        const guestItem = { ...newItem, id: mockId, metadata: itemMetadata } as CartItem;
         updatedItems.push(guestItem);
       }
       
@@ -139,7 +149,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
     try {
        setIsLoading(true);
-       await storeService.addToCart(newItem.productId, newItem.quantity, newItem.variantId);
+       await storeService.addToCart(newItem.productId, newItem.quantity, newItem.variantId, itemMetadata);
        
        toast.success('Added to cart!');
        fetchCart(); 
