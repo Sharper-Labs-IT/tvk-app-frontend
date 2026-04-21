@@ -124,12 +124,12 @@ export const storeService = {
   },
 
   updateCartItem: async (cartItemId: string | number, quantity: number) => {
-    const response = await axiosClient.put(`/cart/${cartItemId}`, { quantity });
+    const response = await axiosClient.post(`/cart/${cartItemId}`, { quantity, _method: 'PUT' });
     return response.data;
   },
 
   removeFromCart: async (cartItemId: string | number) => {
-    const response = await axiosClient.delete(`/cart/${cartItemId}`);
+    const response = await axiosClient.post(`/cart/${cartItemId}`, { _method: 'DELETE' });
     return response.data;
   },
 
