@@ -55,12 +55,12 @@ export const adminProductService = {
   },
 
   deleteProduct: async (id: number) => {
-    const response = await axiosClient.delete(`/admin/products/${id}`);
+    const response = await axiosClient.post(`/admin/products/${id}`, { _method: 'DELETE' });
     return response.data;
   },
 
   deleteProductMedia: async (mediaId: number) => {
-    const response = await axiosClient.delete(`/admin/products/media/${mediaId}`);
+    const response = await axiosClient.post(`/admin/products/media/${mediaId}`, { _method: 'DELETE' });
     return response.data;
   },
 
